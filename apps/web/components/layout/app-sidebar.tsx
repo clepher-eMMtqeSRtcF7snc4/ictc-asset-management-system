@@ -49,11 +49,12 @@ const data = {
       icon: <Package />,
       items: [
         { title: "All Assets", url: "/assets" },
-        { title: "Asset Registration", url: "/asset/registration" },
-        { title: "Asset Assignment", url: "/assets/assignments" },
-        { title: "Asset Transfer & Returns", url: "/assets/transfers" },
+        { title: "Asset Registration", url: "/assets/registration" },
+        { title: "Asset Assignment", url: "/assets/assignment" },
+        { title: "Asset Transfer", url: "/assets/transfer" },
+        { title: "Asset Returns", url: "/assets/return" },
         { title: "Maintenance & Warranty", url: "/maintenance" },
-        { title: "Depreciation & Disposal", url: "/assets/disposal" },
+        { title: "Disposal", url: "/disposal" },
       ],
     },
     {
@@ -65,7 +66,7 @@ const data = {
         { title: "Stock In", url: "/inventory/stock-in" },
         { title: "Stock Out", url: "/inventory/stock-out" },
         { title: "Adjustments & Transfers", url: "/inventory/adjustments" },
-        { title: "Physical Count", url: "/inventory/count" },
+        { title: "Physical Count", url: "/physical-inventory" },
         { title: "Low Stock", url: "/inventory/low-stock" },
       ],
     },
@@ -75,8 +76,8 @@ const data = {
       icon: <ShoppingCart />,
       items: [
         { title: "Purchase Requests", url: "/procurement" },
-        { title: "Purchase Orders", url: "/procurement/orders" },
-        { title: "Suppliers", url: "/procurement/suppliers" },
+        { title: "Purchase Orders", url: "/procurement" },
+        { title: "Suppliers", url: "/administration/suppliers" },
       ],
     },
     {
@@ -85,17 +86,17 @@ const data = {
       icon: <Truck />,
       items: [
         { title: "Deliveries", url: "/receiving" },
-        { title: "Receiving & Inspection", url: "/receiving/inspection" },
+        { title: "Receiving & Inspection", url: "/receiving" },
       ],
     },
     {
       title: "Verification",
-      url: "/verification",
+      url: "/physical-inventory",
       icon: <ClipboardCheck />,
       items: [
-        { title: "Physical Inventory", url: "/verification" },
-        { title: "Asset Verification", url: "/verification/assets" },
-        { title: "Discrepancies", url: "/verification/discrepancies" },
+        { title: "Physical Inventory", url: "/physical-inventory" },
+        { title: "Asset Verification", url: "/physical-inventory" },
+        { title: "Discrepancies", url: "/physical-inventory" },
       ],
     },
     {
@@ -103,15 +104,13 @@ const data = {
       url: "/reports",
       icon: <FileBarChart2 />,
       items: [
-        { title: "Asset Reports", url: "/reports/assets" },
-        { title: "Inventory Reports", url: "/reports/inventory" },
-        { title: "Maintenance Reports", url: "/reports/maintenance" },
-        { title: "Procurement Reports", url: "/reports/procurement" },
+        { title: "Report Center", url: "/reports" },
       ],
     },
   ],
   administration: [
-    { name: "Users & Roles", url: "/administration/users", icon: <UsersRound /> },
+    { name: "Users", url: "/administration/users", icon: <UsersRound /> },
+    { name: "Roles & Permissions", url: "/administration/roles-permissions", icon: <UsersRound /> },
     { name: "Departments & Locations", url: "/administration/locations", icon: <Building2 /> },
     { name: "Categories", url: "/administration/categories", icon: <Settings2 /> },
     { name: "Audit Logs", url: "/administration/audit-logs", icon: <Archive /> },
