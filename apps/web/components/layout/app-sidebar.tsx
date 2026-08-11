@@ -109,11 +109,10 @@ const data = {
     },
   ],
   administration: [
-    { name: "Users", url: "/administration/users", icon: <UsersRound /> },
-    { name: "Roles & Permissions", url: "/administration/roles-permissions", icon: <UsersRound /> },
-    { name: "Departments & Locations", url: "/administration/locations", icon: <Building2 /> },
-    { name: "Categories", url: "/administration/categories", icon: <Settings2 /> },
-    { name: "Audit Logs", url: "/administration/audit-logs", icon: <Archive /> },
+    { name: "Users", url: "/users", icon: <UsersRound /> },
+    { name: "Departments", url: "/master-data/departments", icon: <Building2 /> },
+    { name: "Locations", url: "/master-data/locations", icon: <Building2 /> },
+    { name: "Categories", url: "/master-data/categories", icon: <Settings2 /> },
   ],
 }
 

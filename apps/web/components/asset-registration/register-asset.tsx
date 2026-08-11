@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AssetCategory, AssetType, Departments, FundSource } from "@repo/trpc/schemas";
+import { AssetCategory, AssetType, Department, FundSource } from "@repo/trpc/schemas";
 import { Button } from "../ui/button";
 import { useState } from "react";
 import { CheckCircle2, Printer, QrCode, Upload } from "lucide-react";
@@ -20,7 +20,7 @@ import { CheckCircle2, Printer, QrCode, Upload } from "lucide-react";
 interface AssRegContentPageProps {
   category: AssetCategory[];
   type: AssetType[];
-  departments: Departments[];
+  departments: Department[];
   fundSource: FundSource[];
   onAction: (year: number) => void;
 }

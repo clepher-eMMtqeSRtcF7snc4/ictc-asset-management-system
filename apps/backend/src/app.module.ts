@@ -13,6 +13,10 @@ import { UsersModule } from './auth/users/users.module';
 import { UploadModule } from './upload/upload.module';
 import { AppContext } from './app.context';
 import { AuthTrpcMiddleware } from './auth/auth-trpc.middleware';
+import { CategoriesModule } from './master-data/categories/categories.module';
+import { DepartmentsModule } from './master-data/departments/departments.module';
+import { LocationsModule } from './master-data/locations/locations.module';
+import { UserManagementModule } from './user-management/user-management.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -38,6 +42,10 @@ import { AuthTrpcMiddleware } from './auth/auth-trpc.middleware';
       inject: [DATABASE_CONNECTION, ConfigService],
     }),
     UsersModule,
+    DepartmentsModule,
+    LocationsModule,
+    CategoriesModule,
+    UserManagementModule,
     UploadModule,
   ],
   controllers: [AppController],

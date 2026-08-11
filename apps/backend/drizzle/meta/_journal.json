@@ -15,6 +15,20 @@
       "when": 1786329468651,
       "tag": "0001_hesitant_thor_girl",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786463925058,
+      "tag": "0002_classy_mentor",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786464262338,
+      "tag": "0003_user_management",
+      "breakpoints": true
     }
   ]
 }

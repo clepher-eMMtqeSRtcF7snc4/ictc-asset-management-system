@@ -2,7 +2,7 @@
 
 import AssRegContentSection from "@/components/asset-registration/ass-reg-content-section";
 import AssRegHeaderSection from "@/components/asset-registration/ass-reg-header-section"
-import { AssetCategory, AssetType, Assets, AssetsStats, Departments, FundSource } from "@repo/trpc/schemas";
+import { AssetCategory, AssetType, Assets, AssetsStats, Department, FundSource } from "@repo/trpc/schemas";
 import { useState } from "react";
 
 const stats: AssetsStats[] = [
@@ -42,10 +42,10 @@ const fundSource: FundSource[] = [
   { id:3, label: "Research Grant", value: "Research Grant" },
 ]
 
-const departments: Departments[] = [
-  { id:1, name: "College of Information Technology", shortCode: "CIT", building: "", room: "", floor: "" },
-  { id:2, name: "College of Engineering", shortCode: "COE" },
-  { id:3, name: "Registrar", shortCode: "Registrar" },
+const departments: Department[] = [
+  { id: 1, name: "College of Information Technology", code: "CIT", type: "Academic", status: "active" },
+  { id: 2, name: "College of Engineering", code: "COE", type: "Academic", status: "active" },
+  { id: 3, name: "Registrar", code: "REG", type: "Administrative", status: "active" },
 ]
 
 export default function AssetRegistration(){

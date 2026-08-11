@@ -1,5 +1,14 @@
-import { relations } from 'drizzle-orm';
-import { pgTable, text, timestamp, boolean, index } from 'drizzle-orm/pg-core';
+import { relations, sql } from 'drizzle-orm';
+import {
+  jsonb,
+  pgTable,
+  text,
+  timestamp,
+  boolean,
+  index,
+  serial,
+  integer,
+} from 'drizzle-orm/pg-core';
 import { primaryKey } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('user', {
@@ -91,6 +100,144 @@ export const follow = pgTable(
   }),
 );
 
+export const departments = pgTable(
+  'departments',
+  {
+    id: serial('id').primaryKey(),
+    name: text('name').notNull(),
+    code: text('code').notNull().unique(),
+    type: text('type').notNull(),
+    status: text('status').notNull().default('active'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [
+    index('departments_status_idx').on(table.status),
+    index('departments_type_idx').on(table.type),
+  ],
+);
+
+export const locations = pgTable(
+  'locations',
+  {
+    id: serial('id').primaryKey(),
+    name: text('name').notNull(),
+    code: text('code').notNull().unique(),
+    type: text('type').notNull(),
+    status: text('status').notNull().default('active'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [
+    index('locations_status_idx').on(table.status),
+    index('locations_type_idx').on(table.type),
+  ],
+);
+
+export const categories = pgTable(
+  'categories',
+  {
+    id: serial('id').primaryKey(),
+    name: text('name').notNull(),
+    code: text('code').notNull().unique(),
+    type: text('type').notNull(),
+    status: text('status').notNull().default('active'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [
+    index('categories_status_idx').on(table.status),
+    index('categories_type_idx').on(table.type),
+  ],
+);
+
+export const roles = pgTable(
+  'roles',
+  {
+    id: text('id').primaryKey(),
+    name: text('name').notNull().unique(),
+    description: text('description'),
+    permissions: jsonb('permissions').$type<string[]>().notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [index('roles_name_idx').on(table.name)],
+);
+
+export const userProfiles = pgTable(
+  'user_profiles',
+  {
+    userId: text('user_id')
+      .primaryKey()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    firstName: text('first_name').notNull(),
+    middleName: text('middle_name'),
+    lastName: text('last_name').notNull(),
+    position: text('position').notNull(),
+    designation: text('designation').notNull(),
+    office: text('office').notNull(),
+    departmentId: integer('department_id').references(() => departments.id, {
+      onDelete: 'set null',
+    }),
+    roleId: text('role_id').references(() => roles.id, {
+      onDelete: 'set null',
+    }),
+    status: text('status')
+      .$type<'active' | 'inactive' | 'suspended'>()
+      .notNull()
+      .default('active'),
+    profilePicture: text('profile_picture'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [
+    index('user_profiles_department_idx').on(table.departmentId),
+    index('user_profiles_role_idx').on(table.roleId),
+    index('user_profiles_status_idx').on(table.status),
+  ],
+);
+
+export const userAuditLogs = pgTable(
+  'user_audit_logs',
+  {
+    id: text('id').primaryKey(),
+    actorUserId: text('actor_user_id').references(() => user.id, {
+      onDelete: 'set null',
+    }),
+    userId: text('user_id').references(() => user.id, {
+      onDelete: 'set null',
+    }),
+    action: text('action').notNull(),
+    entityType: text('entity_type').notNull(),
+    entityId: text('entity_id').notNull(),
+    metadata: jsonb('metadata')
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default(sql`'{}'::jsonb`),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('user_audit_logs_created_at_idx').on(table.createdAt),
+    index('user_audit_logs_user_id_idx').on(table.userId),
+    index('user_audit_logs_entity_idx').on(table.entityType, table.entityId),
+  ],
+);
+
 export const followRelations = relations(follow, ({ one }) => ({
   follower: one(user, {
     fields: [follow.followerId],
@@ -102,10 +249,17 @@ export const followRelations = relations(follow, ({ one }) => ({
   }),
 }));
 
-export const userRelations = relations(user, ({ many }) => ({
+export const userRelations = relations(user, ({ many, one }) => ({
   sessions: many(session),
   accounts: many(account),
   posts: many(user),
+  profile: one(userProfiles),
+  auditLogsAsActor: many(userAuditLogs, {
+    relationName: 'audit_actor',
+  }),
+  auditLogsAsSubject: many(userAuditLogs, {
+    relationName: 'audit_subject',
+  }),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -119,6 +273,38 @@ export const accountRelations = relations(account, ({ one }) => ({
   user: one(user, {
     fields: [account.userId],
     references: [user.id],
+  }),
+}));
+
+export const roleRelations = relations(roles, ({ many }) => ({
+  userProfiles: many(userProfiles),
+}));
+
+export const userProfileRelations = relations(userProfiles, ({ one }) => ({
+  user: one(user, {
+    fields: [userProfiles.userId],
+    references: [user.id],
+  }),
+  department: one(departments, {
+    fields: [userProfiles.departmentId],
+    references: [departments.id],
+  }),
+  role: one(roles, {
+    fields: [userProfiles.roleId],
+    references: [roles.id],
+  }),
+}));
+
+export const userAuditLogRelations = relations(userAuditLogs, ({ one }) => ({
+  actor: one(user, {
+    fields: [userAuditLogs.actorUserId],
+    references: [user.id],
+    relationName: 'audit_actor',
+  }),
+  user: one(user, {
+    fields: [userAuditLogs.userId],
+    references: [user.id],
+    relationName: 'audit_subject',
   }),
 }));
 

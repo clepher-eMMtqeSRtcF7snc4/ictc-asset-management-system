@@ -1,14 +1,14 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AssetCategory, Assets, AssetsStats, AssetType, Departments, FundSource } from "@repo/trpc/schemas";
+import { AssetCategory, Assets, AssetsStats, AssetType, Department, FundSource } from "@repo/trpc/schemas";
 
 interface AssRegContentPageProps {
   stats: AssetsStats[];
   assets: Assets[];
   category: AssetCategory[];
   type: AssetType[];
-  departments: Departments[];
+  departments: Department[];
   fundSource: FundSource[];
   onAction: (year: number) => void;
 }
