@@ -12,16 +12,22 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { CalendarCog, FileSliders, UserCog, Box } from "lucide-react"
+import {
+  Archive,
+  Boxes,
+  Building2,
+  ClipboardCheck,
+  FileBarChart2,
+  Handshake,
+  Package,
+  Settings2,
+  ShoppingCart,
+  Truck,
+  UsersRound,
+} from "lucide-react"
 import Image from "next/image"
 
-// This is sample data.
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   teams: [
     {
       name: "MSU at Naawan",
@@ -33,91 +39,82 @@ const data = {
           height={26}
         />
       ),
-      plan: "GAD Plan and Budget",
+      plan: "ICT Asset Management",
     },
   ],
   navMain: [
     {
       title: "Asset Management",
-      url: "#",
-      icon: (
-        <Box
-        />
-      ),
-      isActive: true,
+      url: "/assets",
+      icon: <Package />,
       items: [
-        {
-          title: "Planning & Procurement",
-          url: "#",
-        },
-        {
-          title: "Asset Acquisition",
-          url: "#",
-        },
-        {
-          title: "Asset Registration",
-          url: "/asset/registration",
-        },
-         {
-          title: "Asset Assignment",
-          url: "#",
-        },
-         {
-          title: "Asset Utilization",
-          url: "#",
-        },
-         {
-          title: "Asset Transfer",
-          url: "#",
-        },
+        { title: "All Assets", url: "/assets" },
+        { title: "Asset Registration", url: "/asset/registration" },
+        { title: "Asset Assignment", url: "/assets/assignments" },
+        { title: "Asset Transfer & Returns", url: "/assets/transfers" },
+        { title: "Maintenance & Warranty", url: "/maintenance" },
+        { title: "Depreciation & Disposal", url: "/assets/disposal" },
       ],
     },
     {
-      title: "Management",
-      url: "#",
-      icon: (
-        <FileSliders
-        />
-      ),
+      title: "Inventory",
+      url: "/inventory",
+      icon: <Boxes />,
       items: [
-        {
-          title: "Inventory Audit",
-          url: "#",
-        },
-        {
-          title: "Depreciation",
-          url: "#",
-        },
-        {
-          title: "Asset Disposal",
-          url: "#",
-        },
+        { title: "Inventory Items", url: "/inventory" },
+        { title: "Stock In", url: "/inventory/stock-in" },
+        { title: "Stock Out", url: "/inventory/stock-out" },
+        { title: "Adjustments & Transfers", url: "/inventory/adjustments" },
+        { title: "Physical Count", url: "/inventory/count" },
+        { title: "Low Stock", url: "/inventory/low-stock" },
+      ],
+    },
+    {
+      title: "Procurement",
+      url: "/procurement",
+      icon: <ShoppingCart />,
+      items: [
+        { title: "Purchase Requests", url: "/procurement" },
+        { title: "Purchase Orders", url: "/procurement/orders" },
+        { title: "Suppliers", url: "/procurement/suppliers" },
+      ],
+    },
+    {
+      title: "Receiving",
+      url: "/receiving",
+      icon: <Truck />,
+      items: [
+        { title: "Deliveries", url: "/receiving" },
+        { title: "Receiving & Inspection", url: "/receiving/inspection" },
+      ],
+    },
+    {
+      title: "Verification",
+      url: "/verification",
+      icon: <ClipboardCheck />,
+      items: [
+        { title: "Physical Inventory", url: "/verification" },
+        { title: "Asset Verification", url: "/verification/assets" },
+        { title: "Discrepancies", url: "/verification/discrepancies" },
+      ],
+    },
+    {
+      title: "Reports",
+      url: "/reports",
+      icon: <FileBarChart2 />,
+      items: [
+        { title: "Asset Reports", url: "/reports/assets" },
+        { title: "Inventory Reports", url: "/reports/inventory" },
+        { title: "Maintenance Reports", url: "/reports/maintenance" },
+        { title: "Procurement Reports", url: "/reports/procurement" },
       ],
     },
   ],
   administration: [
-    {
-      name: "GPB Matrix",
-      url: "/master-data/matrix",
-      icon: (
-        <FileSliders
-        />
-      ),
-    },
-    {
-      name: "Fiscal Year",
-      url: "/master-data/fiscal-year",
-      icon: (
-        <CalendarCog />
-      ),
-    },
-    {
-      name: "User Management",
-      url: "/master-data/user",
-      icon: (
-        <UserCog />
-      ),
-    },
+    { name: "Users & Roles", url: "/administration/users", icon: <UsersRound /> },
+    { name: "Departments & Locations", url: "/administration/locations", icon: <Building2 /> },
+    { name: "Categories", url: "/administration/categories", icon: <Settings2 /> },
+    { name: "Audit Logs", url: "/administration/audit-logs", icon: <Archive /> },
   ],
 }
 
@@ -131,8 +128,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarDropdownMenu items={data.navMain} />
         <SidebarSingleMenu settings={data.administration} />
       </SidebarContent>
-      <SidebarFooter>
-        {/* Footer Content */}
+      <SidebarFooter className="p-2">
+        <div className="flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
+          <Handshake className="size-4 text-primary" />
+          <span>ICT Asset Management</span>
+        </div>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

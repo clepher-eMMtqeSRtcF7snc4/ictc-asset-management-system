@@ -31,10 +31,6 @@ export const assetTypeSchema = z.object({
 })
 
 export const createAssetsSchema = z.object({
-  
-  dept: z.string(),
-  
-
   assetId: z.string(),
   assetName: z.string().min(1, "This field is required"),
   category: z.string().min(1, "This field is required"),
@@ -43,7 +39,7 @@ export const createAssetsSchema = z.object({
   model: z.string().min(1, "This field is required"),
   serialNumber: z.string().min(1, "This field is required"),
 
-  serialNumber: z.float32({error: "This field is required"}).positive(),
+  purchaseCost: z.float32({error: "This field is required"}).positive(),
   acquisitionDate: z.string().min(1, "This field is required"),
   fundSource: z.number({error: "This field is required"}).positive(),
   poNumber: z.string().min(1, "This field is required"),
@@ -60,18 +56,6 @@ export const createAssetsSchema = z.object({
   warrantyEnd: z.string().min(1, "This field is required"),
   dateCreated: z.string().min(1, "This field is required"),
   status: z.enum(["In Stock", "Assigned"]),
-  
-  Brand
-  Model
-  Purchase Cost
-  Purchase Date
-  Acquisition Date
-  Warranty
-  Supplier
-  Location
-  Responsible Unit
-  Status
-  Condition
 })
 
 export type AssetsStats = z.infer<typeof assetsStatsSchema>

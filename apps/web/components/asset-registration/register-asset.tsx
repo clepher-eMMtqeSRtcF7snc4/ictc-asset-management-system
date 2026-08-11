@@ -12,12 +12,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AssetCategory, Assets, AssetsStats, AssetType, Departments, FundSource } from "@repo/trpc/schemas";
+import { AssetCategory, AssetType, Departments, FundSource } from "@repo/trpc/schemas";
 import { Button } from "../ui/button";
 import { useState } from "react";
 import { CheckCircle2, Printer, QrCode, Upload } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 
 interface AssRegContentPageProps {
   category: AssetCategory[];
@@ -36,28 +34,15 @@ export default function RegisterAsset({
 }:AssRegContentPageProps) {
   const [saved, setSaved] = useState(false);
 
-  const form = useForm<FiscalYearInput>({
-      resolver: zodResolver(createFiscalYearSchema),
-      mode: "onChange",
-      defaultValues: {
-        year: new Date().getFullYear(),
-        status: "planning",
-        fundSource: "",
-        planningStartPeriod: "",
-        planningEndPeriod: "",
-        implementationStartPeriod: "",
-        implementationEndPeriod: "",
-        finalSubmission: "",
-      },
-    })
-  
-      const handleSubmit = (data) => {
-        console.log(data)
-    };
-
   return <div>
     <div className="grid grid-cols-3 gap-4">
-      <form id="fiscal-year-form" onSubmit={form.handleSubmit(handleSubmit)}>
+      <form
+        id="asset-registration-form"
+        onSubmit={(event) => {
+          event.preventDefault();
+          setSaved(true);
+        }}
+      >
             <div className="col-span-2 space-y-4">
               <Card>
                 <CardHeader>
@@ -84,15 +69,15 @@ export default function RegisterAsset({
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Select items={category}>
+                      <Select>
                         <SelectTrigger className="w-full max-w-48">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectGroup>
                             <SelectLabel>Categoty</SelectLabel>
-                            {category.map((item) => (
-                              <SelectItem key={item.value} value={item.value}>
+                            {category.map((item) => item.value !== null && (
+                              <SelectItem key={item.id} value={item.value}>
                                 {item.label}
                               </SelectItem>
                             ))}
@@ -107,9 +92,9 @@ export default function RegisterAsset({
                         </SelectTrigger>
                         <SelectContent>
                           <SelectGroup>
-                            <SelectLabel>Fruits</SelectLabel>
-                            {type.map((item) => (
-                              <SelectItem key={item.label} value={item.value}>
+                            <SelectLabel>Asset type</SelectLabel>
+                            {type.map((item) => item.value !== null && (
+                              <SelectItem key={item.id} value={item.value}>
                                 {item.label}
                               </SelectItem>
                             ))}
@@ -164,9 +149,9 @@ export default function RegisterAsset({
                         </SelectTrigger>
                         <SelectContent>
                           <SelectGroup>
-                            <SelectLabel>Fruits</SelectLabel>
-                            {fundSource.map((item) => (
-                              <SelectItem key={item.label} value={item.value}>
+                            <SelectLabel>Funding source</SelectLabel>
+                            {fundSource.map((item) => item.value !== null && (
+                              <SelectItem key={item.id} value={item.value}>
                                 {item.label}
                               </SelectItem>
                             ))}
@@ -211,9 +196,9 @@ export default function RegisterAsset({
                         </SelectTrigger>
                         <SelectContent>
                           <SelectGroup>
-                            <SelectLabel>Fruits</SelectLabel>
+                            <SelectLabel>Department</SelectLabel>
                             {departments.map((item) => (
-                              <SelectItem key={item.id} value={item.id}>
+                              <SelectItem key={item.id} value={String(item.id)}>
                                 {item.name}
                               </SelectItem>
                             ))}
@@ -287,7 +272,7 @@ export default function RegisterAsset({
               </Card>
 
               <div className="flex gap-3">
-                <Button onClick={() => setSaved(true)} className="flex-1">
+                <Button type="submit" className="flex-1">
                   {saved ? "✓ Asset Saved — AST-2026-000146" : "Save Asset"}
                 </Button>
                 <Button variant="outline">
