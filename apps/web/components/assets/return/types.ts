@@ -1,0 +1,9 @@
+export type ReturnAsset = { id: string; assetTag: string; propertyNumber: string; name: string; assignee: string; department: string; location: string; assignedDate: string; condition: string; category: string; serialNumber: string; brandModel: string };
+export type ReturnDetails = { reason: string; returnDate: string; returnLocation: string; condition: string; remarks: string; accessories: boolean[] };
+export const assignedAssets: ReturnAsset[] = [
+  { id: "r1", assetTag: "MSU-ICT-2024-000123", propertyNumber: "PROP-2024-000123", name: "Dell Latitude 5450", assignee: "Juan Dela Cruz", department: "ICT", location: "ICT Office - Room 203", assignedDate: "2024-08-12", condition: "Good", category: "Laptop", serialNumber: "ABC123456", brandModel: "Dell / Latitude 5450" },
+  { id: "r2", assetTag: "MSU-ICT-2024-000456", propertyNumber: "PROP-2024-000456", name: "HP LaserJet Pro M404dn", assignee: "Maria Santos", department: "Engineering", location: "Supply Office", assignedDate: "2024-03-15", condition: "Good", category: "Printer", serialNumber: "VNC12345", brandModel: "HP / LaserJet Pro M404dn" },
+  { id: "r3", assetTag: "MSU-ICT-2024-000789", propertyNumber: "PROP-2024-000789", name: "Cisco Catalyst 2960X", assignee: "Pedro Cruz", department: "ICT", location: "Server Room", assignedDate: "2024-06-01", condition: "Good", category: "Network Switch", serialNumber: "FOC23459Z", brandModel: "Cisco / Catalyst 2960X" },
+  { id: "r4", assetTag: "MSU-ICT-2024-000321", propertyNumber: "PROP-2024-000321", name: "Epson EB-X400", assignee: "Ana Reyes", department: "Accounting", location: "AV Room", assignedDate: "2024-05-10", condition: "Good", category: "Projector", serialNumber: "Q7F312456", brandModel: "Epson / EB-X400" },
+];
+export const accessoryLabels = ["Power adapter / cable", "Original charger", "Carrying case or bag", "Peripheral accessories", "Property sticker is intact"];

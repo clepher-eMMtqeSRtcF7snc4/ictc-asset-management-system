@@ -1,2 +1,5 @@
-import { AssetReturnPage } from "@/components/assets/asset-pages"
-export default function Page() { return <AssetReturnPage /> }
+import { AssetReturnContentSection } from "@/components/assets/return/asset-return-content-section";
+
+export default function AssetReturnPage() {
+  return <AssetReturnContentSection />;
+}
