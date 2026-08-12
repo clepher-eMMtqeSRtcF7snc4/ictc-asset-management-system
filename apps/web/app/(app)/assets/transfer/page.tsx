@@ -1,2 +1,5 @@
-import { AssetTransferPage } from "@/components/assets/asset-pages"
-export default function Page() { return <AssetTransferPage /> }
+import { AssetTransferContentSection } from "@/components/assets/transfer/asset-transfer-content-section";
+
+export default function AssetTransferPage() {
+  return <AssetTransferContentSection />;
+}

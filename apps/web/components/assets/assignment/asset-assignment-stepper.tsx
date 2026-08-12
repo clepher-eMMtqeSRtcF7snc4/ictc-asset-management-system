@@ -1,0 +1,10 @@
+import { Check } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const steps = [["Select Asset", "Choose an available asset."], ["Assignment Details", "Who, where, and when."], ["Terms & Conditions", "Warranty and assignment terms."], ["Review & Confirm", "Verify and assign."]];
+export function AssetAssignmentStepper({ current, onSelect }: { current: number; onSelect: (step: number) => void }) {
+  return <ol className="grid gap-4 rounded-lg border bg-card p-4 md:grid-cols-4">{steps.map(([title, description], index) => <li key={title} className="flex gap-2">
+    <button type="button" disabled={index > current} onClick={() => onSelect(index)} className={cn("grid size-7 shrink-0 place-items-center rounded-full border text-xs font-semibold", index === current ? "border-primary bg-primary text-primary-foreground" : index < current ? "border-primary bg-primary/15 text-primary" : "text-muted-foreground")}>{index < current ? <Check className="size-4" /> : index + 1}</button>
+    <span><span className="block text-sm font-semibold">{title}</span><span className="text-xs text-muted-foreground">{description}</span></span>
+  </li>)}</ol>;
+}

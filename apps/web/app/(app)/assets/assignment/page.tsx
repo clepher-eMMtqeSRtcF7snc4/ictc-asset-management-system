@@ -1,2 +1,5 @@
-import { AssetAssignmentPage } from "@/components/assets/asset-pages"
-export default function Page() { return <AssetAssignmentPage /> }
+import { AssetAssignmentContentSection } from "@/components/assets/assignment/asset-assignment-content-section";
+
+export default function AssetAssignmentPage() {
+  return <AssetAssignmentContentSection />;
+}

@@ -1,0 +1,5 @@
+import { assignmentTerms } from "./types";
+
+export function TermsConditionsForm({ accepted, onChange }: { accepted: boolean[]; onChange: (accepted: boolean[]) => void }) {
+  return <section><h2 className="text-base font-semibold">3. Terms & Conditions</h2><p className="mb-4 text-xs text-muted-foreground">Confirm the asset condition and assignment responsibilities.</p><div className="space-y-3 rounded-md border p-4"><div className="rounded-md border border-info-border bg-info p-3 text-sm text-info-foreground"><strong>Asset Condition: Good</strong><p className="mt-1 text-xs">The selected asset is currently recorded in good condition.</p></div>{assignmentTerms.map((term, index) => <label key={term} className="flex items-start gap-3 rounded-md border p-3 text-sm"><input type="checkbox" className="mt-0.5 size-4 accent-primary" checked={accepted[index]} onChange={(event) => { const next = [...accepted]; next[index] = event.target.checked; onChange(next); }} /><span>{term}</span></label>)}</div></section>;
+}
