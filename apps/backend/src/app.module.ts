@@ -17,6 +17,7 @@ import { CategoriesModule } from './master-data/categories/categories.module';
 import { DepartmentsModule } from './master-data/departments/departments.module';
 import { LocationsModule } from './master-data/locations/locations.module';
 import { UserManagementModule } from './user-management/user-management.module';
+import { AssetsModule } from './assets/assets.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -46,6 +47,7 @@ import { UserManagementModule } from './user-management/user-management.module';
     LocationsModule,
     CategoriesModule,
     UserManagementModule,
+    AssetsModule,
     UploadModule,
   ],
   controllers: [AppController],

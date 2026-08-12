@@ -238,8 +238,6 @@
 
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background-color: hsl(210 40% 97%);
-    color: hsl(222.2 84% 4.9%);
     margin: 0;
     padding: 0;
     -webkit-font-smoothing: antialiased;

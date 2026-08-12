@@ -1,6 +1,7 @@
 export * from "./user.schema"
 export * from "./dashboard.schema"
 export * from "./asset.schema"
+export * from "./asset-registration.schema"
 export * from "./fund.schema"
 export * from "./department.schema"
 export * from "./location.schema"

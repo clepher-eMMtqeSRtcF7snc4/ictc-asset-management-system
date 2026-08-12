@@ -8,6 +8,8 @@ import {
   index,
   serial,
   integer,
+  numeric,
+  date,
 } from 'drizzle-orm/pg-core';
 import { primaryKey } from 'drizzle-orm/pg-core';
 
@@ -235,6 +237,95 @@ export const userAuditLogs = pgTable(
     index('user_audit_logs_created_at_idx').on(table.createdAt),
     index('user_audit_logs_user_id_idx').on(table.userId),
     index('user_audit_logs_entity_idx').on(table.entityType, table.entityId),
+  ],
+);
+
+export const assets = pgTable(
+  'assets',
+  {
+    id: serial('id').primaryKey(),
+    name: text('name'),
+    assetType: text('asset_type'),
+    categoryId: integer('category_id')
+      .notNull()
+      .references(() => categories.id, { onDelete: 'restrict' }),
+    departmentId: integer('department_id').references(() => departments.id, {
+      onDelete: 'set null',
+    }),
+    locationId: integer('location_id').references(() => locations.id, {
+      onDelete: 'set null',
+    }),
+    custodianId: text('custodian_id').references(() => user.id, {
+      onDelete: 'set null',
+    }),
+    brand: text('brand'),
+    model: text('model'),
+    description: text('description'),
+    condition: text('condition'),
+    serialNumber: text('serial_number').unique(),
+    barcode: text('barcode'),
+    partNumber: text('part_number'),
+    acquisitionDate: date('acquisition_date'),
+    purchaseDate: date('purchase_date'),
+    acquisitionCost: numeric('acquisition_cost', {
+      precision: 14,
+      scale: 2,
+      mode: 'number',
+    }),
+    supplier: text('supplier'),
+    reference: text('reference'),
+    fundingSource: text('funding_source'),
+    warrantyStartDate: date('warranty_start_date'),
+    warrantyEndDate: date('warranty_end_date'),
+    usefulLife: integer('useful_life'),
+    residualValue: numeric('residual_value', {
+      precision: 14,
+      scale: 2,
+      mode: 'number',
+    }),
+    depreciationMethod: text('depreciation_method'),
+    imageUrl: text('image_url'),
+    assetTag: text('asset_tag').notNull().unique(),
+    propertyNumber: text('property_number').notNull().unique(),
+    qrValue: text('qr_value').notNull().unique(),
+    status: text('status')
+      .$type<'draft' | 'available' | 'assigned'>()
+      .notNull()
+      .default('available'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [
+    index('assets_category_idx').on(table.categoryId),
+    index('assets_department_idx').on(table.departmentId),
+    index('assets_location_idx').on(table.locationId),
+    index('assets_custodian_idx').on(table.custodianId),
+    index('assets_status_idx').on(table.status),
+  ],
+);
+
+export const assetHistory = pgTable(
+  'asset_history',
+  {
+    id: serial('id').primaryKey(),
+    assetId: integer('asset_id')
+      .notNull()
+      .references(() => assets.id, { onDelete: 'cascade' }),
+    actorUserId: text('actor_user_id').references(() => user.id, {
+      onDelete: 'set null',
+    }),
+    action: text('action').notNull(),
+    snapshot: jsonb('snapshot')
+      .$type<Record<string, unknown>>()
+      .notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+  },
+  (table) => [
+    index('asset_history_asset_created_idx').on(table.assetId, table.createdAt),
+    index('asset_history_actor_idx').on(table.actorUserId),
   ],
 );
 
