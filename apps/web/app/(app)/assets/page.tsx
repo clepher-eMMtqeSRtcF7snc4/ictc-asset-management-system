@@ -1,4 +1,5 @@
-import { AssetListPage } from "@/components/assets/asset-pages";
+import { AssetListContentSection } from "@/components/assets/asset-list/asset-list-content-section"
+
 export default function Page() {
-  return <AssetListPage />;
+  return <AssetListContentSection />
 }
