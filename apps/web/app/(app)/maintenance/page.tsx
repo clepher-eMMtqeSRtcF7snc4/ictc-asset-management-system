@@ -1,2 +1,5 @@
-import { MaintenancePage } from "@/components/maintenance/maintenance-pages"
-export default function Page() { return <MaintenancePage /> }
+import { MaintenanceRequestContentSection } from "@/components/maintenance/maintenance-request-content-section";
+
+export default function MaintenancePage() {
+  return <MaintenanceRequestContentSection />;
+}
