@@ -1,2 +1,5 @@
-import { DisposalPage } from "@/components/disposal/disposal-page"
-export default function Page() { return <DisposalPage /> }
+import { AssetDisposalContentSection } from "@/components/assets/disposal/asset-disposal-content-section"
+
+export default function Page() {
+  return <AssetDisposalContentSection />
+}
