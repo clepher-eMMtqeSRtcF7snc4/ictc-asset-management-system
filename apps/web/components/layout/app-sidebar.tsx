@@ -110,9 +110,7 @@ const data = {
   ],
   administration: [
     { name: "Users", url: "/users", icon: <UsersRound /> },
-    { name: "Departments", url: "/master-data/departments", icon: <Building2 /> },
-    { name: "Locations", url: "/master-data/locations", icon: <Building2 /> },
-    { name: "Categories", url: "/master-data/categories", icon: <Settings2 /> },
+    { name: "Master Data", url: "/master-data", icon: <Settings2 /> },
   ],
 }
 

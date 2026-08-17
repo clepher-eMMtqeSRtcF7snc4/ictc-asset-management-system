@@ -1,21 +1,27 @@
-import { z } from 'zod';
+import { z } from "zod";
 
-export const departmentStatusSchema = z.enum(['active', 'inactive']);
+export const departmentStatusSchema = z.enum(["active", "inactive"]);
 
 const departmentFieldsSchema = z.object({
-  name: z.string().trim().min(1, 'This field is required').max(150),
+  name: z.string().trim().min(1, "This field is required").max(150),
   code: z
     .string()
     .trim()
-    .min(1, 'This field is required')
+    .min(1, "This field is required")
     .max(50)
-    .regex(/^[A-Za-z0-9_-]+$/, 'Use only letters, numbers, hyphens, or underscores'),
-  type: z.string().trim().min(1, 'This field is required').max(100),
+    .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
+  type: z.enum(["Academic", "Administrative", "Support Office"]),
+  shortName: z.string().trim().max(50).optional().nullable(),
+  description: z.string().trim().max(500).optional().nullable(),
+  parentDepartmentId: z.number().int().positive().optional().nullable(),
+  headUserId: z.string().trim().min(1).optional().nullable(),
 });
 
 export const departmentSchema = departmentFieldsSchema.extend({
   id: z.number().int().positive(),
   status: departmentStatusSchema,
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
 });
 
 export const departmentListInputSchema = z
@@ -36,9 +42,15 @@ export const updateDepartmentInputSchema = departmentFieldsSchema
     id: z.number().int().positive(),
   })
   .refine(
-    ({ name, code, type }) =>
-      name !== undefined || code !== undefined || type !== undefined,
-    { message: 'Provide at least one field to update' },
+    ({ name, code, type, shortName, description, parentDepartmentId, headUserId }) =>
+      name !== undefined ||
+      code !== undefined ||
+      type !== undefined ||
+      shortName !== undefined ||
+      description !== undefined ||
+      parentDepartmentId !== undefined ||
+      headUserId !== undefined,
+    { message: "Provide at least one field to update" },
   );
 
 export const setDepartmentStatusInputSchema = z.object({

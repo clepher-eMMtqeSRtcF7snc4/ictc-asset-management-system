@@ -1,21 +1,35 @@
-import { z } from 'zod';
+import { z } from "zod";
 
-export const locationStatusSchema = z.enum(['active', 'inactive']);
+export const locationStatusSchema = z.enum(["active", "inactive"]);
 
 const locationFieldsSchema = z.object({
-  name: z.string().trim().min(1, 'This field is required').max(150),
+  name: z.string().trim().min(1, "This field is required").max(150),
   code: z
     .string()
     .trim()
-    .min(1, 'This field is required')
+    .min(1, "This field is required")
     .max(50)
-    .regex(/^[A-Za-z0-9_-]+$/, 'Use only letters, numbers, hyphens, or underscores'),
-  type: z.string().trim().min(1, 'This field is required').max(100),
+    .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
+  type: z.enum([
+    "Campus",
+    "Building",
+    "Floor",
+    "Room",
+    "Office",
+    "Area",
+    "Warehouse",
+    "Storage",
+    "Other",
+  ]),
+  description: z.string().trim().max(500).optional().nullable(),
+  parentLocationId: z.number().int().positive().optional().nullable(),
 });
 
 export const locationSchema = locationFieldsSchema.extend({
   id: z.number().int().positive(),
   status: locationStatusSchema,
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
 });
 
 export const locationListInputSchema = z
@@ -36,9 +50,13 @@ export const updateLocationInputSchema = locationFieldsSchema
     id: z.number().int().positive(),
   })
   .refine(
-    ({ name, code, type }) =>
-      name !== undefined || code !== undefined || type !== undefined,
-    { message: 'Provide at least one field to update' },
+    ({ name, code, type, description, parentLocationId }) =>
+      name !== undefined ||
+      code !== undefined ||
+      type !== undefined ||
+      description !== undefined ||
+      parentLocationId !== undefined,
+    { message: "Provide at least one field to update" },
   );
 
 export const setLocationStatusInputSchema = z.object({
