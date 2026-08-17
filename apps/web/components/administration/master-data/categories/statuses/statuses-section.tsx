@@ -16,9 +16,9 @@ import { toast } from "sonner";
 import { StatusDialog } from "./status-dialog";
 import { StatusDeleteDialog } from "./status-delete-dialog";
 import { StatusesTable } from "./statuses-table";
-import type { AssetStatus } from "@/components/master-data/types";
+import type { AssetStatus } from "@/components/administration/master-data/types";
 import type { StatusFormValues } from "./status-form-schema";
-import { mockStatuses } from "@/components/master-data/mock-data";
+import { mockStatuses } from "@/components/administration/master-data/mock-data";
 
 // TODO: Replace mockStatuses with tRPC query when backend integration is implemented.
 

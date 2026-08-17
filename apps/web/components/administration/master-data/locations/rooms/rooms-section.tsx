@@ -9,9 +9,9 @@ import { RoomDialog } from "./room-dialog";
 import { RoomDeleteDialog } from "./room-delete-dialog";
 import { RoomFilters } from "./room-filters";
 import { RoomsTable } from "./rooms-table";
-import type { Room } from "@/components/master-data/types";
+import type { Room } from "@/components/administration/master-data/types";
 import type { RoomFormValues } from "./room-form-schema";
-import { mockRooms } from "@/components/master-data/mock-data";
+import { mockRooms } from "@/components/administration/master-data/mock-data";
 
 // TODO: Replace mockRooms with tRPC query when backend integration is implemented.
 

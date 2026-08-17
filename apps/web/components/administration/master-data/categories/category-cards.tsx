@@ -24,7 +24,7 @@ import { CategoryDialog } from "./category-dialog";
 import { CategoryDeleteDialog } from "./category-delete-dialog";
 import type { Category } from "@repo/trpc/schemas";
 import type { CategoryFormValues } from "./category-form-schema";
-import { mockCategories } from "@/components/master-data/mock-data";
+import { mockCategories } from "@/components/administration/master-data/mock-data";
 
 // TODO: Replace mockCategories with tRPC query when backend integration is implemented.
 

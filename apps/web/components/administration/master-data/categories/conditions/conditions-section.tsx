@@ -16,9 +16,9 @@ import { toast } from "sonner";
 import { ConditionDialog } from "./condition-dialog";
 import { ConditionDeleteDialog } from "./condition-delete-dialog";
 import { ConditionsTable } from "./conditions-table";
-import type { AssetCondition } from "@/components/master-data/types";
+import type { AssetCondition } from "@/components/administration/master-data/types";
 import type { ConditionFormValues } from "./condition-form-schema";
-import { mockConditions } from "@/components/master-data/mock-data";
+import { mockConditions } from "@/components/administration/master-data/mock-data";
 
 // TODO: Replace mockConditions with tRPC query when backend integration is implemented.
 

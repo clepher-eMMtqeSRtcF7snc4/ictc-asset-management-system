@@ -18,7 +18,7 @@ import { DepartmentDeleteDialog } from "./department-delete-dialog";
 import { DepartmentsTable } from "./departments-table";
 import type { Department } from "@repo/trpc/schemas";
 import type { DepartmentFormValues } from "./department-form-schema";
-import { mockDepartments } from "@/components/master-data/mock-data";
+import { mockDepartments } from "@/components/administration/master-data/mock-data";
 
 // TODO: Replace mockDepartments with tRPC query when backend integration is implemented.
 

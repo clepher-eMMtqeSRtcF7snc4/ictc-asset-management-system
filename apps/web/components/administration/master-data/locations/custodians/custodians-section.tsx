@@ -16,9 +16,9 @@ import { toast } from "sonner";
 import { CustodianDialog } from "./custodian-dialog";
 import { CustodianDeleteDialog } from "./custodian-delete-dialog";
 import { CustodiansTable } from "./custodians-table";
-import type { Custodian } from "@/components/master-data/types";
+import type { Custodian } from "@/components/administration/master-data/types";
 import type { CustodianFormValues } from "./custodian-form-schema";
-import { mockCustodians } from "@/components/master-data/mock-data";
+import { mockCustodians } from "@/components/administration/master-data/mock-data";
 
 // TODO: Replace mockCustodians with tRPC query / User Management data when backend integration is implemented.
 
