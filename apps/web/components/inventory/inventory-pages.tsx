@@ -1,19 +1,19 @@
-import { PageHeader } from "@/components/layout/page-header"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowDownToLine, ArrowUpFromLine, Boxes, ClipboardPenLine, Plus, RefreshCw, TriangleAlert } from "lucide-react"
+import { InventoryOverview } from "./overview/inventory-overview"
+import { InventoryItemsTable } from "./items/inventory-items-table-wrapper"
+import { ReceivingTable } from "./receiving/receiving-table"
+import { IssuanceTable } from "./issuance/issuance-table"
+import { AdjustmentsTable } from "./adjustments/adjustments-table"
+import { StockCountTable } from "./stock-count/stock-count-table"
+import { ReorderTable } from "./reorder/reorder-table"
+import { InventoryItemDetail } from "./detail/inventory-item-detail"
 
-const stockItems = [["SKU-CBL-HDMI-002", "HDMI Cable, 2m", "46", "20", "In Stock"], ["SKU-ADP-USBC-001", "USB-C Adapter", "8", "15", "Low Stock"], ["SKU-TON-BK-205", "HP 205A Black Toner", "0", "5", "Out of Stock"]]
-
-function StockTable() { return <div className="overflow-x-auto"><table className="w-full text-sm"><thead className="border-b text-left text-xs text-muted-foreground"><tr>{["SKU", "Item", "Current stock", "Minimum", "Status"].map((heading) => <th key={heading} className="p-3">{heading}</th>)}</tr></thead><tbody>{stockItems.map(([sku, name, current, min, status]) => <tr key={sku} className="border-b"><td className="p-3 font-mono text-xs text-primary">{sku}</td><td className="p-3 font-medium">{name}</td><td className="p-3 tabular-nums">{current}</td><td className="p-3 tabular-nums">{min}</td><td className="p-3"><Badge variant={status === "In Stock" ? "success" : status === "Low Stock" ? "warning" : "destructive"}>{status}</Badge></td></tr>)}</tbody></table></div> }
-
-export function InventoryPage() { return <div className="space-y-6"><PageHeader title="Inventory" description="Control quantity-based ICT supplies, consumables, and spare parts." action={<Button><Plus /> Add item</Button>} /><div className="grid gap-3 md:grid-cols-4">{[["737", "Inventory items"], ["12,846", "Units in stock"], ["42", "Low-stock items"], ["11", "Out of stock"]].map(([value, label]) => <Card key={label}><CardContent className="p-4"><p className="text-2xl font-semibold">{value}</p><p className="text-xs text-muted-foreground">{label}</p></CardContent></Card>)}</div><Card><CardHeader><CardTitle>Stock levels</CardTitle></CardHeader><CardContent><StockTable /></CardContent></Card></div> }
-
-export function StockInPage() { return <div className="space-y-6"><PageHeader title="Stock In" description="Record accepted inventory received from deliveries or suppliers." /><Card><CardContent className="grid gap-4 p-6 md:grid-cols-3">{[["Item", "HDMI Cable, 2m"], ["Received quantity", "50 units"], ["Storage location", "ICT Stockroom A"], ["Supplier", "TechSource Philippines"], ["Receiving reference", "DR-2026-0018"], ["Unit cost", "₱350.00"]].map(([label, value]) => <div key={label} className="rounded-md border p-3"><p className="text-xs text-muted-foreground">{label}</p><p className="mt-1 font-medium">{value}</p></div>)}</CardContent></Card><div className="flex justify-end"><Button><ArrowDownToLine /> Confirm stock in</Button></div></div> }
-
-export function StockOutPage() { return <div className="space-y-6"><PageHeader title="Stock Out" description="Issue supplies while preventing quantities beyond available stock." /><Card><CardContent className="p-6"><div className="grid gap-4 md:grid-cols-3">{[["Item", "HDMI Cable, 2m"], ["Current stock", "46 units"], ["Requested quantity", "15 units"], ["Requester", "College of Computing"], ["Purpose", "Laboratory setup"], ["Remaining after issue", "31 units"]].map(([label, value]) => <div key={label} className="rounded-md border p-3"><p className="text-xs text-muted-foreground">{label}</p><p className="mt-1 font-medium">{value}</p></div>)}</div><div className="mt-5 flex justify-end"><Button><ArrowUpFromLine /> Issue inventory</Button></div></CardContent></Card></div> }
-
-export function InventoryAdjustmentsPage() { return <div className="space-y-6"><PageHeader title="Stock Adjustments & Transfers" description="Correct stock variances and transfer units between storage locations." /><div className="grid gap-5 md:grid-cols-2"><Card><CardHeader><CardTitle>Stock adjustment</CardTitle></CardHeader><CardContent><p className="text-sm text-muted-foreground">Document count variance with a reason and approval reference.</p><Button className="mt-4" variant="outline"><ClipboardPenLine /> Create adjustment</Button></CardContent></Card><Card><CardHeader><CardTitle>Stock transfer</CardTitle></CardHeader><CardContent><p className="text-sm text-muted-foreground">Move available units from ICT Stockroom to a department location.</p><Button className="mt-4" variant="outline"><RefreshCw /> Start transfer</Button></CardContent></Card></div></div> }
-
-export function LowStockPage() { return <div className="space-y-6"><PageHeader title="Low Stock" description="Prioritize replenishment for items at or below their minimum level." action={<Button><TriangleAlert /> Create purchase request</Button>} /><Card><CardHeader><CardTitle>Reorder recommendations</CardTitle></CardHeader><CardContent><StockTable /></CardContent></Card></div> }
+export {
+  InventoryOverview,
+  InventoryItemsTable,
+  ReceivingTable,
+  IssuanceTable,
+  AdjustmentsTable,
+  StockCountTable,
+  ReorderTable,
+  InventoryItemDetail,
+}

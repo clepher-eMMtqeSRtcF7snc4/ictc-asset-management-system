@@ -1,2 +1,6 @@
-import { InventoryAdjustmentsPage } from "@/components/inventory/inventory-pages"
-export default function Page() { return <InventoryAdjustmentsPage /> }
+import { AdjustmentsTable } from "@/components/inventory/inventory-pages"
+import { adjustmentRecords } from "@/components/inventory/types"
+
+export default function Page() {
+  return <AdjustmentsTable data={adjustmentRecords} showColumns />
+}
