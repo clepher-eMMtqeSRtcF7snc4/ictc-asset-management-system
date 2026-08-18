@@ -1,2 +1,2 @@
-import { AdministrationPage } from "@/components/administration/administration-pages"
+import { AdministrationPage } from "@/components/administration/locations/location-content-section"
 export default function Page() { return <AdministrationPage view="categories" /> }

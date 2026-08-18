@@ -172,6 +172,10 @@ const appRouter = t.router({
         parentLocationId: z.number().int().positive().optional().nullable(),
       }).extend({
         id: z.number().int().positive(),
+        code: z.string(),
+        name: z.string(),
+        description: z.string(),
+        room: z.number(),
         status: z.enum(["active", "inactive"]),
         createdAt: z.date().optional(),
         updatedAt: z.date().optional(),
@@ -220,6 +224,10 @@ const appRouter = t.router({
       parentLocationId: z.number().int().positive().optional().nullable(),
     }).extend({
       id: z.number().int().positive(),
+      code: z.string(),
+      name: z.string(),
+      description: z.string(),
+      room: z.number(),
       status: z.enum(["active", "inactive"]),
       createdAt: z.date().optional(),
       updatedAt: z.date().optional(),
@@ -278,6 +286,10 @@ const appRouter = t.router({
       parentLocationId: z.number().int().positive().optional().nullable(),
     }).extend({
       id: z.number().int().positive(),
+      code: z.string(),
+      name: z.string(),
+      description: z.string(),
+      room: z.number(),
       status: z.enum(["active", "inactive"]),
       createdAt: z.date().optional(),
       updatedAt: z.date().optional(),
@@ -308,6 +320,10 @@ const appRouter = t.router({
       parentLocationId: z.number().int().positive().optional().nullable(),
     }).extend({
       id: z.number().int().positive(),
+      code: z.string(),
+      name: z.string(),
+      description: z.string(),
+      room: z.number(),
       status: z.enum(["active", "inactive"]),
       createdAt: z.date().optional(),
       updatedAt: z.date().optional(),
