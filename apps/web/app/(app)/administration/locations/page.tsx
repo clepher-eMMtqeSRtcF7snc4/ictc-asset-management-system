@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { keepPreviousData } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +21,7 @@ export default function Page() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [editId, setEditId] = useState<number | null>(null);
   const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null);
 
   const buildingsQuery = trpc.buildingRouter.getBuildings.useQuery(
@@ -33,8 +34,25 @@ export default function Page() {
     { placeholderData: keepPreviousData },
   );
 
+  const editBuildingQuery = trpc.buildingRouter.getBuildingById.useQuery(
+    { id: editId! },
+    { enabled: editId !== null },
+  );
+
   const buildings = buildingsQuery.data?.items ?? [];
   const totalPages = buildingsQuery.data?.totalPages ?? 1;
+
+  const editDefaults = useMemo(() => {
+    const building = editBuildingQuery.data;
+    return building
+      ? {
+          code: building.code,
+          name: building.name,
+          description: building.description,
+          status: building.status,
+        }
+      : undefined;
+  }, [editBuildingQuery.data]);
 
   const utils = trpc.useUtils();
   const createBuilding = trpc.buildingRouter.create.useMutation({
@@ -50,6 +68,23 @@ export default function Page() {
 
   const handleCreate = (values: CreateBuildingInput) => {
     createBuilding.mutate(values);
+  };
+
+  const updateBuilding = trpc.buildingRouter.update.useMutation({
+    onSuccess: () => {
+      utils.buildingRouter.getBuildings.invalidate();
+      setEditOpen(false);
+      setSelectedBuilding(null);
+      toast.success("Building updated successfully.");
+    },
+    onError: (error) => {
+      toast.error(error.message ?? "Failed to update building.");
+    },
+  });
+
+  const handleUpdate = (values: CreateBuildingInput) => {
+    if (editId === null) return;
+    updateBuilding.mutate({ id: editId, ...values });
   };
 
   return (
@@ -96,7 +131,7 @@ export default function Page() {
               setPageSize(next.pageSize);
             }}
             onEdit={(building) => {
-              setSelectedBuilding(building);
+              setEditId(building.id);
               setEditOpen(true);
             }}
             onDelete={(building) => {
@@ -116,21 +151,8 @@ export default function Page() {
         <BuildingDialog
           open={editOpen}
           onOpenChange={setEditOpen}
-          onSubmit={() => {
-            setEditOpen(false);
-            setSelectedBuilding(null);
-            toast.info("Building updates are not yet supported.");
-          }}
-          defaultValues={
-            selectedBuilding
-              ? {
-                  code: selectedBuilding.code,
-                  name: selectedBuilding.name,
-                  description: selectedBuilding.description,
-                  status: selectedBuilding.status,
-                }
-              : undefined
-          }
+          onSubmit={handleUpdate}
+          defaultValues={editDefaults}
           title="Edit Building"
         />
 

@@ -1,8 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { DATABASE_CONNECTION } from '../../database/database-connection';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres/driver';
 import { schema } from '../../database/database.module';
-import { CreateBuildingInput } from '@repo/trpc/schemas';
+import { CreateBuildingInput, UpdateBuildingInput } from '@repo/trpc/schemas';
 import { and, asc, count, eq, ilike, type SQL } from 'drizzle-orm';
 import { building } from './schemas/schema';
 
@@ -12,6 +12,20 @@ export class BuildingService {
     @Inject(DATABASE_CONNECTION)
     private readonly database: NodePgDatabase<typeof schema>,
   ) {}
+
+  async findById(id: number) {
+    const [result] = await this.database
+      .select()
+      .from(building)
+      .where(eq(building.id, id))
+      .limit(1);
+
+    if (!result) {
+      throw new NotFoundException(`Building with id ${id} not found`);
+    }
+
+    return result;
+  }
 
   async findAll(input?: {
     search?: string;
@@ -48,6 +62,20 @@ export class BuildingService {
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
     return { items, total, page, pageSize, totalPages };
+  }
+
+  async update(input: UpdateBuildingInput) {
+    await this.database
+      .update(building)
+      .set({
+        ...(input.name !== undefined ? { name: input.name } : {}),
+        ...(input.code !== undefined ? { code: input.code } : {}),
+        ...(input.status !== undefined ? { status: input.status } : {}),
+        ...(input.description !== undefined
+          ? { description: input.description }
+          : {}),
+      })
+      .where(eq(building.id, input.id));
   }
 
   async create(createBuildingInput: CreateBuildingInput) {

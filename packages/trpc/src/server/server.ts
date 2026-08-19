@@ -29,6 +29,42 @@ const appRouter = t.router({
       status: z.enum(["active", "inactive"]),
       description: z.string().trim().max(500).optional().nullable(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    update: publicProcedure.input(z.object({
+      name: z.string().trim().min(1, "This field is required").max(150),
+      code: z
+        .string()
+        .trim()
+        .min(1, "This field is required")
+        .max(50)
+        .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
+      status: z.enum(["active", "inactive"]),
+      description: z.string().trim().max(500).optional().nullable(),
+    }).partial().extend({
+      id: z.number().int().positive(),
+    }).refine(
+      ({ name, code, description }) =>
+        name !== undefined ||
+        code !== undefined ||
+        description !== undefined ||
+        { message: "Provide at least one field to update" },
+    )).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getBuildingById: publicProcedure.input(z.object({
+      id: z.number().int().positive(),
+    })).output(z.object({
+      name: z.string().trim().min(1, "This field is required").max(150),
+      code: z
+        .string()
+        .trim()
+        .min(1, "This field is required")
+        .max(50)
+        .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
+      status: z.enum(["active", "inactive"]),
+      description: z.string().trim().max(500).optional().nullable(),
+    }).extend({
+      id: z.number().int().positive(),
+      createdAt: z.date().optional(),
+      updatedAt: z.date().optional(),
+    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getBuildings: publicProcedure.input(z
       .object({
         search: z.string().trim().optional(),

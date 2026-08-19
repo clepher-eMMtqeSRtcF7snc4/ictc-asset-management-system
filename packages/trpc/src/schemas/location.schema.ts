@@ -18,6 +18,10 @@ export const buildingIdSchema = z.object({
   buildingId: z.string()
 });
 
+export const getBuildingByIdInputSchema = z.object({
+  id: z.number().int().positive(),
+});
+
 export const buildingSchema = buildingFieldsSchema.extend({
   id: z.number().int().positive(),
   createdAt: z.date().optional(),
@@ -93,13 +97,14 @@ export const setBuildingStatusInputSchema = z.object({
 
 export type Location = z.infer<typeof buildingSchema>;
 export type LocationListInput = z.infer<typeof locationListInputSchema>;
-export type UpdateLocationInput = z.infer<typeof updateBuildingInputSchema>;
+export type UpdateBuildingInput = z.infer<typeof updateBuildingInputSchema>;
 export type SetBuildingStatusInput = z.infer<
 typeof setBuildingStatusInputSchema
 >;
 
 export type CreateBuildingInput = z.infer<typeof buildingFieldsSchema>;
 export type GetBuildingInput = z.infer<typeof buildingIdSchema>;
+export type GetBuildingByIdInput = z.infer<typeof getBuildingByIdInputSchema>;
 export type Building = z.infer<typeof buildingSchema>;
 export type BuildingListInput = z.infer<typeof buildingListInputSchema>;
 export type BuildingListOutput = z.infer<typeof buildingListOutputSchema>;
