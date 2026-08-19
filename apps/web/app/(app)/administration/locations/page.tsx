@@ -23,6 +23,7 @@ export default function Page() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   const buildingsQuery = trpc.buildingRouter.getBuildings.useQuery(
     {
@@ -58,15 +59,18 @@ export default function Page() {
   const createBuilding = trpc.buildingRouter.create.useMutation({
     onSuccess: () => {
       utils.buildingRouter.getBuildings.invalidate();
+      setCreateError(null);
       setCreateOpen(false);
       toast.success("Building created successfully.");
     },
     onError: (error) => {
+      setCreateError(error.message ?? "Failed to create building.");
       toast.error(error.message ?? "Failed to create building.");
     },
   });
 
   const handleCreate = (values: CreateBuildingInput) => {
+    setCreateError(null);
     createBuilding.mutate(values);
   };
 
@@ -104,7 +108,10 @@ export default function Page() {
               Manage building and physical locations used by assets.
             </p>
           </div>
-          <Button onClick={() => setCreateOpen(true)}>
+          <Button onClick={() => {
+            setCreateError(null);
+            setCreateOpen(true);
+          }}>
             <Plus /> Create Building
           </Button>
         </CardHeader>
@@ -145,6 +152,8 @@ export default function Page() {
           open={createOpen}
           onOpenChange={setCreateOpen}
           onSubmit={handleCreate}
+          errorMessage={createError}
+          onClearError={() => setCreateError(null)}
           title="Create Building"
         />
 

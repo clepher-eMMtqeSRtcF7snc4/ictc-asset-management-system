@@ -1,9 +1,9 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { DATABASE_CONNECTION } from '../../database/database-connection';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres/driver';
 import { schema } from '../../database/database.module';
 import { CreateBuildingInput, UpdateBuildingInput } from '@repo/trpc/schemas';
-import { and, asc, count, eq, ilike, type SQL } from 'drizzle-orm';
+import { and, asc, count, eq, ilike, or, type SQL } from 'drizzle-orm';
 import { building } from './schemas/schema';
 
 @Injectable()
@@ -79,6 +79,21 @@ export class BuildingService {
   }
 
   async create(createBuildingInput: CreateBuildingInput) {
+    const [existing] = await this.database
+      .select({ id: building.id })
+      .from(building)
+      .where(
+        or(
+          eq(building.name, createBuildingInput.name),
+          eq(building.code, createBuildingInput.code),
+        ),
+      )
+      .limit(1);
+
+    if (existing) {
+      throw new ConflictException('Building already exists');
+    }
+
     await this.database.insert(building).values({
       name: createBuildingInput.name,
       code: createBuildingInput.code,

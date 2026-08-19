@@ -33,6 +33,8 @@ interface BuildingDialogProps {
   onSubmit: (values: CreateBuildingInput) => void;
   defaultValues?: CreateBuildingInput;
   title?: string;
+  errorMessage?: string | null;
+  onClearError?: () => void;
 }
 
 export function BuildingDialog({
@@ -41,6 +43,8 @@ export function BuildingDialog({
   onSubmit,
   defaultValues,
   title = "Create Building",
+  errorMessage,
+  onClearError,
 }: BuildingDialogProps) {
   const form = useForm<CreateBuildingInput>({
     resolver: zodResolver(createBuildingInputSchema),
@@ -58,12 +62,27 @@ export function BuildingDialog({
     }
   }, [open, defaultValues, form]);
 
+  useEffect(() => {
+    const subscription = form.watch(() => {
+      if (errorMessage) onClearError?.();
+    });
+    return () => subscription.unsubscribe();
+  }, [form, errorMessage, onClearError]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
+        {errorMessage && (
+          <p
+            role="alert"
+            className="rounded-md border border-destructive/30 p-3 text-sm text-destructive"
+          >
+            {errorMessage}
+          </p>
+        )}
         <form id="location-form" className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
 
