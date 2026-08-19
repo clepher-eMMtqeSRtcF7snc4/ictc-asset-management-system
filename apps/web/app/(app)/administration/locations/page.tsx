@@ -77,6 +77,7 @@ export default function Page() {
   const updateBuilding = trpc.buildingRouter.update.useMutation({
     onSuccess: () => {
       utils.buildingRouter.getBuildings.invalidate();
+      utils.buildingRouter.getBuildingById.invalidate();
       setEditOpen(false);
       setSelectedBuilding(null);
       toast.success("Building updated successfully.");
@@ -159,7 +160,10 @@ export default function Page() {
 
         <BuildingDialog
           open={editOpen}
-          onOpenChange={setEditOpen}
+          onOpenChange={(open) => {
+            setEditOpen(open);
+            if (!open) setEditId(null);
+          }}
           onSubmit={handleUpdate}
           defaultValues={editDefaults}
           title="Edit Building"
