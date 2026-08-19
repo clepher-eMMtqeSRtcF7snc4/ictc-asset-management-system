@@ -24,25 +24,25 @@ import {
   InputGroup,
   InputGroupTextarea,
 } from "@/components/ui/input-group"
-import { CreateLocationInput, createLocationInputSchema } from "@repo/trpc/schemas";
+import { CreateBuildingInput, createBuildingInputSchema } from "@repo/trpc/schemas";
 
-interface RoomDialogProps {
+interface BuildingDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (values: CreateLocationInput) => void;
-  defaultValues?: CreateLocationInput;
+  onSubmit: (values: CreateBuildingInput) => void;
+  defaultValues?: CreateBuildingInput;
   title?: string;
 }
 
-export function RoomDialog({
+export function BuildingDialog({
   open,
   onOpenChange,
   onSubmit,
   defaultValues,
   title = "Create Building",
-}: RoomDialogProps) {
-  const form = useForm<CreateLocationInput>({
-    resolver: zodResolver(createLocationInputSchema),
+}: BuildingDialogProps) {
+  const form = useForm<CreateBuildingInput>({
+    resolver: zodResolver(createBuildingInputSchema),
     defaultValues: defaultValues ?? {
       code: "",
       name: "",
@@ -146,7 +146,7 @@ export function RoomDialog({
                 <Select
                   name={field.name}
                   value={form.watch("status")}
-                  onValueChange={(value) => form.setValue("status", value as CreateLocationInput["status"])}
+                  onValueChange={(value) => form.setValue("status", value as CreateBuildingInput["status"])}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select status" />
@@ -173,7 +173,7 @@ export function RoomDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              Close
             </Button>
             <Button type="submit">Save</Button>
           </DialogFooter>

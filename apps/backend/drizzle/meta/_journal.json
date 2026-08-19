@@ -29,6 +29,27 @@
       "when": 1786464262338,
       "tag": "0003_user_management",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1787046924845,
+      "tag": "0004_rapid_major_mapleleaf",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1787049439348,
+      "tag": "0005_sudden_warbound",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1787102762943,
+      "tag": "0006_mushy_serpent_society",
+      "breakpoints": true
     }
   ]
 }

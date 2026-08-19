@@ -31,7 +31,6 @@ import {
 import { DATABASE_CONNECTION } from '../database/database-connection';
 import { schema } from '../database/database.module';
 import {
-  departments,
   roles,
   user,
   userAuditLogs,
@@ -53,7 +52,6 @@ export class UserManagementService {
       .select(this.userSelect())
       .from(userProfiles)
       .innerJoin(user, eq(userProfiles.userId, user.id))
-      .leftJoin(departments, eq(userProfiles.departmentId, departments.id))
       .leftJoin(roles, eq(userProfiles.roleId, roles.id))
       .where(this.userListConditions(input))
       .orderBy(asc(userProfiles.lastName), asc(userProfiles.firstName));
@@ -83,7 +81,6 @@ export class UserManagementService {
 
   async createUser(input: CreateUserInput, actorUserId: string) {
     const id = await this.database.transaction(async (tx) => {
-      await this.requireDepartment(input.departmentId, tx);
       await this.requireRole(input.roleId, tx);
 
       const existingByEmail = await tx
@@ -139,7 +136,6 @@ export class UserManagementService {
         position: input.position,
         designation: input.designation,
         office: input.office,
-        departmentId: input.departmentId,
         roleId: input.roleId,
         status: input.status,
         profilePicture: input.profilePicture ?? null,
@@ -174,9 +170,6 @@ export class UserManagementService {
         'User profile',
       );
 
-      if (profileUpdates.departmentId !== undefined) {
-        await this.requireDepartment(profileUpdates.departmentId, tx);
-      }
       if (profileUpdates.roleId !== undefined) {
         await this.requireRole(profileUpdates.roleId, tx);
       }
@@ -326,7 +319,6 @@ export class UserManagementService {
       .select(this.userSelect())
       .from(userProfiles)
       .innerJoin(user, eq(userProfiles.userId, user.id))
-      .leftJoin(departments, eq(userProfiles.departmentId, departments.id))
       .leftJoin(roles, eq(userProfiles.roleId, roles.id))
       .where(eq(userProfiles.userId, id))
       .limit(1);
@@ -343,8 +335,6 @@ export class UserManagementService {
       position: userProfiles.position,
       designation: userProfiles.designation,
       office: userProfiles.office,
-      departmentId: userProfiles.departmentId,
-      departmentName: departments.name,
       roleId: userProfiles.roleId,
       roleName: roles.name,
       status: userProfiles.status,
@@ -368,22 +358,7 @@ export class UserManagementService {
     if (input.status) {
       conditions.push(eq(userProfiles.status, input.status));
     }
-    if (input.departmentId) {
-      conditions.push(eq(userProfiles.departmentId, input.departmentId));
-    }
     return conditions.length ? and(...conditions) : undefined;
-  }
-
-  private async requireDepartment(
-    id: number,
-    database: NodePgDatabase<typeof schema>,
-  ) {
-    const [department] = await database
-      .select({ id: departments.id })
-      .from(departments)
-      .where(eq(departments.id, id))
-      .limit(1);
-    return this.requireRecord(department, 'Department');
   }
 
   private async requireRole(id: string, database: NodePgDatabase<typeof schema>) {

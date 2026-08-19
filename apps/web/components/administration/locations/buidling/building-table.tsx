@@ -13,26 +13,27 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MoreHorizontal } from "lucide-react";
-import { roomColumns } from "./location-columns";
 import { Room } from "./types";
+import { buildingColumn } from "./building-columns";
+import { Building } from "@repo/trpc/schemas";
 
-interface RoomsTableProps {
-  data: Room[];
-  onEdit: (room: Room) => void;
-  onDelete: (room: Room) => void;
+interface BuildingTableProps {
+  data: Building[];
+  onEdit: (building: Building) => void;
+  onDelete: (building: Building) => void;
 }
 
-export function RoomsTable({ data, onEdit, onDelete }: RoomsTableProps) {
+export function RoomsTable({ data, onEdit, onDelete }: BuildingTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const columns = useMemo(
     () =>
-      roomColumns.map((column) => {
+      buildingColumn.map((column) => {
         if (column.id === "actions") {
           return {
             ...column,
-            cell: ({ row }: { row: { original: Room } }) => (
+            cell: ({ row }: { row: { original: Building } }) => (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button size="icon-xs" variant="ghost" aria-label={`Actions for ${row.original.name}`}>
@@ -98,7 +99,7 @@ export function RoomsTable({ data, onEdit, onDelete }: RoomsTableProps) {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={roomColumns.length} className="h-36 text-center">
+                <TableCell colSpan={buildingColumn.length} className="h-36 text-center">
                   <p className="font-medium">No rooms found</p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     No rooms match your current search and filters.

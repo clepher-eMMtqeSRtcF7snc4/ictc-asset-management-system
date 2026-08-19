@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Search } from "lucide-react";
 
-interface RoomFiltersProps {
+interface BuildingFiltersProps {
   search: string;
   onSearchChange: (value: string) => void;
   building: string;
@@ -27,7 +27,7 @@ const buildings = ["Administration Building", "Academic Building", "ICT Center"]
 const floors = ["1st Floor", "2nd Floor", "3rd Floor", "4th Floor"];
 const departments = ["ICT", "Supply", "Accounting", "HR"];
 
-export function RoomFilters({
+export function BuildingFilters({
   search,
   onSearchChange,
   building,
@@ -38,7 +38,7 @@ export function RoomFilters({
   onDepartmentChange,
   status,
   onStatusChange,
-}: RoomFiltersProps) {
+}: BuildingFiltersProps) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       <div className="relative">

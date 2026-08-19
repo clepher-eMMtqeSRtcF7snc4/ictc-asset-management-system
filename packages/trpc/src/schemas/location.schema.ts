@@ -1,8 +1,8 @@
 import { z } from "zod";
 
-export const locationStatusSchema = z.enum(["active", "inactive"]);
+export const buildingStatusSchema = z.enum(["active", "inactive"]);
 
-const locationFieldsSchema = z.object({
+const buildingFieldsSchema = z.object({
   name: z.string().trim().min(1, "This field is required").max(150),
   code: z
     .string()
@@ -10,12 +10,37 @@ const locationFieldsSchema = z.object({
     .min(1, "This field is required")
     .max(50)
     .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
-    status: locationStatusSchema,
+    status: buildingStatusSchema,
   description: z.string().trim().max(500).optional().nullable(),
 });
 
-export const locationSchema = locationFieldsSchema.extend({
+export const buildingIdSchema = z.object({
+  buildingId: z.string()
+});
+
+export const buildingSchema = buildingFieldsSchema.extend({
   id: z.number().int().positive(),
+  office: z.object({
+    id: z.string(),
+    name: z.string(),
+    code: z.string(),
+    room: z.string(),
+    logo: z.string(),
+    officeHead: z.object({
+      id: z.string(),
+      firstName: z.string(),
+      lastName: z.string(),
+      email: z.string(),
+      avatar: z.string() 
+    }).optional(),
+    custodian: z.object({
+      id: z.string(),
+      firstName: z.string(),
+      lastName: z.string(),
+      email: z.string(),
+      avatar: z.string()
+    }).optional()
+  }).optional(),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
 });
@@ -23,16 +48,16 @@ export const locationSchema = locationFieldsSchema.extend({
 export const locationListInputSchema = z
   .object({
     search: z.string().trim().min(1).max(100).optional(),
-    status: locationStatusSchema.optional(),
+    status: buildingStatusSchema.optional(),
     type: z.string().trim().min(1).max(100).optional(),
   })
   .default({});
 
-export const locationListOutputSchema = z.array(locationSchema);
+export const buildingListOutputSchema = z.array(buildingSchema);
 
-export const createLocationInputSchema = locationFieldsSchema;
+export const createBuildingInputSchema = buildingFieldsSchema;
 
-export const updateLocationInputSchema = locationFieldsSchema
+export const updateBuildingInputSchema = buildingFieldsSchema
   .partial()
   .extend({
     id: z.number().int().positive(),
@@ -45,16 +70,18 @@ export const updateLocationInputSchema = locationFieldsSchema
     { message: "Provide at least one field to update" },
   );
 
-export const setLocationStatusInputSchema = z.object({
+export const setBuildingStatusInputSchema = z.object({
   id: z.number().int().positive(),
-  status: locationStatusSchema,
+  status: buildingStatusSchema,
 });
 
-export type Location = z.infer<typeof locationSchema>;
+export type Location = z.infer<typeof buildingSchema>;
 export type LocationListInput = z.infer<typeof locationListInputSchema>;
-export type LocationListOutput = z.infer<typeof locationListOutputSchema>;
-export type CreateLocationInput = z.infer<typeof createLocationInputSchema>;
-export type UpdateLocationInput = z.infer<typeof updateLocationInputSchema>;
-export type SetLocationStatusInput = z.infer<
-  typeof setLocationStatusInputSchema
+export type UpdateLocationInput = z.infer<typeof updateBuildingInputSchema>;
+export type SetBuildingStatusInput = z.infer<
+typeof setBuildingStatusInputSchema
 >;
+
+export type CreateBuildingInput = z.infer<typeof buildingFieldsSchema>;
+export type GetBuildingInput = z.infer<typeof buildingIdSchema>;
+export type Building = z.infer<typeof buildingSchema>;

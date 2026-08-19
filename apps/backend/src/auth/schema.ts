@@ -6,10 +6,7 @@ import {
   timestamp,
   boolean,
   index,
-  serial,
-  integer,
 } from 'drizzle-orm/pg-core';
-import { primaryKey } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
@@ -85,81 +82,6 @@ export const verification = pgTable(
   (table) => [index('verification_identifier_idx').on(table.identifier)],
 );
 
-export const follow = pgTable(
-  'follow',
-  {
-    followerId: text('follower_id')
-      .notNull()
-      .references(() => user.id),
-    followingId: text('following_id')
-      .notNull()
-      .references(() => user.id),
-  },
-  (table) => ({
-    pk: primaryKey({ columns: [table.followerId, table.followingId] }),
-  }),
-);
-
-export const departments = pgTable(
-  'departments',
-  {
-    id: serial('id').primaryKey(),
-    name: text('name').notNull(),
-    code: text('code').notNull().unique(),
-    type: text('type').notNull(),
-    status: text('status').notNull().default('active'),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-    updatedAt: timestamp('updated_at')
-      .defaultNow()
-      .$onUpdate(() => /* @__PURE__ */ new Date())
-      .notNull(),
-  },
-  (table) => [
-    index('departments_status_idx').on(table.status),
-    index('departments_type_idx').on(table.type),
-  ],
-);
-
-export const locations = pgTable(
-  'locations',
-  {
-    id: serial('id').primaryKey(),
-    name: text('name').notNull(),
-    code: text('code').notNull().unique(),
-    type: text('type').notNull(),
-    status: text('status').notNull().default('active'),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-    updatedAt: timestamp('updated_at')
-      .defaultNow()
-      .$onUpdate(() => /* @__PURE__ */ new Date())
-      .notNull(),
-  },
-  (table) => [
-    index('locations_status_idx').on(table.status),
-    index('locations_type_idx').on(table.type),
-  ],
-);
-
-export const categories = pgTable(
-  'categories',
-  {
-    id: serial('id').primaryKey(),
-    name: text('name').notNull(),
-    code: text('code').notNull().unique(),
-    type: text('type').notNull(),
-    status: text('status').notNull().default('active'),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-    updatedAt: timestamp('updated_at')
-      .defaultNow()
-      .$onUpdate(() => /* @__PURE__ */ new Date())
-      .notNull(),
-  },
-  (table) => [
-    index('categories_status_idx').on(table.status),
-    index('categories_type_idx').on(table.type),
-  ],
-);
-
 export const roles = pgTable(
   'roles',
   {
@@ -188,9 +110,6 @@ export const userProfiles = pgTable(
     position: text('position').notNull(),
     designation: text('designation').notNull(),
     office: text('office').notNull(),
-    departmentId: integer('department_id').references(() => departments.id, {
-      onDelete: 'set null',
-    }),
     roleId: text('role_id').references(() => roles.id, {
       onDelete: 'set null',
     }),
@@ -206,7 +125,6 @@ export const userProfiles = pgTable(
       .notNull(),
   },
   (table) => [
-    index('user_profiles_department_idx').on(table.departmentId),
     index('user_profiles_role_idx').on(table.roleId),
     index('user_profiles_status_idx').on(table.status),
   ],
@@ -237,17 +155,6 @@ export const userAuditLogs = pgTable(
     index('user_audit_logs_entity_idx').on(table.entityType, table.entityId),
   ],
 );
-
-export const followRelations = relations(follow, ({ one }) => ({
-  follower: one(user, {
-    fields: [follow.followerId],
-    references: [user.id],
-  }),
-  following: one(user, {
-    fields: [follow.followingId],
-    references: [user.id],
-  }),
-}));
 
 export const userRelations = relations(user, ({ many, one }) => ({
   sessions: many(session),
@@ -284,10 +191,6 @@ export const userProfileRelations = relations(userProfiles, ({ one }) => ({
   user: one(user, {
     fields: [userProfiles.userId],
     references: [user.id],
-  }),
-  department: one(departments, {
-    fields: [userProfiles.departmentId],
-    references: [departments.id],
   }),
   role: one(roles, {
     fields: [userProfiles.roleId],

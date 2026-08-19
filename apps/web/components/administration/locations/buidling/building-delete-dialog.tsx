@@ -12,19 +12,19 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Trash2 } from "lucide-react";
 
-interface RoomDeleteDialogProps {
+interface BuildingDeleteDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
   roomName: string;
 }
 
-export function RoomDeleteDialog({
+export function BuildingDeleteDialog({
   open,
   onOpenChange,
   onConfirm,
   roomName,
-}: RoomDeleteDialogProps) {
+}: BuildingDeleteDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>

@@ -7,11 +7,12 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import type { Room } from "@/components/administration/master-data/types";
 import { mockRooms } from "@/components/administration/master-data/mock-data";
-import { RoomFilters } from "@/components/administration/locations/location-filters";
-import { RoomsTable } from "@/components/administration/locations/location-table";
-import { RoomDialog } from "@/components/administration/locations/location-dialog";
-import { RoomDeleteDialog } from "@/components/administration/locations/location-delete-dialog";
-import { CreateLocationInput } from "@repo/trpc/schemas";
+import { BuildingFilters } from "@/components/administration/locations/buidling/building-filters";
+import { RoomsTable } from "@/components/administration/locations/buidling/building-table";
+import { BuildingDialog } from "@/components/administration/locations/buidling/building-dialog";
+import { BuildingDeleteDialog } from "@/components/administration/locations/buidling/building-delete-dialog";
+import { CreateBuildingInput } from "@repo/trpc/schemas";
+import { trpc } from "@/lib/trpc/client";
 
 
 export default function Page() {
@@ -25,6 +26,9 @@ export default function Page() {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+
+  const utils = trpc.useUtils(); 
+  const createBuilding = trpc.buildingRouter.create.useMutation({})
 
   const filteredRooms = useMemo(() => {
     return rooms.filter((room) => {
@@ -40,13 +44,14 @@ export default function Page() {
     });
   }, [rooms, search, building, floor, department, status]);
 
-    const handleCreate = (values: CreateLocationInput) => {
+    const handleCreate = async (values: CreateBuildingInput) => {
       console.log(values)
+      await createBuilding.mutateAsync(values)
       setCreateOpen(false);
       toast.success("Room created successfully.");
     };
   
-    const handleEdit = (values: CreateLocationInput) => {
+    const handleEdit = (values: CreateBuildingInput) => {
       if (!selectedRoom) return;
       setRooms(
         rooms.map((r) =>
@@ -100,7 +105,7 @@ export default function Page() {
                 </Button>
               </CardHeader>
               <CardContent className="space-y-4 overflow-y-auto">
-                <RoomFilters
+                <BuildingFilters
                   search={search}
                   onSearchChange={setSearch}
                   building={building}
@@ -125,14 +130,14 @@ export default function Page() {
                 />
               </CardContent>
         
-              <RoomDialog
+              <BuildingDialog
                 open={createOpen}
                 onOpenChange={setCreateOpen}
                 onSubmit={handleCreate}
-                title="Create Room"
+                title="Create Building"
               />
         
-              <RoomDialog
+              <BuildingDialog
                 open={editOpen}
                 onOpenChange={setEditOpen}
                 onSubmit={handleEdit}
@@ -153,7 +158,7 @@ export default function Page() {
                 title="Edit Room"
               />
         
-              <RoomDeleteDialog
+              <BuildingDeleteDialog
                 open={deleteOpen}
                 onOpenChange={setDeleteOpen}
                 onConfirm={handleDelete}
