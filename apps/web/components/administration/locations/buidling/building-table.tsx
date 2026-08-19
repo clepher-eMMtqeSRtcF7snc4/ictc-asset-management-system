@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MoreHorizontal } from "lucide-react";
-import { Room } from "./types";
 import { buildingColumn } from "./building-columns";
 import { Building } from "@repo/trpc/schemas";
 
@@ -100,9 +99,9 @@ export function RoomsTable({ data, onEdit, onDelete }: BuildingTableProps) {
             ) : (
               <TableRow>
                 <TableCell colSpan={buildingColumn.length} className="h-36 text-center">
-                  <p className="font-medium">No rooms found</p>
+                  <p className="font-medium">No building found</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    No rooms match your current search and filters.
+                    No building match your current search and filters.
                   </p>
                 </TableCell>
               </TableRow>

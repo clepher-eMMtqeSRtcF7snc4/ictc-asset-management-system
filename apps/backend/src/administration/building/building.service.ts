@@ -12,6 +12,24 @@ export class BuildingService {
     private readonly database: NodePgDatabase<typeof schema>,
   ) {}
 
+  async findAll(input?: { search?: string; status?: 'active' | 'inactive' }) {
+    const conditions = [];
+
+    if (input?.search) {
+      conditions.push(ilike(building.name, `%${input.search}%`));
+    }
+
+    if (input?.status) {
+      conditions.push(eq(building.status, input.status));
+    }
+
+    return await this.database
+      .select()
+      .from(building)
+      .where(conditions.length ? and(...conditions) : undefined)
+      .orderBy(asc(building.name));
+  }
+
   async create(createBuildingInput: CreateBuildingInput) {
     await this.database.insert(building).values({
       name: createBuildingInput.name,

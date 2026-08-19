@@ -28,7 +28,22 @@ const appRouter = t.router({
         .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
       status: z.enum(["active", "inactive"]),
       description: z.string().trim().max(500).optional().nullable(),
-    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getBuildings: publicProcedure.output(z.array(z.object({
+      name: z.string().trim().min(1, "This field is required").max(150),
+      code: z
+        .string()
+        .trim()
+        .min(1, "This field is required")
+        .max(50)
+        .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
+      status: z.enum(["active", "inactive"]),
+      description: z.string().trim().max(500).optional().nullable(),
+    }).extend({
+      id: z.number().int().positive(),
+      createdAt: z.date().optional(),
+      updatedAt: z.date().optional(),
+    }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
   userManagementRouter: t.router({
     listUsers: publicProcedure.input(z

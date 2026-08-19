@@ -5,7 +5,8 @@ import {
   CreateBuildingInput,
   createBuildingInputSchema,
   buildingIdSchema,
-  GetBuildingInput
+  GetBuildingInput,
+  buildingSchema,
 } from '@repo/trpc/schemas';
 import { AuthTrpcMiddleware } from '../../auth/auth-trpc.middleware';
 
@@ -19,9 +20,8 @@ export class BuildingRouter {
     return this.buildingService.create(createLocationInput);
   }
 
-  // @Query({ output: buildingListOutputSchema })
-  // async getBuildings(@Input() getBuildingsInput: GetBuildingInput){
-  //   return this.buildingService.getBuildings
-  // }
-
+  @Query({ output: buildingListOutputSchema })
+  async getBuildings(){
+    return this.buildingService.getBuildings();
+  }
 }

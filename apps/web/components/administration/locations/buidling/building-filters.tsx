@@ -13,29 +13,29 @@ import { Search } from "lucide-react";
 interface BuildingFiltersProps {
   search: string;
   onSearchChange: (value: string) => void;
-  building: string;
-  onBuildingChange: (value: string) => void;
-  floor: string;
-  onFloorChange: (value: string) => void;
-  department: string;
-  onDepartmentChange: (value: string) => void;
+  // building: string;
+  // onBuildingChange: (value: string) => void;
+  // floor: string;
+  // onFloorChange: (value: string) => void;
+  // department: string;
+  // onDepartmentChange: (value: string) => void;
   status: string;
   onStatusChange: (value: string) => void;
 }
 
-const buildings = ["Administration Building", "Academic Building", "ICT Center"];
-const floors = ["1st Floor", "2nd Floor", "3rd Floor", "4th Floor"];
-const departments = ["ICT", "Supply", "Accounting", "HR"];
+// const buildings = ["Administration Building", "Academic Building", "ICT Center"];
+// const floors = ["1st Floor", "2nd Floor", "3rd Floor", "4th Floor"];
+// const departments = ["ICT", "Supply", "Accounting", "HR"];
 
 export function BuildingFilters({
   search,
   onSearchChange,
-  building,
-  onBuildingChange,
-  floor,
-  onFloorChange,
-  department,
-  onDepartmentChange,
+  // building,
+  // onBuildingChange,
+  // floor,
+  // onFloorChange,
+  // department,
+  // onDepartmentChange,
   status,
   onStatusChange,
 }: BuildingFiltersProps) {
@@ -50,7 +50,7 @@ export function BuildingFilters({
           onChange={(e) => onSearchChange(e.target.value)}
         />
       </div>
-      <Select value={building} onValueChange={onBuildingChange}>
+      {/* <Select value={building} onValueChange={onBuildingChange}>
         <SelectTrigger className="w-40">
           <SelectValue placeholder="Building" />
         </SelectTrigger>
@@ -62,8 +62,8 @@ export function BuildingFilters({
             </SelectItem>
           ))}
         </SelectContent>
-      </Select>
-      <Select value={floor} onValueChange={onFloorChange}>
+      </Select> */}
+      {/* <Select value={floor} onValueChange={onFloorChange}>
         <SelectTrigger className="w-32">
           <SelectValue placeholder="Floor" />
         </SelectTrigger>
@@ -75,8 +75,8 @@ export function BuildingFilters({
             </SelectItem>
           ))}
         </SelectContent>
-      </Select>
-      <Select value={department} onValueChange={onDepartmentChange}>
+      </Select> */}
+      {/* <Select value={department} onValueChange={onDepartmentChange}>
         <SelectTrigger className="w-40">
           <SelectValue placeholder="Department" />
         </SelectTrigger>
@@ -88,7 +88,7 @@ export function BuildingFilters({
             </SelectItem>
           ))}
         </SelectContent>
-      </Select>
+      </Select> */}
       <Select value={status} onValueChange={onStatusChange}>
         <SelectTrigger className="w-32">
           <SelectValue placeholder="Status" />

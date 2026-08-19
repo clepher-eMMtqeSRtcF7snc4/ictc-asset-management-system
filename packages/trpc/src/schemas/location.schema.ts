@@ -20,7 +20,11 @@ export const buildingIdSchema = z.object({
 
 export const buildingSchema = buildingFieldsSchema.extend({
   id: z.number().int().positive(),
-  office: z.object({
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
+});
+
+export const officeSchema = z.object({
     id: z.string(),
     name: z.string(),
     code: z.string(),
@@ -32,18 +36,15 @@ export const buildingSchema = buildingFieldsSchema.extend({
       lastName: z.string(),
       email: z.string(),
       avatar: z.string() 
-    }).optional(),
+    }),
     custodian: z.object({
       id: z.string(),
       firstName: z.string(),
       lastName: z.string(),
       email: z.string(),
       avatar: z.string()
-    }).optional()
-  }).optional(),
-  createdAt: z.date().optional(),
-  updatedAt: z.date().optional(),
-});
+    })
+  });
 
 export const locationListInputSchema = z
   .object({
@@ -73,6 +74,11 @@ export const updateBuildingInputSchema = buildingFieldsSchema
 export const setBuildingStatusInputSchema = z.object({
   id: z.number().int().positive(),
   status: buildingStatusSchema,
+});
+
+export const buildingListInputSchema = z.object({
+  search: z.string().trim().optional(),
+  status: buildingStatusSchema.optional(),
 });
 
 export type Location = z.infer<typeof buildingSchema>;

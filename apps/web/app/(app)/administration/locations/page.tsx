@@ -11,38 +11,38 @@ import { BuildingFilters } from "@/components/administration/locations/buidling/
 import { RoomsTable } from "@/components/administration/locations/buidling/building-table";
 import { BuildingDialog } from "@/components/administration/locations/buidling/building-dialog";
 import { BuildingDeleteDialog } from "@/components/administration/locations/buidling/building-delete-dialog";
-import { CreateBuildingInput } from "@repo/trpc/schemas";
+import { Building, CreateBuildingInput } from "@repo/trpc/schemas";
 import { trpc } from "@/lib/trpc/client";
 
 
 export default function Page() {
-  const [rooms, setRooms] = useState<Room[]>(mockRooms);
+  const [rooms, setRooms] = useState<Building[]>(mockRooms);
   const [search, setSearch] = useState("");
-  const [building, setBuilding] = useState("all");
-  const [floor, setFloor] = useState("all");
-  const [department, setDepartment] = useState("all");
+  // const [building, setBuilding] = useState("all");
+  // const [floor, setFloor] = useState("all");
+  // const [department, setDepartment] = useState("all");
   const [status, setStatus] = useState("all");
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+  const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null);
 
   const utils = trpc.useUtils(); 
   const createBuilding = trpc.buildingRouter.create.useMutation({})
 
-  const filteredRooms = useMemo(() => {
-    return rooms.filter((room) => {
+  const filteredBuilding = useMemo(() => {
+    return rooms.filter((building) => {
       const matchesSearch =
         !search ||
-        room.name.toLowerCase().includes(search.toLowerCase()) ||
-        room.code.toLowerCase().includes(search.toLowerCase());
-      const matchesBuilding = building === "all" || room.building === building;
-      const matchesFloor = floor === "all" || room.floor === floor;
-      const matchesDepartment = department === "all" || room.department === department;
-      const matchesStatus = status === "all" || room.status === status;
-      return matchesSearch && matchesBuilding && matchesFloor && matchesDepartment && matchesStatus;
+        building.name.toLowerCase().includes(search.toLowerCase()) ||
+        building.code.toLowerCase().includes(search.toLowerCase());
+      // const matchesBuilding = building === "all" || room.building === building;
+      // const matchesFloor = floor === "all" || room.floor === floor;
+      // const matchesDepartment = department === "all" || room.department === department;
+      const matchesStatus = status === "all" || building.status === status;
+      return matchesSearch && matchesStatus;
     });
-  }, [rooms, search, building, floor, department, status]);
+  }, [rooms, search, status]);
 
     const handleCreate = async (values: CreateBuildingInput) => {
       console.log(values)
@@ -108,23 +108,23 @@ export default function Page() {
                 <BuildingFilters
                   search={search}
                   onSearchChange={setSearch}
-                  building={building}
-                  onBuildingChange={setBuilding}
-                  floor={floor}
-                  onFloorChange={setFloor}
-                  department={department}
-                  onDepartmentChange={setDepartment}
+                  // building={building}
+                  // onBuildingChange={setBuilding}
+                  // floor={floor}
+                  // onFloorChange={setFloor}
+                  // department={department}
+                  // onDepartmentChange={setDepartment}
                   status={status}
                   onStatusChange={setStatus}
                 />
                 <RoomsTable
-                  data={filteredRooms}
-                  onEdit={(room) => {
-                    setSelectedRoom(room);
+                  data={filteredBuilding}
+                  onEdit={(building) => {
+                    setSelectedBuilding(building);
                     setEditOpen(true);
                   }}
-                  onDelete={(room) => {
-                    setSelectedRoom(room);
+                  onDelete={(building) => {
+                    setSelectedBuilding(building);
                     setDeleteOpen(true);
                   }}
                 />
@@ -142,16 +142,12 @@ export default function Page() {
                 onOpenChange={setEditOpen}
                 onSubmit={handleEdit}
                 defaultValues={
-                  selectedRoom
+                  selectedBuilding
                     ? {
-                        code: selectedRoom.code,
-                        name: selectedRoom.name,
-                        building: selectedRoom.building,
-                        floor: selectedRoom.floor,
-                        department: selectedRoom.department,
-                        roomType: selectedRoom.roomType,
-                        custodian: selectedRoom.custodian,
-                        status: selectedRoom.status,
+                        code: selectedBuilding.code,
+                        name: selectedBuilding.name,
+                        description: selectedBuilding.description,
+                        status: selectedBuilding.status,
                       }
                     : undefined
                 }
@@ -162,7 +158,7 @@ export default function Page() {
                 open={deleteOpen}
                 onOpenChange={setDeleteOpen}
                 onConfirm={handleDelete}
-                roomName={selectedRoom?.name ?? ""}
+                roomName={selectedBuilding?.name ?? ""}
               />
             </Card>
         
