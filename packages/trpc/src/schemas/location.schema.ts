@@ -54,7 +54,22 @@ export const locationListInputSchema = z
   })
   .default({});
 
-export const buildingListOutputSchema = z.array(buildingSchema);
+export const buildingListInputSchema = z
+  .object({
+    search: z.string().trim().optional(),
+    status: buildingStatusSchema.optional(),
+    page: z.number().int().min(1).optional(),
+    pageSize: z.number().int().min(1).max(100).optional(),
+  })
+  .default({});
+
+export const buildingListOutputSchema = z.object({
+  items: z.array(buildingSchema),
+  total: z.number().int().nonnegative(),
+  page: z.number().int().positive(),
+  pageSize: z.number().int().positive(),
+  totalPages: z.number().int().nonnegative(),
+});
 
 export const createBuildingInputSchema = buildingFieldsSchema;
 
@@ -76,11 +91,6 @@ export const setBuildingStatusInputSchema = z.object({
   status: buildingStatusSchema,
 });
 
-export const buildingListInputSchema = z.object({
-  search: z.string().trim().optional(),
-  status: buildingStatusSchema.optional(),
-});
-
 export type Location = z.infer<typeof buildingSchema>;
 export type LocationListInput = z.infer<typeof locationListInputSchema>;
 export type UpdateLocationInput = z.infer<typeof updateBuildingInputSchema>;
@@ -91,3 +101,5 @@ typeof setBuildingStatusInputSchema
 export type CreateBuildingInput = z.infer<typeof buildingFieldsSchema>;
 export type GetBuildingInput = z.infer<typeof buildingIdSchema>;
 export type Building = z.infer<typeof buildingSchema>;
+export type BuildingListInput = z.infer<typeof buildingListInputSchema>;
+export type BuildingListOutput = z.infer<typeof buildingListOutputSchema>;

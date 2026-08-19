@@ -45,7 +45,7 @@ export function BuildingFilters({
         <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
         <Input
           className="pl-8"
-          placeholder="Search rooms..."
+          placeholder="Search buildings..."
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
         />

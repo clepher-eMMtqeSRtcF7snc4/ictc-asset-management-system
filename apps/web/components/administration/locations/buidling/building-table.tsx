@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { flexRender, getCoreRowModel, getPaginationRowModel, getSortedRowModel, type SortingState, useReactTable, type VisibilityState } from "@tanstack/react-table";
+import { flexRender, getCoreRowModel, getSortedRowModel, type PaginationState, type SortingState, useReactTable, type VisibilityState } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { DataTablePagination } from "@/components/ui/datatable-pagination";
 import {
@@ -16,13 +16,27 @@ import { MoreHorizontal } from "lucide-react";
 import { buildingColumn } from "./building-columns";
 import { Building } from "@repo/trpc/schemas";
 
+type BuildingRow = Omit<Building, "createdAt" | "updatedAt">;
+
 interface BuildingTableProps {
-  data: Building[];
+  data: BuildingRow[];
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  onPaginationChange: (next: { page: number; pageSize: number }) => void;
   onEdit: (building: Building) => void;
   onDelete: (building: Building) => void;
 }
 
-export function RoomsTable({ data, onEdit, onDelete }: BuildingTableProps) {
+export function BuildingTable({
+  data,
+  page,
+  pageSize,
+  totalPages,
+  onPaginationChange,
+  onEdit,
+  onDelete,
+}: BuildingTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
@@ -61,11 +75,22 @@ export function RoomsTable({ data, onEdit, onDelete }: BuildingTableProps) {
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    manualPagination: true,
+    pageCount: totalPages,
+    state: {
+      sorting,
+      columnVisibility,
+      pagination: { pageIndex: page - 1, pageSize },
+    },
     onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
-    state: { sorting, columnVisibility },
-    initialState: { pagination: { pageSize: 10 } },
+    onPaginationChange: (updater) => {
+      const next: PaginationState =
+        typeof updater === "function"
+          ? updater({ pageIndex: page - 1, pageSize })
+          : updater;
+      onPaginationChange({ page: next.pageIndex + 1, pageSize: next.pageSize });
+    },
   });
 
   return (

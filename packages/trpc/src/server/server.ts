@@ -29,21 +29,34 @@ const appRouter = t.router({
       status: z.enum(["active", "inactive"]),
       description: z.string().trim().max(500).optional().nullable(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
-    getBuildings: publicProcedure.output(z.array(z.object({
-      name: z.string().trim().min(1, "This field is required").max(150),
-      code: z
-        .string()
-        .trim()
-        .min(1, "This field is required")
-        .max(50)
-        .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
-      status: z.enum(["active", "inactive"]),
-      description: z.string().trim().max(500).optional().nullable(),
-    }).extend({
-      id: z.number().int().positive(),
-      createdAt: z.date().optional(),
-      updatedAt: z.date().optional(),
-    }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+    getBuildings: publicProcedure.input(z
+      .object({
+        search: z.string().trim().optional(),
+        status: z.enum(["active", "inactive"]).optional(),
+        page: z.number().int().min(1).optional(),
+        pageSize: z.number().int().min(1).max(100).optional(),
+      })
+      .default({})).output(z.object({
+        items: z.array(z.object({
+          name: z.string().trim().min(1, "This field is required").max(150),
+          code: z
+            .string()
+            .trim()
+            .min(1, "This field is required")
+            .max(50)
+            .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
+          status: z.enum(["active", "inactive"]),
+          description: z.string().trim().max(500).optional().nullable(),
+        }).extend({
+          id: z.number().int().positive(),
+          createdAt: z.date().optional(),
+          updatedAt: z.date().optional(),
+        })),
+        total: z.number().int().nonnegative(),
+        page: z.number().int().positive(),
+        pageSize: z.number().int().positive(),
+        totalPages: z.number().int().nonnegative(),
+      })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
   userManagementRouter: t.router({
     listUsers: publicProcedure.input(z

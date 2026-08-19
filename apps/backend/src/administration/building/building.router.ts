@@ -1,7 +1,9 @@
 import { BuildingService } from './building.service';
 import { Input, Mutation, Query, Router, UseMiddlewares } from 'nestjs-trpc-v2';
 import {
+  buildingListInputSchema,
   buildingListOutputSchema,
+  BuildingListInput,
   CreateBuildingInput,
   createBuildingInputSchema,
   buildingIdSchema,
@@ -20,8 +22,8 @@ export class BuildingRouter {
     return this.buildingService.create(createLocationInput);
   }
 
-  @Query({ output: buildingListOutputSchema })
-  async getBuildings(){
-    return this.buildingService.getBuildings();
+  @Query({ input: buildingListInputSchema, output: buildingListOutputSchema })
+  async getBuildings(@Input() input: BuildingListInput){
+    return this.buildingService.findAll(input);
   }
 }
