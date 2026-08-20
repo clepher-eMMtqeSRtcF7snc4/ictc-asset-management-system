@@ -95,6 +95,12 @@ export const setBuildingStatusInputSchema = z.object({
   status: buildingStatusSchema,
 });
 
+export const deleteBuildingInputSchema = z.object({
+  id: z.number().int().positive(),
+});
+
+export type DeleteBuildingInput = z.infer<typeof deleteBuildingInputSchema>;
+
 export type Location = z.infer<typeof buildingSchema>;
 export type LocationListInput = z.infer<typeof locationListInputSchema>;
 export type UpdateBuildingInput = z.infer<typeof updateBuildingInputSchema>;

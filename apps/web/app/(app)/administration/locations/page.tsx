@@ -92,6 +92,23 @@ export default function Page() {
     updateBuilding.mutate({ id: editId, ...values });
   };
 
+  const deleteBuilding = trpc.buildingRouter.delete.useMutation({
+    onSuccess: () => {
+      utils.buildingRouter.getBuildings.invalidate();
+      setDeleteOpen(false);
+      setSelectedBuilding(null);
+      toast.success("Building deleted successfully.");
+    },
+    onError: (error) => {
+      toast.error(error.message ?? "Failed to delete building.");
+    },
+  });
+
+  const handleDelete = () => {
+    if (selectedBuilding === null) return;
+    deleteBuilding.mutate({ id: selectedBuilding.id });
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -172,11 +189,7 @@ export default function Page() {
         <BuildingDeleteDialog
           open={deleteOpen}
           onOpenChange={setDeleteOpen}
-          onConfirm={() => {
-            setDeleteOpen(false);
-            setSelectedBuilding(null);
-            toast.info("Building deletion is not yet supported.");
-          }}
+          onConfirm={handleDelete}
           roomName={selectedBuilding?.name ?? ""}
         />
       </Card>

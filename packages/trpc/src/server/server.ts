@@ -48,6 +48,9 @@ const appRouter = t.router({
         description !== undefined ||
         { message: "Provide at least one field to update" },
     )).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    delete: publicProcedure.input(z.object({
+      id: z.number().int().positive(),
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getBuildingById: publicProcedure.input(z.object({
       id: z.number().int().positive(),
     })).output(z.object({

@@ -78,6 +78,10 @@ export class BuildingService {
       .where(eq(building.id, input.id));
   }
 
+  async delete(id: number) {
+    await this.database.delete(building).where(eq(building.id, id));
+  }
+
   async create(createBuildingInput: CreateBuildingInput) {
     const [existing] = await this.database
       .select({ id: building.id })
