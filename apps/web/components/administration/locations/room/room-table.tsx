@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MoreHorizontal } from "lucide-react";
-import { buildingColumn } from "./building-columns";
+import { roomColumn } from "./room-columns";
 import { Building } from "@repo/trpc/schemas";
 import Link from "next/link";
 
@@ -29,7 +29,7 @@ interface BuildingTableProps {
   onDelete: (building: Building) => void;
 }
 
-export function BuildingTable({
+export function RoomTable({
   data,
   page,
   pageSize,
@@ -43,7 +43,7 @@ export function BuildingTable({
 
   const columns = useMemo(
     () =>
-      buildingColumn.map((column) => {
+      roomColumn.map((column) => {
         if (column.id === "actions") {
           return {
             ...column,
@@ -56,8 +56,7 @@ export function BuildingTable({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild>
-                    {/* <Link href={`/administration/locations/${row.original.id}?name=${encodeURIComponent(row.original.name)}&desc=${encodeURIComponent(row.original.description ?? "—")}`}>Offices</Link> */}
-                    <Link href={{pathname:`/administration/locations/${row.original.id}`, query: {name:row.original.name, desc: row.original.description ?? "—"}}}>Offices</Link>
+                    <Link href={`/administration/locations/${row.original.id}?name=${encodeURIComponent(row.original.name)}&desc=${encodeURIComponent(row.original.description ?? "—")}`}>Offices</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onEdit(row.original)}>Edit</DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -127,7 +126,7 @@ export function BuildingTable({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={buildingColumn.length} className="h-36 text-center">
+                <TableCell colSpan={roomColumn.length} className="h-36 text-center">
                   <p className="font-medium">No building found</p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     No building match your current search and filters.

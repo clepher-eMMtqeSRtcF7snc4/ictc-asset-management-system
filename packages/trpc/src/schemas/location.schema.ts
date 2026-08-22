@@ -14,10 +14,6 @@ const buildingFieldsSchema = z.object({
   description: z.string().trim().max(500).optional().nullable(),
 });
 
-export const buildingIdSchema = z.object({
-  buildingId: z.string()
-});
-
 export const getBuildingByIdInputSchema = z.object({
   id: z.number().int().positive(),
 });
@@ -27,36 +23,6 @@ export const buildingSchema = buildingFieldsSchema.extend({
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
 });
-
-export const officeSchema = z.object({
-    id: z.string(),
-    name: z.string(),
-    code: z.string(),
-    room: z.string(),
-    logo: z.string(),
-    officeHead: z.object({
-      id: z.string(),
-      firstName: z.string(),
-      lastName: z.string(),
-      email: z.string(),
-      avatar: z.string() 
-    }),
-    custodian: z.object({
-      id: z.string(),
-      firstName: z.string(),
-      lastName: z.string(),
-      email: z.string(),
-      avatar: z.string()
-    })
-  });
-
-export const locationListInputSchema = z
-  .object({
-    search: z.string().trim().min(1).max(100).optional(),
-    status: buildingStatusSchema.optional(),
-    type: z.string().trim().min(1).max(100).optional(),
-  })
-  .default({});
 
 export const buildingListInputSchema = z
   .object({
@@ -75,8 +41,6 @@ export const buildingListOutputSchema = z.object({
   totalPages: z.number().int().nonnegative(),
 });
 
-export const createBuildingInputSchema = buildingFieldsSchema;
-
 export const updateBuildingInputSchema = buildingFieldsSchema
   .partial()
   .extend({
@@ -90,27 +54,69 @@ export const updateBuildingInputSchema = buildingFieldsSchema
     { message: "Provide at least one field to update" },
   );
 
-export const setBuildingStatusInputSchema = z.object({
-  id: z.number().int().positive(),
-  status: buildingStatusSchema,
-});
-
 export const deleteBuildingInputSchema = z.object({
   id: z.number().int().positive(),
 });
 
-export type DeleteBuildingInput = z.infer<typeof deleteBuildingInputSchema>;
+export const createBuildingInputSchema = buildingFieldsSchema;
 
-export type Location = z.infer<typeof buildingSchema>;
-export type LocationListInput = z.infer<typeof locationListInputSchema>;
-export type UpdateBuildingInput = z.infer<typeof updateBuildingInputSchema>;
-export type SetBuildingStatusInput = z.infer<
-typeof setBuildingStatusInputSchema
->;
 
-export type CreateBuildingInput = z.infer<typeof buildingFieldsSchema>;
-export type GetBuildingInput = z.infer<typeof buildingIdSchema>;
-export type GetBuildingByIdInput = z.infer<typeof getBuildingByIdInputSchema>;
 export type Building = z.infer<typeof buildingSchema>;
 export type BuildingListInput = z.infer<typeof buildingListInputSchema>;
 export type BuildingListOutput = z.infer<typeof buildingListOutputSchema>;
+export type CreateBuildingInput = z.infer<typeof buildingFieldsSchema>;
+export type GetBuildingByIdInput = z.infer<typeof getBuildingByIdInputSchema>;
+export type UpdateBuildingInput = z.infer<typeof updateBuildingInputSchema>;
+export type DeleteBuildingInput = z.infer<typeof deleteBuildingInputSchema>;
+
+export const roomTypeInput = z.object({
+  code: z.string().optional().nullable(),
+  name: z.string().min(1, "This field is required")
+});
+
+export const roomTypeSchema = roomTypeInput.extend({
+  id: z.number().int().positive()
+});
+
+export const updateRoomTypeInput = roomTypeInput
+  .partial()
+  .extend({
+     id: z.number().int().positive()
+  })
+  .refine(({code, name}) => 
+    name !== undefined ||
+    code !== undefined || 
+    {message: "Provide at least one field to update"}
+  );
+
+export const deleteRoomType = z.object({
+  id: z.number().int().positive(),
+});
+
+
+export type RoomType = z.infer<typeof roomTypeSchema>
+export type CreateRoomTypeInput = z.infer<typeof roomTypeInput>
+export type UpdateRoomTypeInput = z.infer<typeof updateRoomTypeInput>
+export type DeleteRoomTypeInput = z.infer<typeof deleteRoomType>
+
+
+export const roomFloorSchema = z.enum(["1st floor", "2nd floor", "3rd floor", "4th floor"]);
+export const roomStatusSchema = z.enum(["active", "inactive"]);
+
+export const roomFieldSchema = z.object({
+  name: z.string(),
+  code: z.string().optional().nullable(),
+  roomTypeId: z.number().int().positive(),
+  buildingId: z.number().int().positive(),
+  floor: roomFloorSchema,
+  departmentId: z.number().int().positive().nullable(),
+});
+
+export const roomSchema = roomFieldSchema.extend({
+  id: z.number().int().positive(),
+  status: roomStatusSchema,
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
+});
+
+export type CreateRoomInput = z.infer<typeof roomFieldSchema>;

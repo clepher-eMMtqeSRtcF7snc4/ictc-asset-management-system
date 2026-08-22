@@ -13,7 +13,6 @@ import { UsersModule } from './auth/users/users.module';
 import { UploadModule } from './upload/upload.module';
 import { AppContext } from './app.context';
 import { AuthTrpcMiddleware } from './auth/auth-trpc.middleware';
-import { UserManagementModule } from './user-management/user-management.module';
 import { BuildingModule } from './administration/building/building.module';
 @Module({
   imports: [
@@ -41,7 +40,6 @@ import { BuildingModule } from './administration/building/building.module';
     }),
     UsersModule,
     BuildingModule,
-    UserManagementModule,
     UploadModule,
   ],
   controllers: [AppController],

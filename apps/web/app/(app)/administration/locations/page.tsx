@@ -114,7 +114,7 @@ export default function Page() {
       <div>
         <h2 className="text-lg font-semibold">Locations</h2>
         <p className="text-sm text-muted-foreground">
-          Configure departments, buildings, rooms, and storage areas.
+          Manage physical and organizational reference data
         </p>
       </div>
 

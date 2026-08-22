@@ -5,8 +5,6 @@ import {
   buildingListOutputSchema,
   BuildingListInput,
   CreateBuildingInput,
-  createBuildingInputSchema,
-  buildingIdSchema,
   buildingSchema,
   deleteBuildingInputSchema,
   getBuildingByIdInputSchema,
@@ -14,6 +12,7 @@ import {
   UpdateBuildingInput,
   updateBuildingInputSchema,
   DeleteBuildingInput,
+  createBuildingInputSchema,
 } from '@repo/trpc/schemas';
 import { AuthTrpcMiddleware } from '../../auth/auth-trpc.middleware';
 
@@ -23,8 +22,8 @@ export class BuildingRouter {
   constructor(private readonly buildingService: BuildingService) {}
 
   @Mutation({ input: createBuildingInputSchema })
-  async create(@Input() createLocationInput: CreateBuildingInput) {
-    return this.buildingService.create(createLocationInput);
+  async create(@Input() createBuildingInput: CreateBuildingInput) {
+    return this.buildingService.create(createBuildingInput);
   }
 
   @Mutation({ input: updateBuildingInputSchema })
@@ -43,7 +42,7 @@ export class BuildingRouter {
   }
 
   @Query({ input: buildingListInputSchema, output: buildingListOutputSchema })
-  async getBuildings(@Input() input: BuildingListInput){
+  async getBuildings(@Input() input: BuildingListInput) {
     return this.buildingService.findAll(input);
   }
 }

@@ -13,19 +13,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 
-interface BuildingDeleteDialogProps {
+interface RoomDeleteDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
   roomName: string;
 }
 
-export function BuildingDeleteDialog({
+export function RoomDeleteDialog({
   open,
   onOpenChange,
   onConfirm,
   roomName,
-}: BuildingDeleteDialogProps) {
+}: RoomDeleteDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -36,7 +36,7 @@ export function BuildingDeleteDialog({
             action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="flex items-end gap-2">
+       <AlertDialogFooter className="flex items-end gap-2">
           <AlertDialogCancel asChild>
             <Button variant="outline">Cancel</Button>
           </AlertDialogCancel>

@@ -10,11 +10,12 @@ const departmentFieldsSchema = z.object({
     .min(1, "This field is required")
     .max(50)
     .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
-  type: z.enum(["Academic", "Administrative", "Support Office"]),
-  shortName: z.string().trim().max(50).optional().nullable(),
+  shortName: z.string().trim().max(50),
   description: z.string().trim().max(500).optional().nullable(),
-  parentDepartmentId: z.number().int().positive().optional().nullable(),
-  headUserId: z.string().trim().min(1).optional().nullable(),
+  supervisor: z.string().trim().min(1),
+  custodian: z.string().trim().min(1).optional().nullable(),
+  logo: z.string().nullable(),
+  color: z.string().trim().nullable()
 });
 
 export const departmentSchema = departmentFieldsSchema.extend({
@@ -42,14 +43,12 @@ export const updateDepartmentInputSchema = departmentFieldsSchema
     id: z.number().int().positive(),
   })
   .refine(
-    ({ name, code, type, shortName, description, parentDepartmentId, headUserId }) =>
+    ({ name, code, shortName, description, supervisor }) =>
       name !== undefined ||
       code !== undefined ||
-      type !== undefined ||
       shortName !== undefined ||
       description !== undefined ||
-      parentDepartmentId !== undefined ||
-      headUserId !== undefined,
+      supervisor !== undefined,
     { message: "Provide at least one field to update" },
   );
 
