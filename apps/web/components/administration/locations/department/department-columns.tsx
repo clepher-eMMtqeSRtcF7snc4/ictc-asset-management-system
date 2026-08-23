@@ -6,6 +6,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { Department } from "@repo/trpc/schemas";
 import { Badge } from "@/components/ui/badge";
+import { getImageUrl } from "@/lib/image";
+import Image from "next/image";
 
 export const departmentColumns: ColumnDef<Department>[] = [
   { accessorKey: "code", header: "Code", cell: ({ row }) => <span className="font-mono text-xs">{row.original.code}</span> },
@@ -15,7 +17,7 @@ export const departmentColumns: ColumnDef<Department>[] = [
     header: "Logo",
     cell: ({ row }) =>
       row.original.logo ? (
-        <img src={row.original.logo} alt={row.original.name} className="size-8 rounded object-cover" />
+        <Image src={getImageUrl(row.original.logo)} alt={row.original.name} width={32} height={32} unoptimized className="size-8 rounded object-cover" />
       ) : (
         "—"
       ),

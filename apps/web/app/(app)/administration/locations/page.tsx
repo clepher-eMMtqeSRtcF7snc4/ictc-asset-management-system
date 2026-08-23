@@ -96,9 +96,9 @@ export default function Page() {
     },
   });
 
-  const handleCreateDepartment = (values: CreateDepartmentInput) => {
+  const handleCreateDepartment = async (values: CreateDepartmentInput) => {
     setDeptCreateError(null);
-    createDepartment.mutate(values);
+    await createDepartment.mutateAsync(values);
   };
 
   const updateDepartment = trpc.departmentRouter.update.useMutation({
@@ -114,9 +114,9 @@ export default function Page() {
     },
   });
 
-  const handleUpdateDepartment = (values: CreateDepartmentInput) => {
+  const handleUpdateDepartment = async (values: CreateDepartmentInput) => {
     if (deptEditId === null) return;
-    updateDepartment.mutate({ id: deptEditId, ...values });
+    await updateDepartment.mutateAsync({ id: deptEditId, ...values });
   };
 
   const deleteDepartment = trpc.departmentRouter.delete.useMutation({
