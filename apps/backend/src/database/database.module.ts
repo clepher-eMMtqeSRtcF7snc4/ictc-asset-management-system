@@ -6,11 +6,15 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import * as authSchema from '../auth/schema';
 import * as roomSchema from '../administration/room/schemas/schema';
 import * as roomTypeSchema from '../administration/room-type/schemas/schema';
+import * as departmentSchema from '../administration/department/schemas/schema';
+import * as employeeSchema from '../administration/employee/schemas/schema';
 
 export const schema = {
   ...authSchema,
   ...roomSchema,
   ...roomTypeSchema,
+  ...departmentSchema,
+  ...employeeSchema,
 };
 
 @Module({

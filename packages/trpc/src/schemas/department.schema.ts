@@ -12,8 +12,8 @@ const departmentFieldsSchema = z.object({
     .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
   shortName: z.string().trim().max(50),
   description: z.string().trim().max(500).optional().nullable(),
-  supervisor: z.string().trim().min(1),
-  custodian: z.string().trim().min(1).optional().nullable(),
+  supervisor: z.string().trim().optional().nullable(),
+  custodian: z.string().trim().optional().nullable(),
   logo: z.string().nullable(),
   color: z.string().trim().nullable()
 });
@@ -27,28 +27,39 @@ export const departmentSchema = departmentFieldsSchema.extend({
 
 export const departmentListInputSchema = z
   .object({
-    search: z.string().trim().min(1).max(100).optional(),
+    search: z.string().trim().optional(),
     status: departmentStatusSchema.optional(),
-    type: z.string().trim().min(1).max(100).optional(),
+    page: z.number().int().min(1).optional(),
+    pageSize: z.number().int().min(1).max(100).optional(),
   })
   .default({});
 
-export const departmentListOutputSchema = z.array(departmentSchema);
+export const departmentListOutputSchema = z.object({
+  items: z.array(departmentSchema),
+  total: z.number().int().nonnegative(),
+  page: z.number().int().positive(),
+  pageSize: z.number().int().positive(),
+  totalPages: z.number().int().nonnegative(),
+});
 
 export const createDepartmentInputSchema = departmentFieldsSchema;
 
 export const updateDepartmentInputSchema = departmentFieldsSchema
+  .extend({
+    status: departmentStatusSchema.optional(),
+  })
   .partial()
   .extend({
     id: z.number().int().positive(),
   })
   .refine(
-    ({ name, code, shortName, description, supervisor }) =>
+    ({ name, code, shortName, description, supervisor, status }) =>
       name !== undefined ||
       code !== undefined ||
       shortName !== undefined ||
       description !== undefined ||
-      supervisor !== undefined,
+      supervisor !== undefined ||
+      status !== undefined,
     { message: "Provide at least one field to update" },
   );
 

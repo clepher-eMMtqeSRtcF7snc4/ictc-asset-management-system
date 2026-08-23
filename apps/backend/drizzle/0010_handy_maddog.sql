@@ -1,0 +1,1 @@
+ALTER TABLE "department" ALTER COLUMN "supervisor" DROP NOT NULL;

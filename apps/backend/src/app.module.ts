@@ -16,6 +16,8 @@ import { AuthTrpcMiddleware } from './auth/auth-trpc.middleware';
 import { BuildingModule } from './administration/building/building.module';
 import { RoomModule } from './administration/room/room.module';
 import { RoomTypeModule } from './administration/room-type/room-type.module';
+import { DepartmentModule } from './administration/department/department.module';
+import { EmployeeModule } from './administration/employee/employee.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -44,6 +46,8 @@ import { RoomTypeModule } from './administration/room-type/room-type.module';
     BuildingModule,
     RoomModule,
     RoomTypeModule,
+    DepartmentModule,
+    EmployeeModule,
     UploadModule,
   ],
   controllers: [AppController],
