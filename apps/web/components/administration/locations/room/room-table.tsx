@@ -14,19 +14,16 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MoreHorizontal } from "lucide-react";
 import { roomColumn } from "./room-columns";
-import { Building } from "@repo/trpc/schemas";
-import Link from "next/link";
+import { Room } from "@repo/trpc/schemas";
 
-type BuildingRow = Omit<Building, "createdAt" | "updatedAt">;
-
-interface BuildingTableProps {
-  data: BuildingRow[];
+interface RoomTableProps {
+  data: Room[];
   page: number;
   pageSize: number;
   totalPages: number;
   onPaginationChange: (next: { page: number; pageSize: number }) => void;
-  onEdit: (building: Building) => void;
-  onDelete: (building: Building) => void;
+  onEdit: (room: Room) => void;
+  onDelete: (room: Room) => void;
 }
 
 export function RoomTable({
@@ -37,7 +34,7 @@ export function RoomTable({
   onPaginationChange,
   onEdit,
   onDelete,
-}: BuildingTableProps) {
+}: RoomTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
@@ -47,7 +44,7 @@ export function RoomTable({
         if (column.id === "actions") {
           return {
             ...column,
-            cell: ({ row }: { row: { original: Building } }) => (
+            cell: ({ row }: { row: { original: Room } }) => (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button size="icon-xs" variant="ghost" aria-label={`Actions for ${row.original.name}`}>
@@ -55,9 +52,7 @@ export function RoomTable({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild>
-                    <Link href={`/administration/locations/${row.original.id}?name=${encodeURIComponent(row.original.name)}&desc=${encodeURIComponent(row.original.description ?? "—")}`}>Offices</Link>
-                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onEdit(row.original)}>View Details</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onEdit(row.original)}>Edit</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-destructive" onClick={() => onDelete(row.original)}>
@@ -127,9 +122,9 @@ export function RoomTable({
             ) : (
               <TableRow>
                 <TableCell colSpan={roomColumn.length} className="h-36 text-center">
-                  <p className="font-medium">No building found</p>
+                  <p className="font-medium">No rooms found</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    No building match your current search and filters.
+                    No rooms match your current search and filters.
                   </p>
                 </TableCell>
               </TableRow>

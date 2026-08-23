@@ -5,13 +5,28 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Pencil, Trash2, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Building } from "@repo/trpc/schemas";
+import { Room } from "@repo/trpc/schemas";
 
-
-export const roomColumn: ColumnDef<Building>[] = [
-  { accessorKey: "code", header: "Short Code", cell: ({ row }) => <span className="font-mono text-xs">{row.original.code}</span> },
-  { accessorKey: "name", header: "Name", cell: ({ row }) => <span className="font-medium">{row.original.name}</span> },
-  { accessorKey: "description", header: "Description", cell: ({ row }) => row.original.description || "—" },
+export const roomColumn: ColumnDef<Room>[] = [
+  { accessorKey: "code", header: "Room Code", cell: ({ row }) => <span className="font-mono text-xs">{row.original.code || "—"}</span> },
+  { accessorKey: "name", header: "Room Name", cell: ({ row }) => <span className="font-medium">{row.original.name}</span> },
+  { accessorKey: "floor", header: "Floor", cell: ({ row }) => <span>{row.original.floor}</span> },
+  {
+    accessorKey: "roomTypeId",
+    header: "Room Type",
+    cell: ({ row }) => {
+      const types: Record<number, string> = { 1: "Conference", 2: "Office", 3: "Storage", 4: "Executive", 5: "Training", 6: "Server", 7: "Pantry" };
+      return <span>{types[row.original.roomTypeId] || "Unknown"}</span>;
+    },
+  },
+  {
+    accessorKey: "departmentId",
+    header: "Department",
+    cell: ({ row }) => {
+      const departments: Record<number, string> = { 1: "Administration", 2: "IT", 3: "HR", 4: "Finance", 5: "Executive" };
+      return <span>{row.original.departmentId ? departments[row.original.departmentId] || "—" : "—"}</span>;
+    },
+  },
   {
     accessorKey: "status",
     header: "Status",
@@ -28,7 +43,7 @@ export const roomColumn: ColumnDef<Building>[] = [
   },
 ];
 
-function RowActions({ room }: { room: Building }) {
+function RowActions({ room }: { room: Room }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

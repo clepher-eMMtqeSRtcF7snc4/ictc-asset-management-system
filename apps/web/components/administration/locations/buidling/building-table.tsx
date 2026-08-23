@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreHorizontal } from "lucide-react";
+import { BuildingIcon, MoreHorizontal, Pen, Trash2 } from "lucide-react";
 import { buildingColumn } from "./building-columns";
 import { Building } from "@repo/trpc/schemas";
 import Link from "next/link";
@@ -56,13 +56,12 @@ export function BuildingTable({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild>
-                    {/* <Link href={`/administration/locations/${row.original.id}?name=${encodeURIComponent(row.original.name)}&desc=${encodeURIComponent(row.original.description ?? "—")}`}>Offices</Link> */}
-                    <Link href={{pathname:`/administration/locations/${row.original.id}`, query: {name:row.original.name, desc: row.original.description ?? "—"}}}>Offices</Link>
+                    <Link href={{pathname:`/administration/locations/${row.original.id}`, query: {name:row.original.name, desc: row.original.description ?? "—"}}}><BuildingIcon/> Rooms</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onEdit(row.original)}>Edit</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onEdit(row.original)}><Pen /> Edit</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-destructive" onClick={() => onDelete(row.original)}>
-                    Delete
+                    <Trash2/> Delete
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
