@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Plus } from "lucide-react";
 import Link from "next/link";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { RoomFilters } from "@/components/administration/locations/room/room-filters";
 import { RoomDeleteDialog } from "@/components/administration/locations/room/room-delete-dialog";
 import { RoomDialog } from "@/components/administration/locations/room/room-dialog";
@@ -15,7 +15,8 @@ import { RoomTypeDialog } from "@/components/administration/locations/room-type/
 import { RoomTypeDeleteDialog } from "@/components/administration/locations/room-type/room-type-delete-dialog";
 import { RoomTypeFilters } from "@/components/administration/locations/room-type/room-type-filters";
 import { PageHeader } from "@/components/layout/page-header";
-import { DUMMY_ROOMS, DUMMY_ROOM_TYPES, Room, RoomType, CreateRoomInput, CreateRoomTypeInput } from "@repo/trpc/schemas";
+import { trpc } from "@/lib/trpc/client";
+import { CreateRoomInput, CreateRoomTypeInput, Room, RoomType } from "@repo/trpc/schemas";
 import { toast } from "sonner";
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -27,141 +28,180 @@ export default function Page() {
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState("all");
   const [floor, setFloor] = useState("all");
-  const [rooms, setRooms] = useState<Room[]>(DUMMY_ROOMS);
 
-  const [roomTypes, setRoomTypes] = useState<RoomType[]>(DUMMY_ROOM_TYPES);
   const [roomTypeSearch, setRoomTypeSearch] = useState("");
   const [roomTypePage, setRoomTypePage] = useState(1);
   const [roomTypeCreateOpen, setRoomTypeCreateOpen] = useState(false);
   const [roomTypeEditOpen, setRoomTypeEditOpen] = useState(false);
   const [roomTypeDeleteOpen, setRoomTypeDeleteOpen] = useState(false);
-  const [selectedRoomType, setSelectedRoomType] = useState<RoomType | null>(null);
+  const [selectedRoomTypeId, setSelectedRoomTypeId] = useState<number | null>(null);
   const [roomTypeCreateError, setRoomTypeCreateError] = useState<string | null>(null);
 
-  const buildingId = params.buildingId;
+  const buildingId = Number(params.buildingId);
   const name = searchParams.get("name");
   const description = searchParams.get("desc");
 
   const displayName = name ?? "Building";
   const displayDescription = description ?? "Manage rooms within this building.";
 
-  const filteredRooms = useMemo(() => {
-    return rooms.filter((room) => {
-      const matchesBuilding = room.buildingId === Number(buildingId);
-      const matchesSearch =
-        !search ||
-        room.name.toLowerCase().includes(search.toLowerCase()) ||
-        room.code?.toLowerCase().includes(search.toLowerCase());
-      const matchesStatus = status === "all" || room.status === status;
-      const matchesFloor = floor === "all" || room.floor === floor;
-      return matchesBuilding && matchesSearch && matchesStatus && matchesFloor;
-    });
-  }, [rooms, buildingId, search, status, floor]);
+  const utils = trpc.useUtils();
 
-  const totalPages = Math.max(1, Math.ceil(filteredRooms.length / DEFAULT_PAGE_SIZE));
-  const paginatedRooms = filteredRooms.slice((page - 1) * DEFAULT_PAGE_SIZE, page * DEFAULT_PAGE_SIZE);
+  const roomsQuery = trpc.roomRouter.getRooms.useQuery({
+    buildingId,
+    search: search || undefined,
+    status: status !== "all" ? status as "active" | "inactive" : undefined,
+    floor: floor !== "all" ? floor as "1st floor" | "2nd floor" | "3rd floor" | "4th floor" : undefined,
+    page,
+    pageSize: DEFAULT_PAGE_SIZE,
+  });
 
-  const filteredRoomTypes = useMemo(() => {
-    return roomTypes.filter((roomType) => {
-      const matchesSearch =
-        !roomTypeSearch ||
-        roomType.name.toLowerCase().includes(roomTypeSearch.toLowerCase()) ||
-        roomType.code?.toLowerCase().includes(roomTypeSearch.toLowerCase());
-      return matchesSearch;
-    });
-  }, [roomTypes, roomTypeSearch]);
+  const roomTypesQuery = trpc.roomTypeRouter.getRoomTypes.useQuery({
+    search: roomTypeSearch || undefined,
+    page: roomTypePage,
+    pageSize: DEFAULT_PAGE_SIZE,
+  });
 
-  const roomTypeTotalPages = Math.max(1, Math.ceil(filteredRoomTypes.length / DEFAULT_PAGE_SIZE));
-  const paginatedRoomTypes = filteredRoomTypes.slice((roomTypePage - 1) * DEFAULT_PAGE_SIZE, roomTypePage * DEFAULT_PAGE_SIZE);
+  const createRoomMutation = trpc.roomRouter.create.useMutation({
+    onSuccess: () => {
+      utils.roomRouter.getRooms.invalidate();
+      setCreateError(null);
+      setCreateOpen(false);
+      toast.success("Room created successfully.");
+    },
+    onError: (error) => {
+      setCreateError(error.message ?? "Failed to create room.");
+      toast.error(error.message ?? "Failed to create room.");
+    },
+  });
 
-  const handleCreate = (values: CreateRoomInput) => {
-    const newRoom: Room = {
-      id: rooms.length + 1,
-      ...values,
-      status: "active",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    setRooms((prev) => [...prev, newRoom]);
+  const updateRoomMutation = trpc.roomRouter.update.useMutation({
+    onSuccess: () => {
+      utils.roomRouter.getRooms.invalidate();
+      setEditOpen(false);
+      setSelectedRoomId(null);
+      toast.success("Room updated successfully.");
+    },
+    onError: (error) => {
+      toast.error(error.message ?? "Failed to update room.");
+    },
+  });
+
+  const deleteRoomMutation = trpc.roomRouter.delete.useMutation({
+    onSuccess: () => {
+      utils.roomRouter.getRooms.invalidate();
+      setDeleteOpen(false);
+      setSelectedRoomId(null);
+      toast.success("Room deleted successfully.");
+    },
+    onError: (error) => {
+      toast.error(error.message ?? "Failed to delete room.");
+    },
+  });
+
+  const createRoomTypeMutation = trpc.roomTypeRouter.create.useMutation({
+    onSuccess: () => {
+      utils.roomTypeRouter.getRoomTypes.invalidate();
+      setRoomTypeCreateError(null);
+      setRoomTypeCreateOpen(false);
+      toast.success("Room type created successfully.");
+    },
+    onError: (error) => {
+      setRoomTypeCreateError(error.message ?? "Failed to create room type.");
+      toast.error(error.message ?? "Failed to create room type.");
+    },
+  });
+
+  const updateRoomTypeMutation = trpc.roomTypeRouter.update.useMutation({
+    onSuccess: () => {
+      utils.roomTypeRouter.getRoomTypes.invalidate();
+      setRoomTypeEditOpen(false);
+      setSelectedRoomTypeId(null);
+      toast.success("Room type updated successfully.");
+    },
+    onError: (error) => {
+      toast.error(error.message ?? "Failed to update room type.");
+    },
+  });
+
+  const deleteRoomTypeMutation = trpc.roomTypeRouter.delete.useMutation({
+    onSuccess: () => {
+      utils.roomTypeRouter.getRoomTypes.invalidate();
+      setRoomTypeDeleteOpen(false);
+      setSelectedRoomTypeId(null);
+      toast.success("Room type deleted successfully.");
+    },
+    onError: (error) => {
+      toast.error(error.message ?? "Failed to delete room type.");
+    },
+  });
+
+  const rooms = (roomsQuery.data?.items ?? []).map((r) => ({
+    ...r,
+    createdAt: r.createdAt ? new Date(r.createdAt) : undefined,
+    updatedAt: r.updatedAt ? new Date(r.updatedAt) : undefined,
+  })) as Room[];
+  const roomTotalPages = roomsQuery.data?.totalPages ?? 1;
+  const roomTypes = (roomTypesQuery.data?.items ?? []).map((rt) => ({
+    ...rt,
+  })) as RoomType[];
+  const roomTypeTotalPages = roomTypesQuery.data?.totalPages ?? 1;
+
+  const selectedRoom = rooms.find((r) => r.id === selectedRoomId);
+  const selectedRoomType = roomTypes.find((rt) => rt.id === selectedRoomTypeId);
+
+  const handleCreateRoom = (values: CreateRoomInput) => {
     setCreateError(null);
-    setCreateOpen(false);
-    toast.success("Room created successfully.");
+    createRoomMutation.mutate(values);
   };
 
-  const handleEdit = (room: Room) => {
-    setSelectedRoom(room);
+  const handleEditRoom = (room: { id: number }) => {
+    setSelectedRoomId(room.id);
     setEditOpen(true);
   };
 
-  const handleUpdate = (values: CreateRoomInput) => {
-    if (!selectedRoom) return;
-    setRooms((prev) =>
-      prev.map((r) =>
-        r.id === selectedRoom.id ? { ...r, ...values, updatedAt: new Date() } : r
-      )
-    );
-    setEditOpen(false);
-    setSelectedRoom(null);
-    toast.success("Room updated successfully.");
+  const handleUpdateRoom = (values: CreateRoomInput) => {
+    if (!selectedRoomId) return;
+    updateRoomMutation.mutate({ ...values, id: selectedRoomId } as any);
   };
 
-  const handleDeleteClick = (room: Room) => {
-    setSelectedRoom(room);
+  const handleDeleteRoomClick = (room: { id: number }) => {
+    setSelectedRoomId(room.id);
     setDeleteOpen(true);
   };
 
-  const handleDeleteConfirm = () => {
-    if (!selectedRoom) return;
-    setRooms((prev) => prev.filter((r) => r.id !== selectedRoom.id));
-    setDeleteOpen(false);
-    setSelectedRoom(null);
-    toast.success("Room deleted successfully.");
+  const handleDeleteRoomConfirm = () => {
+    if (!selectedRoomId) return;
+    deleteRoomMutation.mutate({ id: selectedRoomId });
   };
 
-  const handleRoomTypeCreate = (values: CreateRoomTypeInput) => {
-    const newRoomType: RoomType = {
-      id: roomTypes.length + 1,
-      ...values,
-    };
-    setRoomTypes((prev) => [...prev, newRoomType]);
+  const handleCreateRoomType = (values: CreateRoomTypeInput) => {
     setRoomTypeCreateError(null);
-    setRoomTypeCreateOpen(false);
-    toast.success("Room type created successfully.");
+    createRoomTypeMutation.mutate(values);
   };
 
-  const handleRoomTypeEdit = (roomType: RoomType) => {
-    setSelectedRoomType(roomType);
+  const handleEditRoomType = (roomType: { id: number; name: string; code?: string | null }) => {
+    setSelectedRoomTypeId(roomType.id);
     setRoomTypeEditOpen(true);
   };
 
-  const handleRoomTypeUpdate = (values: CreateRoomTypeInput) => {
-    if (!selectedRoomType) return;
-    setRoomTypes((prev) =>
-      prev.map((rt) =>
-        rt.id === selectedRoomType.id ? { ...rt, ...values } : rt
-      )
-    );
-    setRoomTypeEditOpen(false);
-    setSelectedRoomType(null);
-    toast.success("Room type updated successfully.");
+  const handleUpdateRoomType = (values: CreateRoomTypeInput) => {
+    if (!selectedRoomTypeId) return;
+    updateRoomTypeMutation.mutate({ ...values, id: selectedRoomTypeId } as any);
   };
 
-  const handleRoomTypeDeleteClick = (roomType: RoomType) => {
-    setSelectedRoomType(roomType);
+  const handleDeleteRoomTypeClick = (roomType: { id: number }) => {
+    setSelectedRoomTypeId(roomType.id);
     setRoomTypeDeleteOpen(true);
   };
 
-  const handleRoomTypeDeleteConfirm = () => {
-    if (!selectedRoomType) return;
-    setRoomTypes((prev) => prev.filter((rt) => rt.id !== selectedRoomType.id));
-    setRoomTypeDeleteOpen(false);
-    setSelectedRoomType(null);
-    toast.success("Room type deleted successfully.");
+  const handleDeleteRoomTypeConfirm = () => {
+    if (!selectedRoomTypeId) return;
+    deleteRoomTypeMutation.mutate({ id: selectedRoomTypeId });
   };
 
   return (
@@ -216,17 +256,23 @@ export default function Page() {
               setPage(1);
             }}
           />
-          <RoomTable
-            data={paginatedRooms}
-            page={page}
-            pageSize={DEFAULT_PAGE_SIZE}
-            totalPages={totalPages}
-            onPaginationChange={({ page: newPage, pageSize }) => {
-              setPage(newPage);
-            }}
-            onEdit={handleEdit}
-            onDelete={handleDeleteClick}
-          />
+          {roomsQuery.isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <p className="text-muted-foreground">Loading rooms...</p>
+            </div>
+          ) : (
+            <RoomTable
+              data={rooms}
+              page={page}
+              pageSize={DEFAULT_PAGE_SIZE}
+              totalPages={roomTotalPages}
+              onPaginationChange={({ page: newPage }) => {
+                setPage(newPage);
+              }}
+              onEdit={handleEditRoom}
+              onDelete={handleDeleteRoomClick}
+            />
+          )}
         </CardContent>
       </Card>
 
@@ -255,48 +301,62 @@ export default function Page() {
               setRoomTypePage(1);
             }}
           />
-          <RoomTypeTable
-            data={paginatedRoomTypes}
-            page={roomTypePage}
-            pageSize={DEFAULT_PAGE_SIZE}
-            totalPages={roomTypeTotalPages}
-            onPaginationChange={({ page: newPage, pageSize }) => {
-              setRoomTypePage(newPage);
-            }}
-            onEdit={handleRoomTypeEdit}
-            onDelete={handleRoomTypeDeleteClick}
-          />
+          {roomTypesQuery.isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <p className="text-muted-foreground">Loading room types...</p>
+            </div>
+          ) : (
+            <RoomTypeTable
+              data={roomTypes}
+              page={roomTypePage}
+              pageSize={DEFAULT_PAGE_SIZE}
+              totalPages={roomTypeTotalPages}
+              onPaginationChange={({ page: newPage }) => {
+                setRoomTypePage(newPage);
+              }}
+              onEdit={handleEditRoomType}
+              onDelete={handleDeleteRoomTypeClick}
+            />
+          )}
         </CardContent>
       </Card>
 
       <RoomDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
-        onSubmit={handleCreate}
+        onSubmit={handleCreateRoom}
         errorMessage={createError}
         onClearError={() => setCreateError(null)}
         title="Create Room"
+        defaultValues={{ buildingId, floor: "1st floor", roomTypeId: 1, name: "", departmentId: null }}
       />
 
       <RoomDialog
         open={editOpen}
         onOpenChange={setEditOpen}
-        onSubmit={handleUpdate}
-        defaultValues={selectedRoom ?? undefined}
+        onSubmit={handleUpdateRoom}
+        defaultValues={selectedRoom ? {
+          name: selectedRoom.name,
+          code: selectedRoom.code,
+          roomTypeId: selectedRoom.roomTypeId,
+          buildingId: selectedRoom.buildingId,
+          floor: selectedRoom.floor,
+          departmentId: selectedRoom.departmentId,
+        } : undefined}
         title="Edit Room"
       />
 
       <RoomDeleteDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        onConfirm={handleDeleteConfirm}
+        onConfirm={handleDeleteRoomConfirm}
         roomName={selectedRoom?.name ?? ""}
       />
 
       <RoomTypeDialog
         open={roomTypeCreateOpen}
         onOpenChange={setRoomTypeCreateOpen}
-        onSubmit={handleRoomTypeCreate}
+        onSubmit={handleCreateRoomType}
         errorMessage={roomTypeCreateError}
         onClearError={() => setRoomTypeCreateError(null)}
         title="Create Room Type"
@@ -305,15 +365,18 @@ export default function Page() {
       <RoomTypeDialog
         open={roomTypeEditOpen}
         onOpenChange={setRoomTypeEditOpen}
-        onSubmit={handleRoomTypeUpdate}
-        defaultValues={selectedRoomType ?? undefined}
+        onSubmit={handleUpdateRoomType}
+        defaultValues={selectedRoomType ? {
+          name: selectedRoomType.name,
+          code: selectedRoomType.code,
+        } : undefined}
         title="Edit Room Type"
       />
 
       <RoomTypeDeleteDialog
         open={roomTypeDeleteOpen}
         onOpenChange={setRoomTypeDeleteOpen}
-        onConfirm={handleRoomTypeDeleteConfirm}
+        onConfirm={handleDeleteRoomTypeConfirm}
         roomTypeName={selectedRoomType?.name ?? ""}
       />
     </div>

@@ -7,12 +7,12 @@ import {
 import { DATABASE_CONNECTION } from '../../database/database-connection';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres/driver';
 import { schema } from '../../database/database.module';
-import { CreateBuildingInput, UpdateBuildingInput } from '@repo/trpc/schemas';
+import { CreateRoomTypeInput, UpdateRoomTypeInput } from '@repo/trpc/schemas';
 import { and, asc, count, eq, ilike, or, type SQL } from 'drizzle-orm';
-import { building } from './schemas/schema';
+import { roomType } from './schemas/schema';
 
 @Injectable()
-export class BuildingService {
+export class RoomTypeService {
   constructor(
     @Inject(DATABASE_CONNECTION)
     private readonly database: NodePgDatabase<typeof schema>,
@@ -21,33 +21,24 @@ export class BuildingService {
   async findById(id: number) {
     const [result] = await this.database
       .select()
-      .from(building)
-      .where(eq(building.id, id))
+      .from(roomType)
+      .where(eq(roomType.id, id))
       .limit(1);
 
     if (!result) {
-      throw new NotFoundException(`Building with id ${id} not found`);
+      throw new NotFoundException(`Room type with id ${id} not found`);
     }
 
     return result;
   }
 
-  async findAll(input?: {
-    search?: string;
-    status?: 'active' | 'inactive';
-    page?: number;
-    pageSize?: number;
-  }) {
+  async findAll(input?: { search?: string; page?: number; pageSize?: number }) {
     const page = input?.page ?? 1;
     const pageSize = input?.pageSize ?? 10;
     const conditions: SQL[] = [];
 
     if (input?.search) {
-      conditions.push(ilike(building.name, `%${input.search}%`));
-    }
-
-    if (input?.status) {
-      conditions.push(eq(building.status, input.status));
+      conditions.push(ilike(roomType.name, `%${input.search}%`));
     }
 
     const where = conditions.length ? and(...conditions) : undefined;
@@ -55,12 +46,12 @@ export class BuildingService {
     const [items, totals] = await Promise.all([
       this.database
         .select()
-        .from(building)
+        .from(roomType)
         .where(where)
-        .orderBy(asc(building.name))
+        .orderBy(asc(roomType.name))
         .limit(pageSize)
         .offset((page - 1) * pageSize),
-      this.database.select({ total: count() }).from(building).where(where),
+      this.database.select({ total: count() }).from(roomType).where(where),
     ]);
 
     const total = totals[0]?.total ?? 0;
@@ -69,45 +60,39 @@ export class BuildingService {
     return { items, total, page, pageSize, totalPages };
   }
 
-  async update(input: UpdateBuildingInput) {
+  async update(input: UpdateRoomTypeInput) {
     await this.database
-      .update(building)
+      .update(roomType)
       .set({
         ...(input.name !== undefined ? { name: input.name } : {}),
         ...(input.code !== undefined ? { code: input.code } : {}),
-        ...(input.status !== undefined ? { status: input.status } : {}),
-        ...(input.description !== undefined
-          ? { description: input.description }
-          : {}),
       })
-      .where(eq(building.id, input.id));
+      .where(eq(roomType.id, input.id));
   }
 
   async delete(id: number) {
-    await this.database.delete(building).where(eq(building.id, id));
+    await this.database.delete(roomType).where(eq(roomType.id, id));
   }
 
-  async create(createBuildingInput: CreateBuildingInput) {
+  async create(createRoomTypeInput: CreateRoomTypeInput) {
     const [existing] = await this.database
-      .select({ id: building.id })
-      .from(building)
+      .select({ id: roomType.id })
+      .from(roomType)
       .where(
         or(
-          eq(building.name, createBuildingInput.name),
-          eq(building.code, createBuildingInput.code),
+          eq(roomType.name, createRoomTypeInput.name),
+          eq(roomType.code, createRoomTypeInput.code ?? ''),
         ),
       )
       .limit(1);
 
     if (existing) {
-      throw new ConflictException('Building already exists');
+      throw new ConflictException('Room type already exists');
     }
 
-    await this.database.insert(building).values({
-      name: createBuildingInput.name,
-      code: createBuildingInput.code,
-      status: createBuildingInput.status,
-      description: createBuildingInput.description,
+    await this.database.insert(roomType).values({
+      name: createRoomTypeInput.name,
+      code: createRoomTypeInput.code,
       createdAt: new Date(),
     });
   }

@@ -50,6 +50,13 @@
       "when": 1787102762943,
       "tag": "0006_mushy_serpent_society",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1787453656418,
+      "tag": "0007_big_reaper",
+      "breakpoints": true
     }
   ]
 }

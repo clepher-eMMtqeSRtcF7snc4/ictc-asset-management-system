@@ -4,9 +4,13 @@ import { DATABASE_CONNECTION } from './database-connection';
 import { Pool } from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import * as authSchema from '../auth/schema';
+import * as roomSchema from '../administration/room/schemas/schema';
+import * as roomTypeSchema from '../administration/room-type/schemas/schema';
 
 export const schema = {
   ...authSchema,
+  ...roomSchema,
+  ...roomTypeSchema,
 };
 
 @Module({
