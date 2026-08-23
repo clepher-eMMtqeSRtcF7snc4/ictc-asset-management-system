@@ -24,30 +24,5 @@ export const buildingColumn: ColumnDef<Building>[] = [
   {
     id: "actions",
     header: "Actions",
-    cell: ({ row }) => <RowActions room={row.original} />,
   },
 ];
-
-function RowActions({ room }: { room: Building }) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button size="icon-xs" variant="ghost" aria-label={`Actions for ${room.name}`}>
-          <MoreHorizontal />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem>
-          <Eye /> View
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Pencil /> Edit
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-destructive">
-          <Trash2 /> Delete
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}

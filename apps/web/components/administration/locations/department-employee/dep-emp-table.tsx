@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MoreHorizontal, Pen, Trash2, UserRound, UsersRoundIcon } from "lucide-react";
-import { departmentColumns } from "./department-columns";
+import { depEmpColumns } from "./dep-emp-columns";
 import { Department } from "@repo/trpc/schemas";
 import Link from "next/link";
 
@@ -45,7 +45,7 @@ export function DepartmentTable({
 
   const columns = useMemo(
     () =>
-      departmentColumns.map((column) => {
+      depEmpColumns.map((column) => {
         if (column.id === "actions") {
           return {
             ...column,
@@ -57,10 +57,8 @@ export function DepartmentTable({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild>
-                    <Link href={{pathname:`/administration/locations/departments/${row.original.id}`, query:{dept:row.original.name, desc:row.original.description ?? "—"}}}>
-                      <UsersRoundIcon/> Employees
-                    </Link>
+                   <DropdownMenuItem asChild>
+                    <Link href={{pathname:`/administration/departments/${row.original.id}`, query: {name:row.original.name, desc: row.original.description ?? "—"}}}><UsersRoundIcon/> Employees</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onAssignHead(row.original)}>
                     <UserRound/> Assign Head
@@ -138,7 +136,7 @@ export function DepartmentTable({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={departmentColumns.length} className="h-36 text-center">
+                <TableCell colSpan={depEmpColumns.length} className="h-36 text-center">
                   <p className="font-medium">No departments found</p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     No departments match your current search.
