@@ -10,8 +10,12 @@ import { RoomFilters } from "@/components/administration/locations/room/room-fil
 import { RoomDeleteDialog } from "@/components/administration/locations/room/room-delete-dialog";
 import { RoomDialog } from "@/components/administration/locations/room/room-dialog";
 import { RoomTable } from "@/components/administration/locations/room/room-table";
+import { RoomTypeTable } from "@/components/administration/locations/room-type/room-type-table";
+import { RoomTypeDialog } from "@/components/administration/locations/room-type/room-type-dialog";
+import { RoomTypeDeleteDialog } from "@/components/administration/locations/room-type/room-type-delete-dialog";
+import { RoomTypeFilters } from "@/components/administration/locations/room-type/room-type-filters";
 import { PageHeader } from "@/components/layout/page-header";
-import { DUMMY_ROOMS, Room, CreateRoomInput } from "@repo/trpc/schemas";
+import { DUMMY_ROOMS, DUMMY_ROOM_TYPES, Room, RoomType, CreateRoomInput, CreateRoomTypeInput } from "@repo/trpc/schemas";
 import { toast } from "sonner";
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -29,6 +33,15 @@ export default function Page() {
   const [status, setStatus] = useState("all");
   const [floor, setFloor] = useState("all");
   const [rooms, setRooms] = useState<Room[]>(DUMMY_ROOMS);
+
+  const [roomTypes, setRoomTypes] = useState<RoomType[]>(DUMMY_ROOM_TYPES);
+  const [roomTypeSearch, setRoomTypeSearch] = useState("");
+  const [roomTypePage, setRoomTypePage] = useState(1);
+  const [roomTypeCreateOpen, setRoomTypeCreateOpen] = useState(false);
+  const [roomTypeEditOpen, setRoomTypeEditOpen] = useState(false);
+  const [roomTypeDeleteOpen, setRoomTypeDeleteOpen] = useState(false);
+  const [selectedRoomType, setSelectedRoomType] = useState<RoomType | null>(null);
+  const [roomTypeCreateError, setRoomTypeCreateError] = useState<string | null>(null);
 
   const buildingId = params.buildingId;
   const name = searchParams.get("name");
@@ -52,6 +65,19 @@ export default function Page() {
 
   const totalPages = Math.max(1, Math.ceil(filteredRooms.length / DEFAULT_PAGE_SIZE));
   const paginatedRooms = filteredRooms.slice((page - 1) * DEFAULT_PAGE_SIZE, page * DEFAULT_PAGE_SIZE);
+
+  const filteredRoomTypes = useMemo(() => {
+    return roomTypes.filter((roomType) => {
+      const matchesSearch =
+        !roomTypeSearch ||
+        roomType.name.toLowerCase().includes(roomTypeSearch.toLowerCase()) ||
+        roomType.code?.toLowerCase().includes(roomTypeSearch.toLowerCase());
+      return matchesSearch;
+    });
+  }, [roomTypes, roomTypeSearch]);
+
+  const roomTypeTotalPages = Math.max(1, Math.ceil(filteredRoomTypes.length / DEFAULT_PAGE_SIZE));
+  const paginatedRoomTypes = filteredRoomTypes.slice((roomTypePage - 1) * DEFAULT_PAGE_SIZE, roomTypePage * DEFAULT_PAGE_SIZE);
 
   const handleCreate = (values: CreateRoomInput) => {
     const newRoom: Room = {
@@ -95,6 +121,47 @@ export default function Page() {
     setDeleteOpen(false);
     setSelectedRoom(null);
     toast.success("Room deleted successfully.");
+  };
+
+  const handleRoomTypeCreate = (values: CreateRoomTypeInput) => {
+    const newRoomType: RoomType = {
+      id: roomTypes.length + 1,
+      ...values,
+    };
+    setRoomTypes((prev) => [...prev, newRoomType]);
+    setRoomTypeCreateError(null);
+    setRoomTypeCreateOpen(false);
+    toast.success("Room type created successfully.");
+  };
+
+  const handleRoomTypeEdit = (roomType: RoomType) => {
+    setSelectedRoomType(roomType);
+    setRoomTypeEditOpen(true);
+  };
+
+  const handleRoomTypeUpdate = (values: CreateRoomTypeInput) => {
+    if (!selectedRoomType) return;
+    setRoomTypes((prev) =>
+      prev.map((rt) =>
+        rt.id === selectedRoomType.id ? { ...rt, ...values } : rt
+      )
+    );
+    setRoomTypeEditOpen(false);
+    setSelectedRoomType(null);
+    toast.success("Room type updated successfully.");
+  };
+
+  const handleRoomTypeDeleteClick = (roomType: RoomType) => {
+    setSelectedRoomType(roomType);
+    setRoomTypeDeleteOpen(true);
+  };
+
+  const handleRoomTypeDeleteConfirm = () => {
+    if (!selectedRoomType) return;
+    setRoomTypes((prev) => prev.filter((rt) => rt.id !== selectedRoomType.id));
+    setRoomTypeDeleteOpen(false);
+    setSelectedRoomType(null);
+    toast.success("Room type deleted successfully.");
   };
 
   return (
@@ -163,6 +230,45 @@ export default function Page() {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between gap-4">
+          <div>
+            <CardTitle>Room Types</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Manage categories and classifications for rooms.
+            </p>
+          </div>
+          <div>
+            <Button className="ml-1.5" onClick={() => {
+              setRoomTypeCreateError(null);
+              setRoomTypeCreateOpen(true);
+            }}>
+              <Plus /> Create Room Type
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4 overflow-y-auto">
+          <RoomTypeFilters
+            search={roomTypeSearch}
+            onSearchChange={(value) => {
+              setRoomTypeSearch(value);
+              setRoomTypePage(1);
+            }}
+          />
+          <RoomTypeTable
+            data={paginatedRoomTypes}
+            page={roomTypePage}
+            pageSize={DEFAULT_PAGE_SIZE}
+            totalPages={roomTypeTotalPages}
+            onPaginationChange={({ page: newPage, pageSize }) => {
+              setRoomTypePage(newPage);
+            }}
+            onEdit={handleRoomTypeEdit}
+            onDelete={handleRoomTypeDeleteClick}
+          />
+        </CardContent>
+      </Card>
+
       <RoomDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
@@ -185,6 +291,30 @@ export default function Page() {
         onOpenChange={setDeleteOpen}
         onConfirm={handleDeleteConfirm}
         roomName={selectedRoom?.name ?? ""}
+      />
+
+      <RoomTypeDialog
+        open={roomTypeCreateOpen}
+        onOpenChange={setRoomTypeCreateOpen}
+        onSubmit={handleRoomTypeCreate}
+        errorMessage={roomTypeCreateError}
+        onClearError={() => setRoomTypeCreateError(null)}
+        title="Create Room Type"
+      />
+
+      <RoomTypeDialog
+        open={roomTypeEditOpen}
+        onOpenChange={setRoomTypeEditOpen}
+        onSubmit={handleRoomTypeUpdate}
+        defaultValues={selectedRoomType ?? undefined}
+        title="Edit Room Type"
+      />
+
+      <RoomTypeDeleteDialog
+        open={roomTypeDeleteOpen}
+        onOpenChange={setRoomTypeDeleteOpen}
+        onConfirm={handleRoomTypeDeleteConfirm}
+        roomTypeName={selectedRoomType?.name ?? ""}
       />
     </div>
   );

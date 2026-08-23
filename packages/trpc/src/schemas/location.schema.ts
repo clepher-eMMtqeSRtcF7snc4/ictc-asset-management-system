@@ -161,3 +161,13 @@ export const DUMMY_ROOMS: Room[] = [
   { id: 14, name: "Meeting Room 2", code: "MR-02", roomTypeId: 1, buildingId: 1, floor: "2nd floor", departmentId: 4, status: "inactive", createdAt: new Date("2024-03-10"), updatedAt: new Date("2024-07-25") },
   { id: 15, name: "Archives", code: "ARC-01", roomTypeId: 3, buildingId: 1, floor: "4th floor", departmentId: null, status: "active", createdAt: new Date("2024-04-05"), updatedAt: new Date("2024-08-15") },
 ];
+
+export const DUMMY_ROOM_TYPES: RoomType[] = [
+  { id: 1, name: "Conference", code: "CONF" },
+  { id: 2, name: "Office", code: "OFF" },
+  { id: 3, name: "Storage", code: "STOR" },
+  { id: 4, name: "Executive", code: "EXEC" },
+  { id: 5, name: "Training", code: "TRAIN" },
+  { id: 6, name: "Server", code: "SRV" },
+  { id: 7, name: "Pantry", code: "PTRY" },
+];
