@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { CreateDepartmentInput, createDepartmentInputSchema } from "@repo/trpc/schemas";
 
@@ -39,7 +40,6 @@ export function DepartmentDialog({
     defaultValues: defaultValues ?? {
       name: "",
       code: "",
-      shortName: "",
       description: "",
       supervisor: null,
       custodian: null,
@@ -122,40 +122,18 @@ export function DepartmentDialog({
             />
 
             <Controller
-              name="shortName"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-shortName">Short Name</FieldLabel>
-                  <Input
-                    {...field}
-                    value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    id="form-shortName"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Enter short name"
-                    autoComplete="off"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
               name="description"
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="form-description">Description</FieldLabel>
-                  <Input
+                  <Textarea
                     {...field}
                     value={field.value ?? ""}
                     onChange={(e) => field.onChange(e.target.value)}
                     id="form-description"
                     aria-invalid={fieldState.invalid}
-                    placeholder="Enter description"
+                    placeholder="Enter department description"
                     autoComplete="off"
                   />
                   {fieldState.invalid && (
@@ -171,15 +149,23 @@ export function DepartmentDialog({
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="form-color">Color</FieldLabel>
-                  <Input
-                    {...field}
-                    value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    id="form-color"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="e.g. #16a34a"
-                    autoComplete="off"
-                  />
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      {...field}
+                      value={field.value ?? "#000000"}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      id="form-color"
+                      className="size-9 cursor-pointer rounded-md border border-input bg-transparent p-1"
+                    />
+                    <Input
+                      value={field.value ?? ""}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      placeholder="#16a34a"
+                      autoComplete="off"
+                      className="flex-1"
+                    />
+                  </div>
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}

@@ -87,9 +87,6 @@ export class DepartmentService {
       .set({
         ...(input.name !== undefined ? { name: input.name } : {}),
         ...(input.code !== undefined ? { code: input.code } : {}),
-        ...(input.shortName !== undefined
-          ? { shortName: input.shortName }
-          : {}),
         ...(input.description !== undefined
           ? { description: input.description }
           : {}),
@@ -129,7 +126,6 @@ export class DepartmentService {
     await this.database.insert(department).values({
       name: createDepartmentInput.name,
       code: createDepartmentInput.code,
-      shortName: createDepartmentInput.shortName ?? null,
       description: createDepartmentInput.description ?? null,
       supervisor: createDepartmentInput.supervisor,
       custodian: createDepartmentInput.custodian ?? null,

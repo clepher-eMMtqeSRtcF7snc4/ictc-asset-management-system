@@ -10,7 +10,6 @@ const departmentFieldsSchema = z.object({
     .min(1, "This field is required")
     .max(50)
     .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
-  shortName: z.string().trim().max(50),
   description: z.string().trim().max(500).optional().nullable(),
   supervisor: z.string().trim().optional().nullable(),
   custodian: z.string().trim().optional().nullable(),
@@ -53,10 +52,9 @@ export const updateDepartmentInputSchema = departmentFieldsSchema
     id: z.number().int().positive(),
   })
   .refine(
-    ({ name, code, shortName, description, supervisor, status }) =>
+    ({ name, code, description, supervisor, status }) =>
       name !== undefined ||
       code !== undefined ||
-      shortName !== undefined ||
       description !== undefined ||
       supervisor !== undefined ||
       status !== undefined,

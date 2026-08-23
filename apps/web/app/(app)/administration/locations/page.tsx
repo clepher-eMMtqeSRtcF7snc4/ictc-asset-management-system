@@ -74,7 +74,6 @@ export default function Page() {
       ? {
           code: dept.code,
           name: dept.name,
-          shortName: dept.shortName || "",
           description: dept.description || "",
           supervisor: dept.supervisor,
           custodian: dept.custodian || "",

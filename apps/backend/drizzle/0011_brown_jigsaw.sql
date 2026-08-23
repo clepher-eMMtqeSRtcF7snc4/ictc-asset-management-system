@@ -1,0 +1,1 @@
+ALTER TABLE "department" DROP COLUMN "short_name";
