@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CreateEmployeeInput, createEmployeeInputSchema } from "@repo/trpc/schemas";
-import { useEffect as useEffectReact } from "react";
+import FileUploadArea from "@/components/ui/file-upload-area";
+import { getImageUrl } from "@/lib/image";
+import Image from "next/image";
+import { X } from "lucide-react";
 
 interface EmployeeDialogProps {
   open: boolean;
@@ -44,6 +47,9 @@ export function EmployeeDialog({
   onClearError,
   departments,
 }: EmployeeDialogProps) {
+  const [uploading, setUploading] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const form = useForm<CreateEmployeeInput>({
     resolver: zodResolver(createEmployeeInputSchema),
     defaultValues: defaultValues ?? {
@@ -60,18 +66,74 @@ export function EmployeeDialog({
     },
   });
 
-  useEffectReact(() => {
+  useEffect(() => {
     if (open && defaultValues) {
       form.reset(defaultValues);
+      if (defaultValues.photo) {
+        setPhotoPreview(getImageUrl(defaultValues.photo));
+      } else {
+        setPhotoPreview(null);
+      }
     }
   }, [open, defaultValues, form]);
 
-  useEffectReact(() => {
+  useEffect(() => {
     const subscription = form.watch(() => {
       if (errorMessage) onClearError?.();
     });
     return () => subscription.unsubscribe();
   }, [form, errorMessage, onClearError]);
+
+  const handleFileSelect = (file: File) => {
+    if (file && file.type.startsWith("image/")) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPhotoPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedFile(null);
+    setPhotoPreview(null);
+    form.setValue("photo", null);
+  };
+
+  const handleSubmitWithUpload = async (values: CreateEmployeeInput) => {
+    let photoFilename = values.photo;
+
+    if (selectedFile) {
+      setUploading(true);
+      try {
+        const formData = new FormData();
+        formData.append("image", selectedFile);
+
+        const uploadResponse = await fetch("/api/upload/image", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error("Failed to upload image");
+        }
+
+        const { filename } = await uploadResponse.json();
+        photoFilename = filename;
+      } catch (error) {
+        console.error("Upload error:", error);
+        return;
+      } finally {
+        setUploading(false);
+      }
+    }
+
+    await onSubmit({
+      ...values,
+      photo: photoFilename,
+    });
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -87,7 +149,7 @@ export function EmployeeDialog({
             {errorMessage}
           </p>
         )}
-        <form id="employee-form" className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
+        <form id="employee-form" className="grid gap-4" onSubmit={form.handleSubmit(handleSubmitWithUpload)}>
           <FieldGroup>
             <Controller
               name="firstName"
@@ -229,27 +291,41 @@ export function EmployeeDialog({
             />
 
             <Controller
-              name="role"
+              name="photo"
               control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-role">Role</FieldLabel>
-                  <Select
-                    value={field.value ?? ""}
-                    onValueChange={(value) => field.onChange(value || null)}
-                  >
-                    <SelectTrigger id="form-role" className="w-full">
-                      <SelectValue placeholder="Select role (optional)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="supervisor">Supervisor</SelectItem>
-                      <SelectItem value="custodian">Custodian</SelectItem>
-                      <SelectItem value="staff">Staff</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
+              render={() => (
+                <Field>
+                  <FieldLabel>Photo</FieldLabel>
+                  <div className="mt-2">
+                    {photoPreview ? (
+                      <div className="relative inline-block">
+                        <Image
+                          src={photoPreview}
+                          unoptimized
+                          alt="Employee photo preview"
+                          width={96}
+                          height={96}
+                          className="size-24 rounded-md object-cover border"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon-xs"
+                          className="absolute -top-2 -right-2"
+                          onClick={clearSelection}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <FileUploadArea onFileSelect={handleFileSelect} />
+                    )}
+                    {uploading && (
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        Uploading...
+                      </p>
+                    )}
+                  </div>
                 </Field>
               )}
             />
@@ -263,7 +339,9 @@ export function EmployeeDialog({
             >
               Close
             </Button>
-            <Button type="submit">Save</Button>
+            <Button type="submit" disabled={uploading || form.formState.isSubmitting}>
+              {uploading || form.formState.isSubmitting ? "Saving..." : "Save"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

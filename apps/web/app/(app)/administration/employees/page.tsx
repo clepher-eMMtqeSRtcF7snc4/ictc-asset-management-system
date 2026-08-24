@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useSearchParams } from "next/navigation";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmployeeFilters } from "@/components/administration/employees/employee-filters";
 import { EmployeeTable } from "@/components/administration/employees/employee-table";
 import { EmployeeDialog } from "@/components/administration/employees/employee-dialog";
@@ -31,6 +32,7 @@ export default function Page() {
   const [editId, setEditId] = useState<number | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("employees");
 
   const departmentsQuery = trpc.departmentRouter.getDepartments.useQuery(
     { page: 1, pageSize: 100 },
@@ -160,105 +162,126 @@ export default function Page() {
         </p>
       </div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between gap-4">
-          <div>
-            <CardTitle>All Employees</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              View and manage employee records.
-            </p>
-          </div>
-          <Button onClick={() => {
-            setCreateError(null);
-            setCreateOpen(true);
-          }}>
-            <Plus /> Create Employee
-          </Button>
-        </CardHeader>
-        <CardContent className="space-y-4 overflow-y-auto">
-          <EmployeeFilters
-            search={search}
-            onSearchChange={(value) => {
-              setSearch(value);
-              setPage(1);
-            }}
-            departmentId={departmentId}
-            onDepartmentIdChange={(value) => {
-              setDepartmentId(value);
-              setPage(1);
-            }}
-            departments={departments.map(d => ({ id: d.id, name: d.name }))}
-            position={position}
-            onPositionChange={(value) => {
-              setPosition(value);
-              setPage(1);
-            }}
-            designation={designation}
-            onDesignationChange={(value) => {
-              setDesignation(value);
-              setPage(1);
-            }}
-            status={status}
-            onStatusChange={(value) => {
-              setStatus(value);
-              setPage(1);
-            }}
-          />
-          {employeesQuery.isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <p className="text-muted-foreground">Loading employees...</p>
-            </div>
-          ) : (
-            <EmployeeTable
-              data={enrichedEmployees}
-              page={page}
-              pageSize={pageSize}
-              totalPages={totalPages}
-              onPaginationChange={(next) => {
-                setPage(next.page);
-                setPageSize(next.pageSize);
-              }}
-              onEdit={(emp) => {
-                setEditId(emp.id);
-                setEditOpen(true);
-              }}
-              onDelete={(emp) => {
-                setSelectedEmployee(emp);
-                setDeleteOpen(true);
-              }}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList variant="line">
+          <TabsTrigger value="employees">Employees</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
+        </TabsList>
+        <TabsContent value="employees" className="mt-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between gap-4">
+              <div>
+                <CardTitle>All Employees</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  View and manage employee records.
+                </p>
+              </div>
+              <Button onClick={() => {
+                setCreateError(null);
+                setCreateOpen(true);
+              }}>
+                <Plus /> Create Employee
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4 overflow-y-auto">
+              <EmployeeFilters
+                search={search}
+                onSearchChange={(value) => {
+                  setSearch(value);
+                  setPage(1);
+                }}
+                departmentId={departmentId}
+                onDepartmentIdChange={(value) => {
+                  setDepartmentId(value);
+                  setPage(1);
+                }}
+                departments={departments.map(d => ({ id: d.id, name: d.name }))}
+                position={position}
+                onPositionChange={(value) => {
+                  setPosition(value);
+                  setPage(1);
+                }}
+                designation={designation}
+                onDesignationChange={(value) => {
+                  setDesignation(value);
+                  setPage(1);
+                }}
+                status={status}
+                onStatusChange={(value) => {
+                  setStatus(value);
+                  setPage(1);
+                }}
+              />
+              {employeesQuery.isLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <p className="text-muted-foreground">Loading employees...</p>
+                </div>
+              ) : (
+                <EmployeeTable
+                  data={enrichedEmployees}
+                  page={page}
+                  pageSize={pageSize}
+                  totalPages={totalPages}
+                  onPaginationChange={(next) => {
+                    setPage(next.page);
+                    setPageSize(next.pageSize);
+                  }}
+                  onEdit={(emp) => {
+                    setEditId(emp.id);
+                    setEditOpen(true);
+                  }}
+                  onDelete={(emp) => {
+                    setSelectedEmployee(emp);
+                    setDeleteOpen(true);
+                  }}
+                />
+              )}
+            </CardContent>
+
+            <EmployeeDialog
+              open={createOpen}
+              onOpenChange={setCreateOpen}
+              onSubmit={handleCreateEmployee}
+              errorMessage={createError}
+              onClearError={() => setCreateError(null)}
+              title="Create Employee"
+              departments={departments.map(d => ({ id: d.id, name: d.name }))}
             />
-          )}
-        </CardContent>
 
-        <EmployeeDialog
-          open={createOpen}
-          onOpenChange={setCreateOpen}
-          onSubmit={handleCreateEmployee}
-          errorMessage={createError}
-          onClearError={() => setCreateError(null)}
-          title="Create Employee"
-          departments={departments.map(d => ({ id: d.id, name: d.name }))}
-        />
+            <EmployeeDialog
+              open={editOpen}
+              onOpenChange={(open) => {
+                setEditOpen(open);
+                if (!open) setEditId(null);
+              }}
+              onSubmit={handleUpdateEmployee}
+              defaultValues={editDefaults}
+              title="Edit Employee"
+              departments={departments.map(d => ({ id: d.id, name: d.name }))}
+            />
 
-        <EmployeeDialog
-          open={editOpen}
-          onOpenChange={(open) => {
-            setEditOpen(open);
-            if (!open) setEditId(null);
-          }}
-          onSubmit={handleUpdateEmployee}
-          defaultValues={editDefaults}
-          title="Edit Employee"
-          departments={departments.map(d => ({ id: d.id, name: d.name }))}
-        />
-
-        <EmployeeDeleteDialog
-          open={deleteOpen}
-          onOpenChange={setDeleteOpen}
-          onConfirm={handleDeleteEmployee}
-          employeeName={`${selectedEmployee?.firstName ?? ""} ${selectedEmployee?.lastName ?? ""}`}
-        />
-      </Card>
+            <EmployeeDeleteDialog
+              open={deleteOpen}
+              onOpenChange={setDeleteOpen}
+              onConfirm={handleDeleteEmployee}
+              employeeName={`${selectedEmployee?.firstName ?? ""} ${selectedEmployee?.lastName ?? ""}`}
+            />
+          </Card>
+        </TabsContent>
+        <TabsContent value="settings" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Settings</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Employee settings and preferences.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">Settings content coming soon.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
