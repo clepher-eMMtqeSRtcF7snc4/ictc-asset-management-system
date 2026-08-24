@@ -6,15 +6,25 @@ import {
   integer,
   text,
 } from 'drizzle-orm/pg-core';
-import { pgTable, primaryKey } from 'drizzle-orm/pg-core';
+import { pgTable } from 'drizzle-orm/pg-core';
 import { department } from '../../department/schemas/schema';
 import { position } from '../../position/schemas/schema';
 import { designation } from '../../designation/schemas/schema';
 
 export const employeeStatusEnum = pgEnum('employee_status', [
   'active',
+  'casual',
+  'contractual',
+  'deceased',
+  'end-of-contract',
   'inactive',
-  'retire',
+  'on-leave',
+  'permanent',
+  'probationary',
+  'retired',
+  'suspended',
+  'temporary',
+  'terminated',
 ]);
 
 export const employee = pgTable('employee', {

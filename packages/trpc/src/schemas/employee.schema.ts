@@ -2,8 +2,18 @@ import { z } from 'zod';
 
 export const employeeStatusSchema = z.enum([
   'active',
+  'casual',
+  'contractual',
+  'deceased',
+  'end-of-contract',
   'inactive',
-  'retire',
+  'on-leave',
+  'permanent',
+  'probationary',
+  'retired',
+  'suspended',
+  'temporary',
+  'terminated',
 ]);
 
 export const employeeFieldsSchema = z.object({

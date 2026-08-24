@@ -25,6 +25,7 @@ import FileUploadArea from "@/components/ui/file-upload-area";
 import { getImageUrl } from "@/lib/image";
 import Image from "next/image";
 import { X } from "lucide-react";
+import { trpc } from "@/lib/trpc/client";
 
 interface EmployeeDialogProps {
   open: boolean;
@@ -50,6 +51,20 @@ export function EmployeeDialog({
   const [uploading, setUploading] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const positionsQuery = trpc.positionRouter.getPositions.useQuery(
+    { status: "active", pageSize: 100 },
+    { enabled: open }
+  );
+
+  const designationsQuery = trpc.designationRouter.getDesignations.useQuery(
+    { status: "active", pageSize: 100 },
+    { enabled: open }
+  );
+
+  const positions = positionsQuery.data?.items ?? [];
+  const designations = designationsQuery.data?.items ?? [];
+
   const form = useForm<CreateEmployeeInput>({
     resolver: zodResolver(createEmployeeInputSchema),
     defaultValues: defaultValues ?? {
@@ -151,9 +166,11 @@ export function EmployeeDialog({
     });
   };
 
+  const isEdit = Boolean(defaultValues);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
@@ -165,189 +182,279 @@ export function EmployeeDialog({
             {errorMessage}
           </p>
         )}
-        <form id="employee-form" className="grid gap-4" onSubmit={form.handleSubmit(handleSubmitWithUpload)}>
-          <FieldGroup>
-            <Controller
-              name="firstName"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-firstName">First Name</FieldLabel>
-                  <Input
-                    {...field}
-                    value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    id="form-firstName"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Enter first name"
-                    autoComplete="off"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
+        <form id="employee-form" className="grid gap-6" onSubmit={form.handleSubmit(handleSubmitWithUpload)}>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {/* Left Column: Personal & Job Info */}
+            <FieldGroup className="space-y-2">
+              <Controller
+                name="firstName"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="form-firstName">First Name</FieldLabel>
+                    <Input
+                      {...field}
+                      value={field.value ?? ""}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      id="form-firstName"
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Enter first name"
+                      autoComplete="off"
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
 
-            <Controller
-              name="lastName"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-lastName">Last Name</FieldLabel>
-                  <Input
-                    {...field}
-                    value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    id="form-lastName"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Enter last name"
-                    autoComplete="off"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
+              <Controller
+                name="middleName"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="form-middleName">Middle Name (Optional)</FieldLabel>
+                    <Input
+                      {...field}
+                      value={field.value ?? ""}
+                      onChange={(e) => field.onChange(e.target.value || null)}
+                      id="form-middleName"
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Enter middle name"
+                      autoComplete="off"
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
 
-            <Controller
-              name="email"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-email">Email</FieldLabel>
-                  <Input
-                    {...field}
-                    value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    id="form-email"
-                    type="email"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Enter email address"
-                    autoComplete="off"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
+              <Controller
+                name="lastName"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="form-lastName">Last Name</FieldLabel>
+                    <Input
+                      {...field}
+                      value={field.value ?? ""}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      id="form-lastName"
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Enter last name"
+                      autoComplete="off"
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
 
-            <Controller
-              name="position"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-position">Position</FieldLabel>
-                  <Input
-                    {...field}
-                    value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    id="form-position"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Enter position"
-                    autoComplete="off"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
+              <Controller
+                name="email"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="form-email">Email</FieldLabel>
+                    <Input
+                      {...field}
+                      value={field.value ?? ""}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      id="form-email"
+                      type="email"
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Enter email address"
+                      autoComplete="off"
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
 
-            <Controller
-              name="designation"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-designation">Designation</FieldLabel>
-                  <Input
-                    {...field}
-                    value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    id="form-designation"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Enter designation"
-                    autoComplete="off"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
+              <Controller
+                name="position"
+                control={form.control}
+                render={({ field, fieldState }) => {
+                  const selectedVal =
+                    positions.find((p) => p.id === field.value || p.name === field.value)?.id ??
+                    field.value ??
+                    "";
+                  return (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="form-position">Position</FieldLabel>
+                      <Select
+                        value={selectedVal}
+                        onValueChange={(value) => field.onChange(value)}
+                      >
+                        <SelectTrigger id="form-position" className="w-full">
+                          <SelectValue placeholder="Select position" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {positions.map((pos) => (
+                            <SelectItem key={pos.id} value={pos.id}>
+                              {pos.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  );
+                }}
+              />
 
-            <Controller
-              name="departmentId"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-department">Department</FieldLabel>
+              <Controller
+                name="designation"
+                control={form.control}
+                render={({ field, fieldState }) => {
+                  const selectedVal =
+                    designations.find((d) => d.id === field.value || d.name === field.value)?.id ??
+                    field.value ??
+                    "";
+                  return (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="form-designation">Designation</FieldLabel>
+                      <Select
+                        value={selectedVal}
+                        onValueChange={(value) => field.onChange(value)}
+                      >
+                        <SelectTrigger id="form-designation" className="w-full">
+                          <SelectValue placeholder="Select designation" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {designations.map((des) => (
+                            <SelectItem key={des.id} value={des.id}>
+                              {des.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  );
+                }}
+              />
+            </FieldGroup>
+
+            {/* Right Column: Photo & Department Assignments */}
+            <div className="space-y-4">
+              <Controller
+                name="departmentId"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="form-department">Primary Department</FieldLabel>
+                    <Select
+                      value={field.value ? String(field.value) : ""}
+                      onValueChange={(value) => field.onChange(Number(value))}
+                    >
+                      <SelectTrigger id="form-department" className="w-full">
+                        <SelectValue placeholder="Select primary department" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {departments.map((dept) => (
+                          <SelectItem key={dept.id} value={String(dept.id)}>
+                            {dept.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              {isEdit && (
+                <Controller
+                  name="status"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="form-status">Status</FieldLabel>
                   <Select
-                    value={field.value ? String(field.value) : ""}
-                    onValueChange={(value) => field.onChange(Number(value))}
+                    value={field.value ?? "active"}
+                    onValueChange={(value) => field.onChange(value as any)}
                   >
-                    <SelectTrigger id="form-department" className="w-full">
-                      <SelectValue placeholder="Select department" />
+                    <SelectTrigger id="form-status" className="w-full">
+                      <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
-                      {departments.map((dept) => (
-                        <SelectItem key={dept.id} value={String(dept.id)}>
-                          {dept.name}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="casual">Casual</SelectItem>
+                      <SelectItem value="contractual">Contractual</SelectItem>
+                      <SelectItem value="deceased">Deceased</SelectItem>
+                      <SelectItem value="end-of-contract">End of Contract</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                      <SelectItem value="on-leave">On Leave</SelectItem>
+                      <SelectItem value="permanent">Permanent</SelectItem>
+                      <SelectItem value="probationary">Probationary</SelectItem>
+                      <SelectItem value="retired">Retired</SelectItem>
+                      <SelectItem value="suspended">Suspended</SelectItem>
+                      <SelectItem value="temporary">Temporary</SelectItem>
+                      <SelectItem value="terminated">Terminated</SelectItem>
                     </SelectContent>
                   </Select>
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
                   )}
-                </Field>
+                />
               )}
-            />
 
-            <Controller
-              name="photo"
-              control={form.control}
-              render={() => (
-                <Field>
-                  <FieldLabel>Photo</FieldLabel>
-                  <div className="mt-2">
-                    {photoPreview ? (
-                      <div className="relative inline-block">
-                        <Image
-                          src={photoPreview}
-                          unoptimized
-                          alt="Employee photo preview"
-                          width={96}
-                          height={96}
-                          className="size-24 rounded-md object-cover border"
-                        />
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon-xs"
-                          className="absolute -top-2 -right-2"
-                          onClick={clearSelection}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <FileUploadArea onFileSelect={handleFileSelect} />
-                    )}
-                    {uploading && (
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        Uploading...
-                      </p>
-                    )}
-                  </div>
-                </Field>
-              )}
-            />
-          </FieldGroup>
+              <Controller
+                name="photo"
+                control={form.control}
+                render={() => (
+                  <Field>
+                    <FieldLabel>Photo</FieldLabel>
+                    <div className="mt-2 flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 text-center">
+                      {photoPreview ? (
+                        <div className="relative inline-block">
+                          <Image
+                            src={photoPreview}
+                            unoptimized
+                            alt="Employee photo preview"
+                            width={112}
+                            height={112}
+                            className="size-28 rounded-md border object-cover"
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon-xs"
+                            className="absolute -top-2 -right-2"
+                            onClick={clearSelection}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <FileUploadArea onFileSelect={handleFileSelect} />
+                      )}
+                      {uploading && (
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Uploading photo...
+                        </p>
+                      )}
+                    </div>
+                  </Field>
+                )}
+              />
+            </div>
+          </div>
 
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <Button
               type="button"
               variant="outline"

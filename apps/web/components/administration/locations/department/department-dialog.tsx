@@ -13,6 +13,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { CreateDepartmentInput, createDepartmentInputSchema } from "@repo/trpc/schemas";
 import FileUploadArea from "@/components/ui/file-upload-area";
 import { getImageUrl } from "@/lib/image";

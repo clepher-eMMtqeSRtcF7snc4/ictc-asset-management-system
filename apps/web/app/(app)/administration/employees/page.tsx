@@ -47,7 +47,7 @@ export default function Page() {
       departmentId: departmentId === "all" ? undefined : Number(departmentId),
       positionId: position || undefined,
       designationId: designation || undefined,
-      status: status === "all" ? undefined : status,
+      status: status === "all" ? undefined : (status as any),
       page,
       pageSize,
     },

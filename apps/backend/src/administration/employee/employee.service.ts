@@ -69,7 +69,7 @@ export class EmployeeService {
 
     if (input?.status) {
       conditions.push(
-        eq(employee.status, input.status as 'active' | 'inactive' | 'retire'),
+        eq(employee.status, input.status as any),
       );
     }
 
@@ -117,7 +117,7 @@ export class EmployeeService {
           : {}),
         ...(input.role !== undefined ? { role: input.role } : {}),
         ...(input.status !== undefined
-          ? { status: input.status as 'active' | 'inactive' | 'retire' }
+          ? { status: ((input.status as string) === 'retire' ? 'retired' : input.status) as any }
           : {}),
         ...(input.photo !== undefined ? { photo: input.photo } : {}),
       })
@@ -148,7 +148,7 @@ export class EmployeeService {
       designationId: Number(createEmployeeInput.designation),
       departmentId: createEmployeeInput.departmentId,
       role: createEmployeeInput.role ?? null,
-      status: createEmployeeInput.status as 'active' | 'inactive' | 'retire',
+      status: ((createEmployeeInput.status as string) === 'retire' ? 'retired' : createEmployeeInput.status) as any,
       photo: createEmployeeInput.photo ?? null,
       createdAt: new Date(),
       updatedAt: new Date(),

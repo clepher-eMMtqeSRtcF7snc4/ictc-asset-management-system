@@ -48,7 +48,7 @@ export default function FileUploadArea({ onFileSelect, className }: FileUploadAr
           or click to select a file from your computer
         </p>
 
-        <Button variant="outline">
+        <Button type="button" variant="outline">
           <ImageIcon className="w-4 h-4 mr-2" />
           Select from your computer
         </Button>
