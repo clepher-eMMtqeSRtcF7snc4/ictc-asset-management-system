@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search } from "lucide-react";
+import { Combobox } from "@/components/ui/combobox";
 
 interface EmployeeFiltersProps {
   search: string;
@@ -20,6 +21,8 @@ interface EmployeeFiltersProps {
   onPositionChange: (value: string) => void;
   designation: string;
   onDesignationChange: (value: string) => void;
+  positions: { id: string; name: string }[];
+  designations: { id: string; name: string }[];
   status: "all" | "active" | "inactive" | "retire";
   onStatusChange: (value: "all" | "active" | "inactive" | "retire") => void;
 }
@@ -34,6 +37,8 @@ export function EmployeeFilters({
   onPositionChange,
   designation,
   onDesignationChange,
+  positions,
+  designations,
   status,
   onStatusChange,
 }: EmployeeFiltersProps) {
@@ -61,17 +66,17 @@ export function EmployeeFilters({
           ))}
         </SelectContent>
       </Select>
-      <Input
-        className="w-40"
-        placeholder="Position"
+      <Combobox
+        options={positions}
         value={position}
-        onChange={(e) => onPositionChange(e.target.value)}
+        onValueChange={onPositionChange}
+        placeholder="Position"
       />
-      <Input
-        className="w-40"
-        placeholder="Designation"
+      <Combobox
+        options={designations}
         value={designation}
-        onChange={(e) => onDesignationChange(e.target.value)}
+        onValueChange={onDesignationChange}
+        placeholder="Designation"
       />
       <Select value={status} onValueChange={onStatusChange}>
         <SelectTrigger className="w-32">

@@ -14,8 +14,8 @@ export const employeeColumns: ColumnDef<EmployeeRow>[] = [
   { accessorKey: "firstName", header: "First Name", cell: ({ row }) => <span className="font-medium">{row.original.firstName}</span> },
   { accessorKey: "lastName", header: "Last Name", cell: ({ row }) => row.original.lastName },
   { accessorKey: "email", header: "Email", cell: ({ row }) => row.original.email },
-  { accessorKey: "position", header: "Position", cell: ({ row }) => row.original.position },
-  { accessorKey: "designation", header: "Designation", cell: ({ row }) => row.original.designation },
+  { accessorKey: "position", header: "Position", cell: ({ row }) => row.original.position || "—" },
+  { accessorKey: "designation", header: "Designation", cell: ({ row }) => row.original.designation || "—" },
   {
     accessorKey: "departmentId",
     header: "Department",

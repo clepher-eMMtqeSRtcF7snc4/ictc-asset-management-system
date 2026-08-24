@@ -8,8 +8,11 @@ import { DATABASE_CONNECTION } from '../../database/database-connection';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres/driver';
 import { schema } from '../../database/database.module';
 import { CreateEmployeeInput, UpdateEmployeeInput } from '@repo/trpc/schemas';
-import { and, asc, count, eq, ilike, or, type SQL } from 'drizzle-orm';
+import { and, asc, count, eq, ilike, or, sql, type SQL } from 'drizzle-orm';
 import { employee } from './schemas/schema';
+import { position } from '../position/schemas/schema';
+import { designation } from '../designation/schemas/schema';
+import { department } from '../department/schemas/schema';
 
 @Injectable()
 export class EmployeeService {
@@ -20,8 +23,24 @@ export class EmployeeService {
 
   async findById(id: number) {
     const [result] = await this.database
-      .select()
+      .select({
+        id: employee.id,
+        firstName: employee.firstName,
+        middleName: employee.middleName,
+        lastName: employee.lastName,
+        email: employee.email,
+        position: position.name ?? null,
+        designation: designation.name ?? null,
+        departmentId: employee.departmentId,
+        role: employee.role,
+        status: employee.status,
+        photo: employee.photo,
+        createdAt: employee.createdAt,
+        updatedAt: employee.updatedAt,
+      })
       .from(employee)
+      .leftJoin(position, eq(employee.positionId, position.id))
+      .leftJoin(designation, eq(employee.designationId, designation.id))
       .where(eq(employee.id, id))
       .limit(1);
 
@@ -45,12 +64,13 @@ export class EmployeeService {
     const pageSize = input?.pageSize ?? 10;
     const conditions: SQL[] = [];
 
-    if (input?.search) {
+    const search = input?.search;
+    if (search) {
       conditions.push(
         or(
-          ilike(employee.firstName, `%${input.search}%`),
-          ilike(employee.lastName, `%${input.search}%`),
-          ilike(employee.email, `%${input.search}%`),
+          ilike(employee.firstName, `%${search}%`),
+          ilike(employee.lastName, `%${search}%`),
+          ilike(employee.email, `%${search}%`),
         ) as SQL,
       );
     }
@@ -60,11 +80,11 @@ export class EmployeeService {
     }
 
     if (input?.positionId) {
-      conditions.push(eq(employee.positionId, Number(input.positionId)));
+      conditions.push(eq(position.id, Number(input.positionId)));
     }
 
     if (input?.designationId) {
-      conditions.push(eq(employee.designationId, Number(input.designationId)));
+      conditions.push(eq(designation.id, Number(input.designationId)));
     }
 
     if (input?.status) {
@@ -75,11 +95,27 @@ export class EmployeeService {
 
     const where = conditions.length ? and(...conditions) : undefined;
 
-    const baseQuery = this.database.select().from(employee);
-    const whereQuery = where ? baseQuery.where(where) : baseQuery;
-
     const [items, totals] = await Promise.all([
-      whereQuery
+      this.database
+        .select({
+          id: employee.id,
+          firstName: employee.firstName,
+          middleName: employee.middleName,
+          lastName: employee.lastName,
+          email: employee.email,
+          position: position.name ?? null,
+          designation: designation.name ?? null,
+          departmentId: employee.departmentId,
+          role: employee.role,
+          status: employee.status,
+          photo: employee.photo,
+          createdAt: employee.createdAt,
+          updatedAt: employee.updatedAt,
+        })
+        .from(employee)
+        .leftJoin(position, eq(employee.positionId, position.id))
+        .leftJoin(designation, eq(employee.designationId, designation.id))
+        .where(where)
         .orderBy(asc(employee.lastName))
         .limit(pageSize)
         .offset((page - 1) * pageSize),

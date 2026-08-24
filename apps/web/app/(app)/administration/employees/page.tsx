@@ -41,6 +41,16 @@ export default function Page() {
     { placeholderData: keepPreviousData }
   );
 
+  const positionsQuery = trpc.positionRouter.getPositions.useQuery(
+    { status: "active", pageSize: 100 },
+    { placeholderData: keepPreviousData }
+  );
+
+  const designationsQuery = trpc.designationRouter.getDesignations.useQuery(
+    { status: "active", pageSize: 100 },
+    { placeholderData: keepPreviousData }
+  );
+
   const employeesQuery = trpc.employeeRouter.getEmployees.useQuery(
     {
       search: search || undefined,
@@ -62,26 +72,12 @@ export default function Page() {
   const employees = employeesQuery.data?.items ?? [];
   const totalPages = employeesQuery.data?.totalPages ?? 1;
   const departments = departmentsQuery.data?.items ?? [];
-
-  const departmentCodeMap = useMemo(() => {
-    const map = new Map<number, string>();
-    departments.forEach((dept) => map.set(dept.id, dept.code));
-    return map;
-  }, [departments]);
-
-  const departmentColorMap = useMemo(() => {
-    const map = new Map<number, string | null>();
-    departments.forEach((dept) => map.set(dept.id, dept.color));
-    return map;
-  }, [departments]);
+  const positions = positionsQuery.data?.items ?? [];
+  const designations = designationsQuery.data?.items ?? [];
 
   const enrichedEmployees = useMemo(() => {
-    return employees.map((emp) => ({
-      ...emp,
-      departmentCode: departmentCodeMap.get(emp.departmentId) ?? "—",
-      departmentColor: departmentColorMap.get(emp.departmentId) ?? null,
-    })) as (Employee & { departmentCode: string; departmentColor: string | null })[];
-  }, [employees, departmentCodeMap, departmentColorMap]);
+    return employees as (Employee & { departmentCode: string; departmentColor: string | null })[];
+  }, [employees]);
 
   const editDefaults = useMemo(() => {
     const emp = editEmployeeQuery.data;
@@ -208,6 +204,8 @@ export default function Page() {
                   setDesignation(value);
                   setPage(1);
                 }}
+                positions={positions}
+                designations={designations}
                 status={status}
                 onStatusChange={(value) => {
                   setStatus(value);
@@ -272,10 +270,10 @@ export default function Page() {
         </TabsContent>
         <TabsContent value="settings" className="mt-4 space-y-4">
           <PositionSection
-            employeePositions={employees.map((emp) => ({ position: emp.position, status: emp.status }))}
+            employeePositions={employees.map((emp) => ({ position: emp.position ?? "", status: emp.status }))}
           />
           <DesignationSection
-            employeeDesignations={employees.map((emp) => ({ designation: emp.designation, status: emp.status }))}
+            employeeDesignations={employees.map((emp) => ({ designation: emp.designation ?? "", status: emp.status }))}
           />
         </TabsContent>
       </Tabs>
