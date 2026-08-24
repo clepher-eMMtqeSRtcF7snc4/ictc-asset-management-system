@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { flexRender, getCoreRowModel, getSortedRowModel, type PaginationState, type SortingState, useReactTable, type VisibilityState } from "@tanstack/react-table";
+import { flexRender, getCoreRowModel, getSortedRowModel, type PaginationState, type SortingState, type VisibilityState, useReactTable } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { DataTablePagination } from "@/components/ui/datatable-pagination";
 import {
@@ -12,26 +12,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreHorizontal, Pen, Trash2 } from "lucide-react";
-import { Employee } from "@repo/trpc/schemas";
-import { employeeDesignationColumns } from "./emp-des-columns";
+import { MoreHorizontal } from "lucide-react";
+import { designationColumns } from "./designation-columns";
+import { Designation } from "@repo/trpc/schemas";
 
-type EmployeeRow = Employee & {
-  departmentCode: string;
-  departmentColor: string | null;
-};
-
-interface EmployeeDesignationTableProps {
-  data: EmployeeRow[];
+interface DesignationTableProps {
+  data: Designation[];
   page: number;
   pageSize: number;
   totalPages: number;
   onPaginationChange: (next: { page: number; pageSize: number }) => void;
-  onEdit: (employee: Employee) => void;
-  onDelete: (employee: Employee) => void;
+  onEdit: (designation: Designation) => void;
+  onDelete: (designation: Designation) => void;
 }
 
-export function EmployeeDesignationTable({
+export function DesignationTable({
   data,
   page,
   pageSize,
@@ -39,30 +34,30 @@ export function EmployeeDesignationTable({
   onPaginationChange,
   onEdit,
   onDelete,
-}: EmployeeDesignationTableProps) {
+}: DesignationTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const columns = useMemo(
     () =>
-      employeeDesignationColumns.map((column) => {
+      designationColumns.map((column) => {
         if (column.id === "actions") {
           return {
             ...column,
-            cell: ({ row }: { row: { original: EmployeeRow } }) => (
+            cell: ({ row }: { row: { original: Designation } }) => (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button size="icon-xs" variant="ghost" aria-label={`Actions for ${row.original.firstName} ${row.original.lastName}`}>
+                  <Button size="icon-xs" variant="ghost" aria-label={`Actions for ${row.original.name}`}>
                     <MoreHorizontal />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => onEdit(row.original)}>
-                    <Pen/> Edit
+                    Edit
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-destructive" onClick={() => onDelete(row.original)}>
-                    <Trash2/> Delete
+                    Delete
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -127,10 +122,10 @@ export function EmployeeDesignationTable({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={employeeDesignationColumns.length} className="h-36 text-center">
-                  <p className="font-medium">No employees found</p>
+                <TableCell colSpan={designationColumns.length} className="h-36 text-center">
+                  <p className="font-medium">No designations found</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    No employees match your current search.
+                    No designations match your current search.
                   </p>
                 </TableCell>
               </TableRow>

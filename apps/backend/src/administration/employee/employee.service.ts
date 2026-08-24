@@ -1,4 +1,9 @@
-import { Inject, Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { DATABASE_CONNECTION } from '../../database/database-connection';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres/driver';
 import { schema } from '../../database/database.module';
@@ -27,7 +32,15 @@ export class EmployeeService {
     return result;
   }
 
-  async findAll(input?: { search?: string; departmentId?: number; position?: string; designation?: string; status?: string; page?: number; pageSize?: number }) {
+  async findAll(input?: {
+    search?: string;
+    departmentId?: number;
+    positionId?: number | string;
+    designationId?: number | string;
+    status?: string;
+    page?: number;
+    pageSize?: number;
+  }) {
     const page = input?.page ?? 1;
     const pageSize = input?.pageSize ?? 10;
     const conditions: SQL[] = [];
@@ -46,16 +59,18 @@ export class EmployeeService {
       conditions.push(eq(employee.departmentId, input.departmentId));
     }
 
-    if (input?.position) {
-      conditions.push(ilike(employee.position, `%${input.position}%`));
+    if (input?.positionId) {
+      conditions.push(eq(employee.positionId, Number(input.positionId)));
     }
 
-    if (input?.designation) {
-      conditions.push(ilike(employee.designation, `%${input.designation}%`));
+    if (input?.designationId) {
+      conditions.push(eq(employee.designationId, Number(input.designationId)));
     }
 
     if (input?.status) {
-      conditions.push(eq(employee.status, input.status as 'active' | 'inactive' | 'retire'));
+      conditions.push(
+        eq(employee.status, input.status as 'active' | 'inactive' | 'retire'),
+      );
     }
 
     const where = conditions.length ? and(...conditions) : undefined;
@@ -83,15 +98,27 @@ export class EmployeeService {
     await this.database
       .update(employee)
       .set({
-        ...(input.firstName !== undefined ? { firstName: input.firstName } : {}),
-        ...(input.middleName !== undefined ? { middleName: input.middleName } : {}),
+        ...(input.firstName !== undefined
+          ? { firstName: input.firstName }
+          : {}),
+        ...(input.middleName !== undefined
+          ? { middleName: input.middleName }
+          : {}),
         ...(input.lastName !== undefined ? { lastName: input.lastName } : {}),
         ...(input.email !== undefined ? { email: input.email } : {}),
-        ...(input.position !== undefined ? { position: input.position } : {}),
-        ...(input.designation !== undefined ? { designation: input.designation } : {}),
-        ...(input.departmentId !== undefined ? { departmentId: input.departmentId } : {}),
+        ...(input.position !== undefined
+          ? { positionId: Number(input.position) }
+          : {}),
+        ...(input.designation !== undefined
+          ? { designationId: Number(input.designation) }
+          : {}),
+        ...(input.departmentId !== undefined
+          ? { departmentId: input.departmentId }
+          : {}),
         ...(input.role !== undefined ? { role: input.role } : {}),
-        ...(input.status !== undefined ? { status: input.status } : {}),
+        ...(input.status !== undefined
+          ? { status: input.status as 'active' | 'inactive' | 'retire' }
+          : {}),
         ...(input.photo !== undefined ? { photo: input.photo } : {}),
       })
       .where(eq(employee.id, input.id));
@@ -117,13 +144,14 @@ export class EmployeeService {
       middleName: createEmployeeInput.middleName ?? null,
       lastName: createEmployeeInput.lastName,
       email: createEmployeeInput.email,
-      position: createEmployeeInput.position,
-      designation: createEmployeeInput.designation,
+      positionId: Number(createEmployeeInput.position),
+      designationId: Number(createEmployeeInput.designation),
       departmentId: createEmployeeInput.departmentId,
       role: createEmployeeInput.role ?? null,
-      status: createEmployeeInput.status,
+      status: createEmployeeInput.status as 'active' | 'inactive' | 'retire',
       photo: createEmployeeInput.photo ?? null,
       createdAt: new Date(),
+      updatedAt: new Date(),
     });
   }
 }

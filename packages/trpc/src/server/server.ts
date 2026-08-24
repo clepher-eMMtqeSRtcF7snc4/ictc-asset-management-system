@@ -503,8 +503,8 @@ const appRouter = t.router({
       .object({
         search: z.string().trim().min(1).max(100).optional(),
         departmentId: z.number().int().positive().optional(),
-        position: z.string().trim().min(1).max(150).optional(),
-        designation: z.string().trim().min(1).max(150).optional(),
+        positionId: z.string().trim().min(1).max(150).optional(),
+        designationId: z.string().trim().min(1).max(150).optional(),
         status: z.enum([
           'active',
           'inactive',
@@ -538,6 +538,102 @@ const appRouter = t.router({
           ]),
           createdAt: z.date().optional(),
           updatedAt: z.date().optional(),
+        })),
+        total: z.number().int().nonnegative(),
+        page: z.number().int().positive(),
+        pageSize: z.number().int().positive(),
+        totalPages: z.number().int().nonnegative(),
+      })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+  }),
+  positionRouter: t.router({
+    create: publicProcedure.input(z.object({
+      name: z.string().min(1, "Position name is required"),
+      status: z.enum(["active", "inactive"]),
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    update: publicProcedure.input(z.object({
+      name: z.string().min(1, "Position name is required"),
+      status: z.enum(["active", "inactive"]),
+    }).partial().extend({
+      id: z.string().min(1, "ID is required"),
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    delete: publicProcedure.input(z.object({
+      id: z.string(),
+      name: z.string().min(1, "Name is required"),
+      status: z.enum(["active", "inactive"]),
+      employeeCount: z.number().int().nonnegative(),
+    }).pick({ id: true })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getPositionById: publicProcedure.input(z.object({
+      id: z.string(),
+      name: z.string().min(1, "Name is required"),
+      status: z.enum(["active", "inactive"]),
+      employeeCount: z.number().int().nonnegative(),
+    }).pick({ id: true })).output(z.object({
+      id: z.string(),
+      name: z.string().min(1, "Name is required"),
+      status: z.enum(["active", "inactive"]),
+      employeeCount: z.number().int().nonnegative(),
+    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getPositions: publicProcedure.input(z
+      .object({
+        search: z.string().trim().min(1).max(100).optional(),
+        status: z.enum(["active", "inactive"]).optional(),
+        page: z.number().int().min(1).optional(),
+        pageSize: z.number().int().min(1).max(100).optional(),
+      })
+      .default({})).output(z.object({
+        items: z.array(z.object({
+          id: z.string(),
+          name: z.string().min(1, "Name is required"),
+          status: z.enum(["active", "inactive"]),
+          employeeCount: z.number().int().nonnegative(),
+        })),
+        total: z.number().int().nonnegative(),
+        page: z.number().int().positive(),
+        pageSize: z.number().int().positive(),
+        totalPages: z.number().int().nonnegative(),
+      })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+  }),
+  designationRouter: t.router({
+    create: publicProcedure.input(z.object({
+      name: z.string().min(1, "Designation name is required"),
+      status: z.enum(["active", "inactive"]),
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    update: publicProcedure.input(z.object({
+      name: z.string().min(1, "Designation name is required"),
+      status: z.enum(["active", "inactive"]),
+    }).partial().extend({
+      id: z.string().min(1, "ID is required"),
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    delete: publicProcedure.input(z.object({
+      id: z.string(),
+      name: z.string().min(1, "Name is required"),
+      status: z.enum(["active", "inactive"]),
+      employeeCount: z.number().int().nonnegative(),
+    }).pick({ id: true })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getDesignationById: publicProcedure.input(z.object({
+      id: z.string(),
+      name: z.string().min(1, "Name is required"),
+      status: z.enum(["active", "inactive"]),
+      employeeCount: z.number().int().nonnegative(),
+    }).pick({ id: true })).output(z.object({
+      id: z.string(),
+      name: z.string().min(1, "Name is required"),
+      status: z.enum(["active", "inactive"]),
+      employeeCount: z.number().int().nonnegative(),
+    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getDesignations: publicProcedure.input(z
+      .object({
+        search: z.string().trim().min(1).max(100).optional(),
+        status: z.enum(["active", "inactive"]).optional(),
+        page: z.number().int().min(1).optional(),
+        pageSize: z.number().int().min(1).max(100).optional(),
+      })
+      .default({})).output(z.object({
+        items: z.array(z.object({
+          id: z.string(),
+          name: z.string().min(1, "Name is required"),
+          status: z.enum(["active", "inactive"]),
+          employeeCount: z.number().int().nonnegative(),
         })),
         total: z.number().int().nonnegative(),
         page: z.number().int().positive(),

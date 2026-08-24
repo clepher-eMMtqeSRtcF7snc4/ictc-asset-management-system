@@ -38,11 +38,18 @@ export const employeeColumns: ColumnDef<EmployeeRow>[] = [
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => (
-      <Badge variant={row.original.status === "active" ? "success" : "destructive"}>
-        {row.original.status === "active" ? "Active" : "Inactive"}
-      </Badge>
-    ),
+    cell: ({ row }) => {
+      const statusMap: Record<string, string> = {
+        active: "Active",
+        inactive: "Inactive",
+        retire: "Retire",
+      };
+      return (
+        <Badge variant={row.original.status === "active" ? "success" : "destructive"}>
+          {statusMap[row.original.status] || row.original.status}
+        </Badge>
+      );
+    },
   },
   {
     id: "actions",

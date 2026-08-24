@@ -7,6 +7,8 @@ import * as authSchema from '../auth/schema';
 import * as roomSchema from '../administration/room/schemas/schema';
 import * as roomTypeSchema from '../administration/room-type/schemas/schema';
 import * as departmentSchema from '../administration/department/schemas/schema';
+import * as positionSchema from '../administration/position/schemas/schema';
+import * as designationSchema from '../administration/designation/schemas/schema';
 import * as employeeSchema from '../administration/employee/schemas/schema';
 
 export const schema = {
@@ -14,6 +16,8 @@ export const schema = {
   ...roomSchema,
   ...roomTypeSchema,
   ...departmentSchema,
+  ...positionSchema,
+  ...designationSchema,
   ...employeeSchema,
 };
 

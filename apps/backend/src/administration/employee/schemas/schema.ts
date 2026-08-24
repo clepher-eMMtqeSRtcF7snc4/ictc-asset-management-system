@@ -1,8 +1,21 @@
-import { pgEnum, timestamp, varchar, serial, text, integer } from 'drizzle-orm/pg-core';
-import { pgTable } from 'drizzle-orm/pg-core';
+import {
+  pgEnum,
+  timestamp,
+  varchar,
+  serial,
+  integer,
+  text,
+} from 'drizzle-orm/pg-core';
+import { pgTable, primaryKey } from 'drizzle-orm/pg-core';
 import { department } from '../../department/schemas/schema';
+import { position } from '../../position/schemas/schema';
+import { designation } from '../../designation/schemas/schema';
 
-export const employeeStatusEnum = pgEnum('employee_status', ['active', 'inactive', 'retire']);
+export const employeeStatusEnum = pgEnum('employee_status', [
+  'active',
+  'inactive',
+  'retire',
+]);
 
 export const employee = pgTable('employee', {
   id: serial('id').primaryKey(),
@@ -10,8 +23,8 @@ export const employee = pgTable('employee', {
   middleName: varchar('middle_name', { length: 100 }),
   lastName: varchar('last_name', { length: 100 }).notNull(),
   email: varchar('email', { length: 255 }).notNull().unique(),
-  position: varchar('position', { length: 150 }).notNull(),
-  designation: varchar('designation', { length: 150 }).notNull(),
+  positionId: integer('position_id').references(() => position.id),
+  designationId: integer('designation_id').references(() => designation.id),
   departmentId: integer('department_id').references(() => department.id),
   role: varchar('role', { length: 50 }),
   status: employeeStatusEnum('status').notNull().default('active'),
@@ -19,6 +32,6 @@ export const employee = pgTable('employee', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()
-    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .$onUpdate(() => new Date())
     .notNull(),
 });

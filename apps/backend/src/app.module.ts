@@ -18,6 +18,8 @@ import { RoomModule } from './administration/room/room.module';
 import { RoomTypeModule } from './administration/room-type/room-type.module';
 import { DepartmentModule } from './administration/department/department.module';
 import { EmployeeModule } from './administration/employee/employee.module';
+import { PositionModule } from './administration/position/position.module';
+import { DesignationModule } from './administration/designation/designation.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -49,6 +51,8 @@ import { EmployeeModule } from './administration/employee/employee.module';
     DepartmentModule,
     EmployeeModule,
     UploadModule,
+    PositionModule,
+    DesignationModule,
   ],
   controllers: [AppController],
   providers: [

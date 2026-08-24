@@ -13,26 +13,26 @@ import {
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 
-interface EmployeeStatusDeleteDialogProps {
+interface DesignationDeleteDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
-  employeeName: string;
+  designationName: string;
 }
 
-export function EmployeeDeleteDialog({
+export function DesignationDeleteDialog({
   open,
   onOpenChange,
   onConfirm,
-  employeeName,
-}: EmployeeStatusDeleteDialogProps) {
+  designationName,
+}: DesignationDeleteDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete Employee?</AlertDialogTitle>
+          <AlertDialogTitle>Delete Designation?</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete &quot;{employeeName}&quot;? This
+            Are you sure you want to delete &quot;{designationName}&quot;? This
             action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>

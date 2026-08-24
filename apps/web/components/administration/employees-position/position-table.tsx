@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { flexRender, getCoreRowModel, getSortedRowModel, type PaginationState, type SortingState, useReactTable, type VisibilityState } from "@tanstack/react-table";
+import { flexRender, getCoreRowModel, getSortedRowModel, type PaginationState, type SortingState, type VisibilityState, useReactTable } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { DataTablePagination } from "@/components/ui/datatable-pagination";
 import {
@@ -13,25 +13,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MoreHorizontal } from "lucide-react";
-import { employeeStatusColumns } from "./emp-stat-columns";
-import { Employee } from "@repo/trpc/schemas";
+import { positionColumns } from "./position-columns";
+import { Position } from "@repo/trpc/schemas";
 
-type EmployeeRow = Employee & {
-  departmentCode: string;
-  departmentColor: string | null;
-};
-
-interface EmployeeStatusTableProps {
-  data: EmployeeRow[];
+interface PositionTableProps {
+  data: Position[];
   page: number;
   pageSize: number;
   totalPages: number;
   onPaginationChange: (next: { page: number; pageSize: number }) => void;
-  onEdit: (employee: Employee) => void;
-  onDelete: (employee: Employee) => void;
+  onEdit: (position: Position) => void;
+  onDelete: (position: Position) => void;
 }
 
-export function EmployeeTable({
+export function PositionTable({
   data,
   page,
   pageSize,
@@ -39,20 +34,20 @@ export function EmployeeTable({
   onPaginationChange,
   onEdit,
   onDelete,
-}: EmployeeStatusTableProps) {
+}: PositionTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const columns = useMemo(
     () =>
-      employeeStatusColumns.map((column) => {
+      positionColumns.map((column) => {
         if (column.id === "actions") {
           return {
             ...column,
-            cell: ({ row }: { row: { original: EmployeeRow } }) => (
+            cell: ({ row }: { row: { original: Position } }) => (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button size="icon-xs" variant="ghost" aria-label={`Actions for ${row.original.firstName} ${row.original.lastName}`}>
+                  <Button size="icon-xs" variant="ghost" aria-label={`Actions for ${row.original.name}`}>
                     <MoreHorizontal />
                   </Button>
                 </DropdownMenuTrigger>
@@ -127,10 +122,10 @@ export function EmployeeTable({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={employeeStatusColumns.length} className="h-36 text-center">
-                  <p className="font-medium">No employees found</p>
+                <TableCell colSpan={positionColumns.length} className="h-36 text-center">
+                  <p className="font-medium">No positions found</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    No employees match your current search.
+                    No positions match your current search.
                   </p>
                 </TableCell>
               </TableRow>

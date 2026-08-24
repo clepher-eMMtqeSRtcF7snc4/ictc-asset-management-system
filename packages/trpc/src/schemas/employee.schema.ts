@@ -30,8 +30,8 @@ export const employeeListInputSchema = z
   .object({
     search: z.string().trim().min(1).max(100).optional(),
     departmentId: z.number().int().positive().optional(),
-    position: z.string().trim().min(1).max(150).optional(),
-    designation: z.string().trim().min(1).max(150).optional(),
+    positionId: z.string().trim().min(1).max(150).optional(),
+    designationId: z.string().trim().min(1).max(150).optional(),
     status: employeeStatusSchema.optional(),
     page: z.number().int().min(1).optional(),
     pageSize: z.number().int().min(1).max(100).optional(),
@@ -75,6 +75,23 @@ export const positionSchema = z.object({
   employeeCount: z.number().int().nonnegative(),
 });
 
+export const positionListInputSchema = z
+  .object({
+    search: z.string().trim().min(1).max(100).optional(),
+    status: employeeSettingStatusSchema.optional(),
+    page: z.number().int().min(1).optional(),
+    pageSize: z.number().int().min(1).max(100).optional(),
+  })
+  .default({});
+
+export const positionListOutputSchema = z.object({
+  items: z.array(positionSchema),
+  total: z.number().int().nonnegative(),
+  page: z.number().int().positive(),
+  pageSize: z.number().int().positive(),
+  totalPages: z.number().int().nonnegative(),
+});
+
 export const createPositionInputSchema = z.object({
   name: z.string().min(1, "Position name is required"),
   status: employeeSettingStatusSchema,
@@ -89,6 +106,16 @@ export const designationSchema = z.object({
   name: z.string().min(1, "Name is required"),
   status: employeeSettingStatusSchema,
   employeeCount: z.number().int().nonnegative(),
+});
+
+export const designationListInputSchema = positionListInputSchema;
+
+export const designationListOutputSchema = z.object({
+  items: z.array(designationSchema),
+  total: z.number().int().nonnegative(),
+  page: z.number().int().positive(),
+  pageSize: z.number().int().positive(),
+  totalPages: z.number().int().nonnegative(),
 });
 
 export const createDesignationInputSchema = z.object({
@@ -124,9 +151,13 @@ export type EmployeeListOutput = z.infer<typeof employeeListOutputSchema>;
 export type CreateEmployeeInput = z.infer<typeof createEmployeeInputSchema>;
 export type UpdateEmployeeInput = z.infer<typeof updateEmployeeInputSchema>;
 export type Position = z.infer<typeof positionSchema>;
+export type PositionListInput = z.infer<typeof positionListInputSchema>;
+export type PositionListOutput = z.infer<typeof positionListOutputSchema>;
 export type CreatePositionInput = z.infer<typeof createPositionInputSchema>;
 export type UpdatePositionInput = z.infer<typeof updatePositionInputSchema>;
 export type Designation = z.infer<typeof designationSchema>;
+export type DesignationListInput = z.infer<typeof designationListInputSchema>;
+export type DesignationListOutput = z.infer<typeof designationListOutputSchema>;
 export type CreateDesignationInput = z.infer<typeof createDesignationInputSchema>;
 export type UpdateDesignationInput = z.infer<typeof updateDesignationInputSchema>;
 export type EmployeeSettingStatus = z.infer<typeof employeeSettingStatusItemSchema>;
