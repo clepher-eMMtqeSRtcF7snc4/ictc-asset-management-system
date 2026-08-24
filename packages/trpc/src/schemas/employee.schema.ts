@@ -66,8 +66,69 @@ export const updateEmployeeInputSchema = employeeFieldsSchema
     { message: "Provide at least one field to update" },
   );
 
+export const employeeSettingStatusSchema = z.enum(["active", "inactive"]);
+
+export const positionSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, "Name is required"),
+  status: employeeSettingStatusSchema,
+  employeeCount: z.number().int().nonnegative(),
+});
+
+export const createPositionInputSchema = z.object({
+  name: z.string().min(1, "Position name is required"),
+  status: employeeSettingStatusSchema,
+});
+
+export const updatePositionInputSchema = createPositionInputSchema.partial().extend({
+  id: z.string().min(1, "ID is required"),
+});
+
+export const designationSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, "Name is required"),
+  status: employeeSettingStatusSchema,
+  employeeCount: z.number().int().nonnegative(),
+});
+
+export const createDesignationInputSchema = z.object({
+  name: z.string().min(1, "Designation name is required"),
+  status: employeeSettingStatusSchema,
+});
+
+export const updateDesignationInputSchema = createDesignationInputSchema.partial().extend({
+  id: z.string().min(1, "ID is required"),
+});
+
+export const employeeSettingStatusItemSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, "Name is required"),
+  value: z.string().min(1, "Value is required"),
+  status: employeeSettingStatusSchema,
+  employeeCount: z.number().int().nonnegative(),
+});
+
+export const createStatusInputSchema = z.object({
+  name: z.string().min(1, "Status name is required"),
+  value: z.string().min(1, "Status value is required"),
+  status: employeeSettingStatusSchema,
+});
+
+export const updateStatusInputSchema = createStatusInputSchema.partial().extend({
+  id: z.string().min(1, "ID is required"),
+});
+
 export type Employee = z.infer<typeof employeeSchema>;
 export type EmployeeListInput = z.infer<typeof employeeListInputSchema>;
 export type EmployeeListOutput = z.infer<typeof employeeListOutputSchema>;
 export type CreateEmployeeInput = z.infer<typeof createEmployeeInputSchema>;
 export type UpdateEmployeeInput = z.infer<typeof updateEmployeeInputSchema>;
+export type Position = z.infer<typeof positionSchema>;
+export type CreatePositionInput = z.infer<typeof createPositionInputSchema>;
+export type UpdatePositionInput = z.infer<typeof updatePositionInputSchema>;
+export type Designation = z.infer<typeof designationSchema>;
+export type CreateDesignationInput = z.infer<typeof createDesignationInputSchema>;
+export type UpdateDesignationInput = z.infer<typeof updateDesignationInputSchema>;
+export type EmployeeSettingStatus = z.infer<typeof employeeSettingStatusItemSchema>;
+export type CreateStatusInput = z.infer<typeof createStatusInputSchema>;
+export type UpdateStatusInput = z.infer<typeof updateStatusInputSchema>;

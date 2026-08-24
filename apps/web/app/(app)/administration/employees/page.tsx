@@ -12,6 +12,9 @@ import { EmployeeFilters } from "@/components/administration/employees/employee-
 import { EmployeeTable } from "@/components/administration/employees/employee-table";
 import { EmployeeDialog } from "@/components/administration/employees/employee-dialog";
 import { EmployeeDeleteDialog } from "@/components/administration/employees/employee-delete-dialog";
+import { PositionSection } from "@/components/administration/employees-settings/position-section";
+import { DesignationSection } from "@/components/administration/employees-settings/designation-section";
+import { StatusSection } from "@/components/administration/employees-settings/status-section";
 import { CreateEmployeeInput, Employee } from "@repo/trpc/schemas";
 import { trpc } from "@/lib/trpc/client";
 
@@ -268,18 +271,16 @@ export default function Page() {
             />
           </Card>
         </TabsContent>
-        <TabsContent value="settings" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Settings</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Employee settings and preferences.
-              </p>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">Settings content coming soon.</p>
-            </CardContent>
-          </Card>
+        <TabsContent value="settings" className="mt-4 space-y-4">
+          <PositionSection
+            employees={employees.map((emp) => ({ position: emp.position, status: emp.status }))}
+          />
+          <DesignationSection
+            employees={employees.map((emp) => ({ designation: emp.designation, status: emp.status }))}
+          />
+          <StatusSection
+            employees={employees.map((emp) => ({ status: emp.status }))}
+          />
         </TabsContent>
       </Tabs>
     </div>
