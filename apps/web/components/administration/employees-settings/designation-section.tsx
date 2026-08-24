@@ -71,14 +71,14 @@ export function DesignationSection({ employeeDesignations }: DesignationSectionP
   }, [designations, derivedEmployeeCounts]);
 
   const editDefaults = useMemo(() => {
-    const des = editDesignationQuery.data;
+    const des = designations.find((d) => d.id === editId) ?? editDesignationQuery.data;
     return des
       ? {
           name: des.name,
           status: des.status,
         }
       : undefined;
-  }, [editDesignationQuery.data]);
+  }, [editId, designations, editDesignationQuery.data]);
 
   const utils = trpc.useUtils();
 

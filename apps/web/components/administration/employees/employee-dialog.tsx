@@ -67,11 +67,27 @@ export function EmployeeDialog({
   });
 
   useEffect(() => {
-    if (open && defaultValues) {
-      form.reset(defaultValues);
-      if (defaultValues.photo) {
-        setPhotoPreview(getImageUrl(defaultValues.photo));
+    if (open) {
+      if (defaultValues) {
+        form.reset(defaultValues);
+        if (defaultValues.photo) {
+          setPhotoPreview(getImageUrl(defaultValues.photo));
+        } else {
+          setPhotoPreview(null);
+        }
       } else {
+        form.reset({
+          firstName: "",
+          middleName: null,
+          lastName: "",
+          email: "",
+          position: "",
+          designation: "",
+          departmentId: 0,
+          role: null,
+          status: "active",
+          photo: null,
+        });
         setPhotoPreview(null);
       }
     }

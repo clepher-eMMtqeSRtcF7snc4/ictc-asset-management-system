@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,19 @@ export function DesignationDialog({
       status: "active",
     },
   });
+
+  useEffect(() => {
+    if (open) {
+      if (defaultValues) {
+        form.reset(defaultValues);
+      } else {
+        form.reset({
+          name: "",
+          status: "active",
+        });
+      }
+    }
+  }, [open, defaultValues, form]);
 
   const isEdit = Boolean(defaultValues);
 

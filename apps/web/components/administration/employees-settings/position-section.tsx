@@ -71,14 +71,14 @@ export function PositionSection({ employeePositions }: PositionSectionProps) {
   }, [positions, derivedEmployeeCounts]);
 
   const editDefaults = useMemo(() => {
-    const pos = editPositionQuery.data;
+    const pos = positions.find((p) => p.id === editId) ?? editPositionQuery.data;
     return pos
       ? {
           name: pos.name,
           status: pos.status,
         }
       : undefined;
-  }, [editPositionQuery.data]);
+  }, [editId, positions, editPositionQuery.data]);
 
   const utils = trpc.useUtils();
 

@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Pen, Trash2 } from "lucide-react";
 import { positionColumns } from "./position-columns";
 import { Position } from "@repo/trpc/schemas";
 
@@ -53,11 +53,11 @@ export function PositionTable({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => onEdit(row.original)}>
-                    Edit
+                    <Pen/> Edit
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-destructive" onClick={() => onDelete(row.original)}>
-                    Delete
+                    <Trash2/> Delete
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
