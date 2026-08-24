@@ -1,59 +1,51 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { Employee } from "@repo/trpc/schemas";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
-export const employeeColumns: ColumnDef<Employee>[] = [
+type EmployeeRow = Employee & {
+  departmentCode: string;
+  departmentColor: string | null;
+};
+
+export const employeeColumns: ColumnDef<EmployeeRow>[] = [
   { accessorKey: "firstName", header: "First Name", cell: ({ row }) => <span className="font-medium">{row.original.firstName}</span> },
   { accessorKey: "lastName", header: "Last Name", cell: ({ row }) => row.original.lastName },
   { accessorKey: "email", header: "Email", cell: ({ row }) => row.original.email },
   { accessorKey: "position", header: "Position", cell: ({ row }) => row.original.position },
   { accessorKey: "designation", header: "Designation", cell: ({ row }) => row.original.designation },
   {
-    accessorKey: "role",
-    header: "Role",
-    cell: ({ row }) => (
-      <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${row.original.role === "supervisor" ? "bg-primary/10 text-primary" : row.original.role === "custodian" ? "bg-warning/10 text-warning" : "bg-muted text-muted-foreground"}`}>
-        {row.original.role ? row.original.role.charAt(0).toUpperCase() + row.original.role.slice(1) : "—"}
-      </span>
-    ),
+    accessorKey: "departmentId",
+    header: "Department",
+    cell: ({ row }) => {
+      const color = row.original.departmentColor;
+      const code = row.original.departmentCode ?? "—";
+      return (
+        <span
+          className={cn(
+            "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
+            color ? "" : "bg-primary/10 text-primary"
+          )}
+          style={color ? { backgroundColor: `${color}20`, color } : undefined}
+        >
+          {code}
+        </span>
+      );
+    },
   },
   {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => (
-      <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${row.original.status === "active" ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
-        {row.original.status === "active" ? "Active" : row.original.status === "inactive" ? "Inactive" : "Retired"}
-      </span>
+      <Badge variant={row.original.status === "active" ? "success" : "destructive"}>
+        {row.original.status === "active" ? "Active" : "Inactive"}
+      </Badge>
     ),
   },
   {
     id: "actions",
     header: "Actions",
-    cell: ({ row }) => <RowActions employee={row.original} />,
   },
 ];
-
-function RowActions({ employee }: { employee: Employee }) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button size="icon-xs" variant="ghost" aria-label={`Actions for ${employee.firstName} ${employee.lastName}`}>
-          <MoreHorizontal />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem>
-          <Pencil /> Edit
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-destructive">
-          <Trash2 /> Delete
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}

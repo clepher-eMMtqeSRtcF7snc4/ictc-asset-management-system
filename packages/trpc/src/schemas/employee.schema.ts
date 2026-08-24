@@ -30,7 +30,8 @@ export const employeeListInputSchema = z
   .object({
     search: z.string().trim().min(1).max(100).optional(),
     departmentId: z.number().int().positive().optional(),
-    role: z.enum(["supervisor", "custodian", "staff"]).optional(),
+    position: z.string().trim().min(1).max(150).optional(),
+    designation: z.string().trim().min(1).max(150).optional(),
     status: employeeStatusSchema.optional(),
     page: z.number().int().min(1).optional(),
     pageSize: z.number().int().min(1).max(100).optional(),

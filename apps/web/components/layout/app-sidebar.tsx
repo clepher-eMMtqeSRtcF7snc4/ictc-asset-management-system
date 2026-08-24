@@ -23,6 +23,7 @@ import {
   Settings2,
   ShoppingCart,
   Truck,
+  UserRound,
   UsersRound,
 } from "lucide-react"
 import Image from "next/image"
@@ -113,6 +114,7 @@ const data = {
     { name: "Users", url: "/users", icon: <UsersRound /> },
     { name: "Master Data", url: "/administration/master-data", icon: <Settings2 /> },
     { name: "Locations", url: "/administration/locations", icon: <Building2 /> },
+    { name: "Employees", url: "/administration/employees", icon: <UsersRound /> },
   ],
 }
 

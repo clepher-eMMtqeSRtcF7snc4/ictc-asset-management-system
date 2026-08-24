@@ -27,7 +27,7 @@ export class EmployeeService {
     return result;
   }
 
-  async findAll(input?: { search?: string; departmentId?: number; role?: string; status?: string; page?: number; pageSize?: number }) {
+  async findAll(input?: { search?: string; departmentId?: number; position?: string; designation?: string; status?: string; page?: number; pageSize?: number }) {
     const page = input?.page ?? 1;
     const pageSize = input?.pageSize ?? 10;
     const conditions: SQL[] = [];
@@ -46,8 +46,12 @@ export class EmployeeService {
       conditions.push(eq(employee.departmentId, input.departmentId));
     }
 
-    if (input?.role) {
-      conditions.push(eq(employee.role, input.role));
+    if (input?.position) {
+      conditions.push(ilike(employee.position, `%${input.position}%`));
+    }
+
+    if (input?.designation) {
+      conditions.push(ilike(employee.designation, `%${input.designation}%`));
     }
 
     if (input?.status) {

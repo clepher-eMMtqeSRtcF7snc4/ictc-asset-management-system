@@ -16,8 +16,13 @@ import { MoreHorizontal } from "lucide-react";
 import { employeeColumns } from "./employee-columns";
 import { Employee } from "@repo/trpc/schemas";
 
+type EmployeeRow = Employee & {
+  departmentCode: string;
+  departmentColor: string | null;
+};
+
 interface EmployeeTableProps {
-  data: Employee[];
+  data: EmployeeRow[];
   page: number;
   pageSize: number;
   totalPages: number;
@@ -44,7 +49,7 @@ export function EmployeeTable({
         if (column.id === "actions") {
           return {
             ...column,
-            cell: ({ row }: { row: { original: Employee } }) => (
+            cell: ({ row }: { row: { original: EmployeeRow } }) => (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button size="icon-xs" variant="ghost" aria-label={`Actions for ${row.original.firstName} ${row.original.lastName}`}>

@@ -17,11 +17,12 @@ import { trpc } from "@/lib/trpc/client";
 export default function Page() {
   const searchParams = useSearchParams();
   const initialDepartmentId = searchParams.get("departmentId");
-  const initialRole = searchParams.get("role");
 
   const [search, setSearch] = useState("");
-  const [role, setRole] = useState<string>(initialRole ?? "all");
   const [departmentId, setDepartmentId] = useState<string>(initialDepartmentId ?? "all");
+  const [position, setPosition] = useState("");
+  const [designation, setDesignation] = useState("");
+  const [status, setStatus] = useState<"active" | "inactive" | "retire" | "all">("all");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [createOpen, setCreateOpen] = useState(false);
@@ -40,8 +41,9 @@ export default function Page() {
     {
       search: search || undefined,
       departmentId: departmentId === "all" ? undefined : Number(departmentId),
-      role: role === "all" ? undefined : (role as "supervisor" | "custodian" | "staff"),
-      status: undefined,
+      position: position || undefined,
+      designation: designation || undefined,
+      status: status === "all" ? undefined : status,
       page,
       pageSize,
     },
@@ -56,6 +58,26 @@ export default function Page() {
   const employees = employeesQuery.data?.items ?? [];
   const totalPages = employeesQuery.data?.totalPages ?? 1;
   const departments = departmentsQuery.data?.items ?? [];
+
+  const departmentCodeMap = useMemo(() => {
+    const map = new Map<number, string>();
+    departments.forEach((dept) => map.set(dept.id, dept.code));
+    return map;
+  }, [departments]);
+
+  const departmentColorMap = useMemo(() => {
+    const map = new Map<number, string | null>();
+    departments.forEach((dept) => map.set(dept.id, dept.color));
+    return map;
+  }, [departments]);
+
+  const enrichedEmployees = useMemo(() => {
+    return employees.map((emp) => ({
+      ...emp,
+      departmentCode: departmentCodeMap.get(emp.departmentId) ?? "—",
+      departmentColor: departmentColorMap.get(emp.departmentId) ?? null,
+    })) as (Employee & { departmentCode: string; departmentColor: string | null })[];
+  }, [employees, departmentCodeMap, departmentColorMap]);
 
   const editDefaults = useMemo(() => {
     const emp = editEmployeeQuery.data;
@@ -165,9 +187,20 @@ export default function Page() {
               setDepartmentId(value);
               setPage(1);
             }}
-            role={role}
-            onRoleChange={(value) => {
-              setRole(value);
+            departments={departments.map(d => ({ id: d.id, name: d.name }))}
+            position={position}
+            onPositionChange={(value) => {
+              setPosition(value);
+              setPage(1);
+            }}
+            designation={designation}
+            onDesignationChange={(value) => {
+              setDesignation(value);
+              setPage(1);
+            }}
+            status={status}
+            onStatusChange={(value) => {
+              setStatus(value);
               setPage(1);
             }}
           />
@@ -177,7 +210,7 @@ export default function Page() {
             </div>
           ) : (
             <EmployeeTable
-              data={employees as Employee[]}
+              data={enrichedEmployees}
               page={page}
               pageSize={pageSize}
               totalPages={totalPages}

@@ -15,8 +15,13 @@ interface EmployeeFiltersProps {
   onSearchChange: (value: string) => void;
   departmentId: string;
   onDepartmentIdChange: (value: string) => void;
-  role: string;
-  onRoleChange: (value: string) => void;
+  departments: { id: number; name: string }[];
+  position: string;
+  onPositionChange: (value: string) => void;
+  designation: string;
+  onDesignationChange: (value: string) => void;
+  status: "all" | "active" | "inactive" | "retire";
+  onStatusChange: (value: "all" | "active" | "inactive" | "retire") => void;
 }
 
 export function EmployeeFilters({
@@ -24,8 +29,13 @@ export function EmployeeFilters({
   onSearchChange,
   departmentId,
   onDepartmentIdChange,
-  role,
-  onRoleChange,
+  departments,
+  position,
+  onPositionChange,
+  designation,
+  onDesignationChange,
+  status,
+  onStatusChange,
 }: EmployeeFiltersProps) {
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -38,15 +48,40 @@ export function EmployeeFilters({
           onChange={(e) => onSearchChange(e.target.value)}
         />
       </div>
-      <Select value={role} onValueChange={onRoleChange}>
-        <SelectTrigger className="w-32">
-          <SelectValue placeholder="Role" />
+      <Select value={departmentId} onValueChange={onDepartmentIdChange}>
+        <SelectTrigger className="w-40">
+          <SelectValue placeholder="Department" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All Roles</SelectItem>
-          <SelectItem value="supervisor">Supervisor</SelectItem>
-          <SelectItem value="custodian">Custodian</SelectItem>
-          <SelectItem value="staff">Staff</SelectItem>
+          <SelectItem value="all">All Departments</SelectItem>
+          {departments.map((dept) => (
+            <SelectItem key={dept.id} value={String(dept.id)}>
+              {dept.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Input
+        className="w-40"
+        placeholder="Position"
+        value={position}
+        onChange={(e) => onPositionChange(e.target.value)}
+      />
+      <Input
+        className="w-40"
+        placeholder="Designation"
+        value={designation}
+        onChange={(e) => onDesignationChange(e.target.value)}
+      />
+      <Select value={status} onValueChange={onStatusChange}>
+        <SelectTrigger className="w-32">
+          <SelectValue placeholder="Status" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All Status</SelectItem>
+          <SelectItem value="active">Active</SelectItem>
+          <SelectItem value="inactive">Inactive</SelectItem>
+          <SelectItem value="retire">Retire</SelectItem>
         </SelectContent>
       </Select>
     </div>
