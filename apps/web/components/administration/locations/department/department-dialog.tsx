@@ -20,17 +20,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CreateDepartmentInput, createDepartmentInputSchema } from "@repo/trpc/schemas";
+import { CreateDepartmentInput, UpdateDepartmentInput, createDepartmentInputSchema } from "@repo/trpc/schemas";
+import { z } from "zod";
 import FileUploadArea from "@/components/ui/file-upload-area";
 import { getImageUrl } from "@/lib/image";
 import Image from "next/image";
 import { X } from "lucide-react";
 
+const departmentDialogSchema = createDepartmentInputSchema.extend({
+  status: z.enum(["active", "inactive"]).optional(),
+});
+
 interface DepartmentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (values: CreateDepartmentInput) => void;
-  defaultValues?: CreateDepartmentInput;
+  onSubmit: (values: CreateDepartmentInput & { status?: "active" | "inactive" }) => void;
+  defaultValues?: CreateDepartmentInput & { status?: "active" | "inactive" };
   title?: string;
   errorMessage?: string | null;
   onClearError?: () => void;
@@ -48,8 +53,9 @@ export function DepartmentDialog({
   const [uploading, setUploading] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const form = useForm<CreateDepartmentInput>({
-    resolver: zodResolver(createDepartmentInputSchema),
+  const isEdit = Boolean(defaultValues);
+  const form = useForm<CreateDepartmentInput & { status?: "active" | "inactive" }>({
+    resolver: zodResolver(departmentDialogSchema),
     defaultValues: defaultValues ?? {
       name: "",
       code: "",
@@ -243,6 +249,33 @@ export function DepartmentDialog({
               )}
             />
 
+            {isEdit && (
+              <Controller
+                name="status"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="form-status">Status</FieldLabel>
+                    <Select
+                      value={field.value ?? ""}
+                      onValueChange={(value) => field.onChange(value)}
+                    >
+                      <SelectTrigger id="form-status" className="w-full">
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="inactive">Inactive</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+            )}
+
             <Controller
               name="logo"
               control={form.control}
@@ -282,6 +315,7 @@ export function DepartmentDialog({
                 </Field>
               )}
             />
+
           </FieldGroup>
 
           <DialogFooter>

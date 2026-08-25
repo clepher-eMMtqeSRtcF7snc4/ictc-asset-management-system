@@ -79,6 +79,7 @@ export default function Page() {
           custodian: dept.custodian || "",
           logo: dept.logo || null,
           color: dept.color || null,
+          status: dept.status,
         }
       : undefined;
   }, [editDepartmentQuery.data]);
