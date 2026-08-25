@@ -18,6 +18,7 @@ import { DepartmentFilters } from "@/components/administration/locations/departm
 import { DepartmentTable } from "@/components/administration/locations/department/department-table";
 import { DepartmentDialog } from "@/components/administration/locations/department/department-dialog";
 import { DepartmentDeleteDialog } from "@/components/administration/locations/department/department-delete-dialog";
+import { DepartmentAssignDialog } from "@/components/administration/locations/department/department-assign-dialog";
 
 export default function Page() {
   const router = useRouter();
@@ -41,13 +42,16 @@ export default function Page() {
   const [deptEditId, setDeptEditId] = useState<number | null>(null);
   const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null);
   const [deptCreateError, setDeptCreateError] = useState<string | null>(null);
+  const [assignMode, setAssignMode] = useState<"supervisor" | "custodian" | null>(null);
 
   const handleAssignHead = (department: Department) => {
-    router.push(`/administration/employees?departmentId=${department.id}&role=supervisor`);
+    setSelectedDepartment(department);
+    setAssignMode("supervisor");
   };
 
   const handleAssignCustodian = (department: Department) => {
-    router.push(`/administration/employees?departmentId=${department.id}&role=custodian`);
+    setSelectedDepartment(department);
+    setAssignMode("custodian");
   };
 
   const departmentsQuery = trpc.departmentRouter.getDepartments.useQuery(
@@ -388,6 +392,23 @@ export default function Page() {
           onConfirm={handleDeleteDepartment}
           departmentName={selectedDepartment?.name ?? ""}
         />
+
+        {assignMode && (
+          <DepartmentAssignDialog
+            open={assignMode !== null}
+            onOpenChange={(open) => {
+              if (!open) {
+                setAssignMode(null);
+                setSelectedDepartment(null);
+              }
+            }}
+            department={selectedDepartment}
+            mode={assignMode}
+            onSuccess={() => {
+              toast.success("Assignment updated successfully.");
+            }}
+          />
+        )}
       </Card>
     </div>
   );

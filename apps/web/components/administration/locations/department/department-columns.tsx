@@ -7,8 +7,6 @@ import { getImageUrl } from "@/lib/image";
 import Image from "next/image";
 
 export const departmentColumns: ColumnDef<Department>[] = [
-  { accessorKey: "code", header: "Code", cell: ({ row }) => <span className="font-mono text-xs">{row.original.code}</span> },
-  { accessorKey: "name", header: "Department Name", cell: ({ row }) => <span className="font-medium">{row.original.name}</span> },
   {
     accessorKey: "logo",
     header: "Logo",
@@ -19,6 +17,8 @@ export const departmentColumns: ColumnDef<Department>[] = [
         "—"
       ),
   },
+  { accessorKey: "code", header: "Code", cell: ({ row }) => <span className="font-mono text-xs">{row.original.code}</span> },
+  { accessorKey: "name", header: "Department Name", cell: ({ row }) => <span className="font-medium">{row.original.name}</span> },
   {
     accessorKey: "color",
     header: "Color",

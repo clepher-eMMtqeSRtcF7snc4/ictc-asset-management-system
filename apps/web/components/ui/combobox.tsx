@@ -12,12 +12,13 @@ import {
 import { Input } from "@/components/ui/input";
 
 interface ComboboxProps {
-  options: { id: string; name: string }[];
+  options: { id: string; name: string; photoUrl?: string | null }[];
   value: string;
   onValueChange: (value: string) => void;
   placeholder: string;
   className?: string;
   fullWidth?: boolean;
+  renderOption?: (option: { id: string; name: string; photoUrl?: string | null }) => React.ReactNode;
 }
 
 export function Combobox({
@@ -27,6 +28,7 @@ export function Combobox({
   placeholder,
   className,
   fullWidth = false,
+  renderOption,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
@@ -111,7 +113,7 @@ export function Combobox({
                   setOpen(false);
                 }}
               >
-                {option.name}
+                {renderOption ? renderOption(option) : option.name}
                 {value === option.id && (
                   <Check className="absolute right-2 size-3" />
                 )}
