@@ -70,14 +70,17 @@ export const employeeColumns: ColumnDef<EmployeeRow>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
-      const statusMap: Record<string, string> = {
-        active: "Active",
-        inactive: "Inactive",
-        retire: "Retire",
+      const status = row.original.status;
+      const displayLabel = status === "active" ? "Regular" : status;
+      const getVariant = (s: string): "success" | "info" | "warning" | "destructive" => {
+        if (s === "active" || s === "contractual" || s === "permanent") return "success";
+        if (s === "job-order" || s === "casual" || s === "temporary" || s === "probationary") return "info";
+        if (s === "on-leave") return "warning";
+        return "destructive";
       };
       return (
-        <Badge variant={row.original.status === "active" ? "success" : "destructive"}>
-          {statusMap[row.original.status] || row.original.status}
+        <Badge variant={getVariant(status)}>
+          {displayLabel}
         </Badge>
       );
     },

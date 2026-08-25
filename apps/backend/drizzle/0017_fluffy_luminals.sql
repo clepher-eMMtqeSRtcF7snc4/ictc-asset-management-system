@@ -1,0 +1,1 @@
+ALTER TYPE "public"."employee_status" ADD VALUE 'job-order' BEFORE 'on-leave';

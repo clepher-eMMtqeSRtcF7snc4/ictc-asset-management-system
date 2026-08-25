@@ -73,11 +73,20 @@ export const departmentEmployeeColumns: ColumnDef<EmployeeRow>[] = [
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => (
-      <Badge variant={row.original.status === "active" ? "success" : "destructive"}>
-        {row.original.status}
-      </Badge>
-    ),
+    cell: ({ row }) => {
+      const status = row.original.status;
+      const getVariant = (s: string): "success" | "info" | "warning" | "destructive" => {
+        if (s === "active" || s === "contractual" || s === "permanent") return "success";
+        if (s === "job-order" || s === "casual" || s === "temporary" || s === "probationary") return "info";
+        if (s === "on-leave") return "warning";
+        return "destructive";
+      };
+      return (
+        <Badge variant={getVariant(status)}>
+          {status}
+        </Badge>
+      );
+    },
   },
   {
     id: "actions",
