@@ -12,24 +12,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreHorizontal, Pen, Trash2, UserRound, UsersRoundIcon } from "lucide-react";
-import { depEmpColumns } from "./dep-emp-columns";
-import { Department } from "@repo/trpc/schemas";
+import { MoreHorizontal, Pen, Trash2 } from "lucide-react";
+import { departmentEmployeeColumns } from "./dep-emp-columns";
+import { Employee } from "@repo/trpc/schemas";
 import Link from "next/link";
+import { EmployeeRow } from "./dep-emp-types";
 
-interface DepartmentTableProps {
-  data: Department[];
+interface DepartmentEmployeeTableProps {
+  data: EmployeeRow[];
   page: number;
   pageSize: number;
   totalPages: number;
   onPaginationChange: (next: { page: number; pageSize: number }) => void;
-  onEdit: (department: Department) => void;
-  onDelete: (department: Department) => void;
-  onAssignHead: (department: Department) => void;
-  onAssignCustodian: (department: Department) => void;
+  onEdit: (employee: Employee) => void;
+  onDelete: (employee: Employee) => void;
 }
 
-export function DepartmentTable({
+export function DepartmentEmployeeTable({
   data,
   page,
   pageSize,
@@ -37,41 +36,30 @@ export function DepartmentTable({
   onPaginationChange,
   onEdit,
   onDelete,
-  onAssignHead,
-  onAssignCustodian,
-}: DepartmentTableProps) {
+}: DepartmentEmployeeTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const columns = useMemo(
     () =>
-      depEmpColumns.map((column) => {
+      departmentEmployeeColumns.map((column) => {
         if (column.id === "actions") {
           return {
             ...column,
-            cell: ({ row }: { row: { original: Department } }) => (
+            cell: ({ row }: { row: { original: EmployeeRow } }) => (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button size="icon-xs" variant="ghost" aria-label={`Actions for ${row.original.name}`}>
+                  <Button size="icon-xs" variant="ghost" aria-label={`Actions for ${row.original.firstName} ${row.original.lastName}`}>
                     <MoreHorizontal />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                   <DropdownMenuItem asChild>
-                    <Link href={{pathname:`/administration/departments/${row.original.id}`, query: {name:row.original.name, desc: row.original.description ?? "—"}}}><UsersRoundIcon/> Employees</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onAssignHead(row.original)}>
-                    <UserRound/> Assign Head
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onAssignCustodian(row.original)}>
-                    <UserRound/> Assign Custodian
-                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onEdit(row.original)}>
-                    <Pen/> Edit
+                    <Pen /> Edit
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-destructive" onClick={() => onDelete(row.original)}>
-                    <Trash2/> Delete
+                    <Trash2 /> Delete
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -80,7 +68,7 @@ export function DepartmentTable({
         }
         return column;
       }),
-    [onEdit, onDelete, onAssignHead, onAssignCustodian]
+    [onEdit, onDelete]
   );
 
   const table = useReactTable({
@@ -136,10 +124,10 @@ export function DepartmentTable({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={depEmpColumns.length} className="h-36 text-center">
-                  <p className="font-medium">No departments found</p>
+                <TableCell colSpan={departmentEmployeeColumns.length} className="h-36 text-center">
+                  <p className="font-medium">No employees found</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    No departments match your current search.
+                    No employees match your current search.
                   </p>
                 </TableCell>
               </TableRow>

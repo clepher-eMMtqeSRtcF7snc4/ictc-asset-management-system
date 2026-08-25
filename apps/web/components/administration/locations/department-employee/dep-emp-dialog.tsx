@@ -13,54 +13,108 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { CreateDepartmentInput, createDepartmentInputSchema } from "@repo/trpc/schemas";
+import { Combobox } from "@/components/ui/combobox";
+import { CreateEmployeeInput, createEmployeeInputSchema } from "@repo/trpc/schemas";
 import FileUploadArea from "@/components/ui/file-upload-area";
 import { getImageUrl } from "@/lib/image";
 import Image from "next/image";
 import { X } from "lucide-react";
+import { trpc } from "@/lib/trpc/client";
 
-interface DepEmpDialogProps {
+interface DepartmentEmployeeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (values: CreateDepartmentInput) => void;
-  defaultValues?: CreateDepartmentInput;
+  onSubmit: (values: CreateEmployeeInput & { id?: number }) => void | Promise<void>;
+  defaultValues?: CreateEmployeeInput;
   title?: string;
   errorMessage?: string | null;
   onClearError?: () => void;
+  departments: { id: number; name: string }[];
 }
 
-export function DepEmpDialog({
+export function DepartmentEmployeeDialog({
   open,
   onOpenChange,
   onSubmit,
   defaultValues,
-  title = "Create Department",
+  title = "Create Employee",
   errorMessage,
   onClearError,
-}: DepEmpDialogProps) {
+  departments,
+}: DepartmentEmployeeDialogProps) {
   const [uploading, setUploading] = useState(false);
-  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const form = useForm<CreateDepartmentInput>({
-    resolver: zodResolver(createDepartmentInputSchema),
+
+  const positionsQuery = trpc.positionRouter.getPositions.useQuery(
+    { status: "active", pageSize: 100 },
+    { enabled: open }
+  );
+
+  const designationsQuery = trpc.designationRouter.getDesignations.useQuery(
+    { status: "active", pageSize: 100 },
+    { enabled: open }
+  );
+
+  const positions = positionsQuery.data?.items ?? [];
+  const designations = designationsQuery.data?.items ?? [];
+
+  const statusOptions = [
+    { id: "active", name: "Active" },
+    { id: "casual", name: "Casual" },
+    { id: "contractual", name: "Contractual" },
+    { id: "deceased", name: "Deceased" },
+    { id: "end-of-contract", name: "End of Contract" },
+    { id: "inactive", name: "Inactive" },
+    { id: "job-order", name: "Job Order" },
+    { id: "on-leave", name: "On Leave" },
+    { id: "permanent", name: "Permanent" },
+    { id: "probationary", name: "Probationary" },
+    { id: "retired", name: "Retired" },
+    { id: "suspended", name: "Suspended" },
+    { id: "temporary", name: "Temporary" },
+    { id: "terminated", name: "Terminated" },
+  ];
+
+  const form = useForm<CreateEmployeeInput>({
+    resolver: zodResolver(createEmployeeInputSchema),
     defaultValues: defaultValues ?? {
-      name: "",
-      code: "",
-      description: "",
-      supervisorId: null,
-      custodianId: null,
-      logo: null,
-      color: null,
+      firstName: "",
+      middleName: null,
+      lastName: "",
+      email: "",
+      position: "",
+      designation: "",
+      departmentId: 0,
+      role: null,
+      status: "active",
+      photo: null,
     },
   });
 
   useEffect(() => {
-    if (open && defaultValues) {
-      form.reset(defaultValues);
-      if (defaultValues.logo) {
-        setLogoPreview(getImageUrl(defaultValues.logo));
+    if (open) {
+      if (defaultValues) {
+        form.reset(defaultValues);
+        if (defaultValues.photo) {
+          setPhotoPreview(getImageUrl(defaultValues.photo));
+        } else {
+          setPhotoPreview(null);
+        }
       } else {
-        setLogoPreview(null);
+        form.reset({
+          firstName: "",
+          middleName: null,
+          lastName: "",
+          email: "",
+          position: "",
+          designation: "",
+          departmentId: 0,
+          role: null,
+          status: "active",
+          photo: null,
+        });
+        setPhotoPreview(null);
       }
     }
   }, [open, defaultValues, form]);
@@ -77,7 +131,7 @@ export function DepEmpDialog({
       setSelectedFile(file);
       const reader = new FileReader();
       reader.onload = (e) => {
-        setLogoPreview(e.target?.result as string);
+        setPhotoPreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -85,12 +139,12 @@ export function DepEmpDialog({
 
   const clearSelection = () => {
     setSelectedFile(null);
-    setLogoPreview(null);
-    form.setValue("logo", null);
+    setPhotoPreview(null);
+    form.setValue("photo", null);
   };
 
-  const handleSubmitWithUpload = async (values: CreateDepartmentInput) => {
-    let logoFilename = values.logo;
+  const handleSubmitWithUpload = async (values: CreateEmployeeInput) => {
+    let photoFilename = values.photo;
 
     if (selectedFile) {
       setUploading(true);
@@ -108,7 +162,7 @@ export function DepEmpDialog({
         }
 
         const { filename } = await uploadResponse.json();
-        logoFilename = filename;
+        photoFilename = filename;
       } catch (error) {
         console.error("Upload error:", error);
         return;
@@ -119,13 +173,13 @@ export function DepEmpDialog({
 
     await onSubmit({
       ...values,
-      logo: logoFilename,
+      photo: photoFilename,
     });
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
@@ -137,147 +191,227 @@ export function DepEmpDialog({
             {errorMessage}
           </p>
         )}
-        <form id="department-form" className="grid gap-4" onSubmit={form.handleSubmit(handleSubmitWithUpload)}>
-          <FieldGroup>
-            <Controller
-              name="code"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-code">Code</FieldLabel>
-                  <Input
-                    {...field}
-                    value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    id="form-code"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Enter department code"
-                    autoComplete="off"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="name"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-name">Department Name</FieldLabel>
-                  <Input
-                    {...field}
-                    value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    id="form-name"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Enter department name"
-                    autoComplete="off"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="description"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-description">Description</FieldLabel>
-                  <textarea
-                    {...field}
-                    value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    id="form-description"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Enter department description"
-                    autoComplete="off"
-                    className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:bg-input/30"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="color"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-color">Color</FieldLabel>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      {...field}
-                      value={field.value ?? "#000000"}
-                      onChange={(e) => field.onChange(e.target.value)}
-                      id="form-color"
-                      className="size-9 cursor-pointer rounded-md border border-input bg-transparent p-1"
-                    />
+        <form id="employee-form" className="grid gap-6" onSubmit={form.handleSubmit(handleSubmitWithUpload)}>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <FieldGroup className="space-y-2">
+              <Controller
+                name="firstName"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="form-firstName">First Name</FieldLabel>
                     <Input
+                      {...field}
                       value={field.value ?? ""}
                       onChange={(e) => field.onChange(e.target.value)}
-                      placeholder="#16a34a"
+                      id="form-firstName"
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Enter first name"
                       autoComplete="off"
-                      className="flex-1"
                     />
-                  </div>
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="logo"
-              control={form.control}
-              render={() => (
-                <Field>
-                  <FieldLabel>Logo</FieldLabel>
-                  <div className="mt-2">
-                    {logoPreview ? (
-                      <div className="relative inline-block">
-                        <Image
-                          src={logoPreview}
-                          unoptimized
-                          alt="Department logo preview"
-                          width={96}
-                          height={96}
-                          className="size-24 rounded-md object-cover border"
-                        />
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon-xs"
-                          className="absolute -top-2 -right-2"
-                          onClick={clearSelection}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <FileUploadArea onFileSelect={handleFileSelect} />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
                     )}
-                    {uploading && (
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        Uploading...
-                      </p>
-                    )}
-                  </div>
-                </Field>
-              )}
-            />
-          </FieldGroup>
+                  </Field>
+                )}
+              />
 
-          <DialogFooter>
+              <Controller
+                name="middleName"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="form-middleName">Middle Name (Optional)</FieldLabel>
+                    <Input
+                      {...field}
+                      value={field.value ?? ""}
+                      onChange={(e) => field.onChange(e.target.value || null)}
+                      id="form-middleName"
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Enter middle name"
+                      autoComplete="off"
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="lastName"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="form-lastName">Last Name</FieldLabel>
+                    <Input
+                      {...field}
+                      value={field.value ?? ""}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      id="form-lastName"
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Enter last name"
+                      autoComplete="off"
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="email"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="form-email">Email</FieldLabel>
+                    <Input
+                      {...field}
+                      value={field.value ?? ""}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      id="form-email"
+                      type="email"
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Enter email address"
+                      autoComplete="off"
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="position"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="form-position">Position</FieldLabel>
+                    <Combobox
+                      options={positions}
+                      value={field.value ?? ""}
+                      onValueChange={(value) => field.onChange(value)}
+                      placeholder="Select position"
+                      className="w-full"
+                      fullWidth
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="designation"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="form-designation">Designation</FieldLabel>
+                    <Combobox
+                      options={designations}
+                      value={field.value ?? ""}
+                      onValueChange={(value) => field.onChange(value)}
+                      placeholder="Select designation"
+                      className="w-full"
+                      fullWidth
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+            </FieldGroup>
+
+            <div className="space-y-4">
+              <Controller
+                name="departmentId"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="form-department">Department</FieldLabel>
+                    <Combobox
+                      options={departments.map((d) => ({ id: String(d.id), name: d.name }))}
+                      value={field.value ? String(field.value) : ""}
+                      onValueChange={(value) => field.onChange(value ? Number(value) : 0)}
+                      placeholder="Select department"
+                      className="w-full"
+                      fullWidth
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="status"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="form-status">Status</FieldLabel>
+                    <Combobox
+                      options={statusOptions}
+                      value={field.value ?? "active"}
+                      onValueChange={(value) => field.onChange(value as any)}
+                      placeholder="Select status"
+                      className="w-full"
+                      fullWidth
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="photo"
+                control={form.control}
+                render={() => (
+                  <Field>
+                    <FieldLabel>Photo</FieldLabel>
+                    <div className="mt-2 flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 text-center">
+                      {photoPreview ? (
+                        <div className="relative inline-block">
+                          <Image
+                            src={photoPreview}
+                            unoptimized
+                            alt="Employee photo preview"
+                            width={112}
+                            height={112}
+                            className="size-28 rounded-md border object-cover"
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon-xs"
+                            className="absolute -top-2 -right-2"
+                            onClick={clearSelection}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <FileUploadArea onFileSelect={handleFileSelect} />
+                      )}
+                      {uploading && (
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Uploading photo...
+                        </p>
+                      )}
+                    </div>
+                  </Field>
+                )}
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="mt-4">
             <Button
               type="button"
               variant="outline"

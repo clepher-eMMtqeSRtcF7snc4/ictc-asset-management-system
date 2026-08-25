@@ -76,6 +76,7 @@ export function EmployeeFilters({
           { id: "deceased", name: "Deceased" },
           { id: "end-of-contract", name: "End of Contract" },
           { id: "inactive", name: "Inactive" },
+          { id: "job-order", name: "Job Order" },
           { id: "on-leave", name: "On Leave" },
           { id: "permanent", name: "Permanent" },
           { id: "probationary", name: "Probationary" },

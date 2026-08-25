@@ -7,6 +7,7 @@ export const employeeStatusSchema = z.enum([
   'deceased',
   'end-of-contract',
   'inactive',
+  'job-order',
   'on-leave',
   'permanent',
   'probationary',

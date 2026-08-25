@@ -1,46 +1,81 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { Department } from "@repo/trpc/schemas";
+import { Employee } from "@repo/trpc/schemas";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { getImageUrl } from "@/lib/image";
 import Image from "next/image";
+import { EmployeeRow } from "./dep-emp-types";
 
-export const depEmpColumns: ColumnDef<Department>[] = [
-  { accessorKey: "code", header: "Code", cell: ({ row }) => <span className="font-mono text-xs">{row.original.code}</span> },
-  { accessorKey: "name", header: "Department Name", cell: ({ row }) => <span className="font-medium">{row.original.name}</span> },
+export const departmentEmployeeColumns: ColumnDef<EmployeeRow>[] = [
   {
-    accessorKey: "logo",
-    header: "Logo",
-    cell: ({ row }) =>
-      row.original.logo ? (
-        <Image src={getImageUrl(row.original.logo)} alt={row.original.name} width={32} height={32} unoptimized className="size-8 rounded object-cover" />
-      ) : (
-        "—"
-      ),
+    accessorKey: "lastName",
+    header: "Last Name",
+    cell: ({ row }) => {
+      const photo = row.original.photo;
+      return (
+        <div className="flex items-center gap-2">
+          {photo ? (
+            <Image
+              src={getImageUrl(photo)}
+              unoptimized
+              alt={`${row.original.firstName} ${row.original.lastName}`}
+              width={32}
+              height={32}
+              className="size-8 rounded-full border object-cover"
+            />
+          ) : (
+            <div className="flex size-8 items-center justify-center rounded-full border bg-muted text-xs font-semibold text-muted-foreground">
+              {row.original.lastName.slice(0, 1)}
+            </div>
+          )}
+          <span className="font-medium">{row.original.lastName}</span>
+        </div>
+      );
+    },
   },
   {
-    accessorKey: "color",
-    header: "Color",
-    cell: ({ row }) =>
-      row.original.color ? (
-        <span className="inline-flex items-center gap-2">
-          <span className="size-3 rounded-full" style={{ backgroundColor: row.original.color }} />
-          {row.original.color}
+    accessorKey: "firstName",
+    header: "First Name",
+    cell: ({ row }) => row.original.firstName,
+  },
+  { accessorKey: "email", header: "Email", cell: ({ row }) => row.original.email },
+  {
+    accessorFn: (row) => row.positionName,
+    header: "Position",
+    cell: ({ row }) => (row.original as EmployeeRow).positionName || "—",
+  },
+  {
+    accessorFn: (row) => row.designationName,
+    header: "Designation",
+    cell: ({ row }) => (row.original as EmployeeRow).designationName || "—",
+  },
+  {
+    accessorKey: "departmentCode",
+    header: "Department",
+    cell: ({ row }) => {
+      const color = row.original.departmentColor;
+      const code = row.original.departmentCode ?? "—";
+      return (
+        <span
+          className={cn(
+            "inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium",
+            color ? "" : "bg-primary/10 text-primary"
+          )}
+          style={color ? { backgroundColor: `${color}20`, color } : undefined}
+        >
+          {code}
         </span>
-      ) : (
-        "—"
-      ),
+      );
+    },
   },
-  { accessorKey: "description", header: "Description", cell: ({ row }) => row.original.description || "—" },
-  { accessorKey: "supervisorId", header: "Department Head", cell: ({ row }) => row.original.supervisorId ? `ID: ${row.original.supervisorId}` : "—" },
-  { accessorKey: "custodianId", header: "Custodian", cell: ({ row }) => row.original.custodianId ? `ID: ${row.original.custodianId}` : "—" },
   {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => (
       <Badge variant={row.original.status === "active" ? "success" : "destructive"}>
-        {row.original.status === "active" ? "Active" : "Inactive"}
+        {row.original.status}
       </Badge>
     ),
   },
