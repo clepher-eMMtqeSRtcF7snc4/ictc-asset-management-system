@@ -1,13 +1,6 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Search } from "lucide-react";
 import { Combobox } from "@/components/ui/combobox";
 
@@ -53,19 +46,15 @@ export function EmployeeFilters({
           onChange={(e) => onSearchChange(e.target.value)}
         />
       </div>
-      <Select value={departmentId} onValueChange={onDepartmentIdChange}>
-        <SelectTrigger className="w-40">
-          <SelectValue placeholder="Department" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Departments</SelectItem>
-          {departments.map((dept) => (
-            <SelectItem key={dept.id} value={String(dept.id)}>
-              {dept.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <Combobox
+        options={[
+          { id: "all", name: "All Departments" },
+          ...departments.map((dept) => ({ id: String(dept.id), name: dept.name })),
+        ]}
+        value={departmentId}
+        onValueChange={onDepartmentIdChange}
+        placeholder="Department"
+      />
       <Combobox
         options={positions}
         value={position}
@@ -78,17 +67,17 @@ export function EmployeeFilters({
         onValueChange={onDesignationChange}
         placeholder="Designation"
       />
-      <Select value={status} onValueChange={onStatusChange}>
-        <SelectTrigger className="w-32">
-          <SelectValue placeholder="Status" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Status</SelectItem>
-          <SelectItem value="active">Active</SelectItem>
-          <SelectItem value="inactive">Inactive</SelectItem>
-          <SelectItem value="retire">Retire</SelectItem>
-        </SelectContent>
-      </Select>
+      <Combobox
+        options={[
+          { id: "all", name: "All Status" },
+          { id: "active", name: "Active" },
+          { id: "inactive", name: "Inactive" },
+          { id: "retire", name: "Retire" },
+        ]}
+        value={status}
+        onValueChange={(value) => onStatusChange(value as "all" | "active" | "inactive" | "retire")}
+        placeholder="Status"
+      />
     </div>
   );
 }
