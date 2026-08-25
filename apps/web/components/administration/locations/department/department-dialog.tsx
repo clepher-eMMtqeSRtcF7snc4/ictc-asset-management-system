@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CreateDepartmentInput, UpdateDepartmentInput, createDepartmentInputSchema } from "@repo/trpc/schemas";
+import { CreateDepartmentInput, createDepartmentInputSchema } from "@repo/trpc/schemas";
 import { z } from "zod";
 import FileUploadArea from "@/components/ui/file-upload-area";
 import { getImageUrl } from "@/lib/image";
@@ -102,7 +102,7 @@ export function DepartmentDialog({
     form.setValue("logo", null);
   };
 
-  const handleSubmitWithUpload = async (values: CreateDepartmentInput) => {
+  const handleSubmitWithUpload = async (values: CreateDepartmentInput & { status?: "active" | "inactive" }) => {
     let logoFilename = values.logo;
 
     if (selectedFile) {
@@ -138,7 +138,7 @@ export function DepartmentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
@@ -150,173 +150,178 @@ export function DepartmentDialog({
             {errorMessage}
           </p>
         )}
-        <form id="department-form" className="grid gap-4" onSubmit={form.handleSubmit(handleSubmitWithUpload)}>
-          <FieldGroup>
-            <Controller
-              name="code"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-code">Code</FieldLabel>
-                  <Input
-                    {...field}
-                    value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    id="form-code"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Enter department code"
-                    autoComplete="off"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="name"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-name">Department Name</FieldLabel>
-                  <Input
-                    {...field}
-                    value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    id="form-name"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Enter department name"
-                    autoComplete="off"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="description"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-description">Description</FieldLabel>
-                  <textarea
-                    {...field}
-                    value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    id="form-description"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Enter department description"
-                    autoComplete="off"
-                    className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:bg-input/30"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            <Controller
-              name="color"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-color">Color</FieldLabel>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      {...field}
-                      value={field.value ?? "#000000"}
-                      onChange={(e) => field.onChange(e.target.value)}
-                      id="form-color"
-                      className="size-9 cursor-pointer rounded-md border border-input bg-transparent p-1"
-                    />
-                    <Input
-                      value={field.value ?? ""}
-                      onChange={(e) => field.onChange(e.target.value)}
-                      placeholder="#16a34a"
-                      autoComplete="off"
-                      className="flex-1"
-                    />
-                  </div>
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
-            {isEdit && (
+        <form id="department-form" className="grid gap-4 space-y-4" onSubmit={form.handleSubmit(handleSubmitWithUpload)}>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {/* Left Column */}
+            <FieldGroup className="space-y-3">
               <Controller
-                name="status"
+                name="code"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="form-status">Status</FieldLabel>
-                    <Select
+                    <FieldLabel htmlFor="form-code">Code</FieldLabel>
+                    <Input
+                      {...field}
                       value={field.value ?? ""}
-                      onValueChange={(value) => field.onChange(value)}
-                    >
-                      <SelectTrigger id="form-status" className="w-full">
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="inactive">Inactive</SelectItem>
-                      </SelectContent>
-                    </Select>
+                      onChange={(e) => field.onChange(e.target.value)}
+                      id="form-code"
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Enter department code"
+                      autoComplete="off"
+                    />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
                   </Field>
                 )}
               />
-            )}
 
-            <Controller
-              name="logo"
-              control={form.control}
-              render={() => (
-                <Field>
-                  <FieldLabel>Logo</FieldLabel>
-                  <div className="mt-2">
-                    {logoPreview ? (
-                      <div className="relative inline-block">
-                        <Image
-                          src={logoPreview}
-                          unoptimized
-                          alt="Department logo preview"
-                          width={96}
-                          height={96}
-                          className="size-24 rounded-md object-cover border"
-                        />
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon-xs"
-                          className="absolute -top-2 -right-2"
-                          onClick={clearSelection}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <FileUploadArea onFileSelect={handleFileSelect} />
+              <Controller
+                name="name"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="form-name">Department Name</FieldLabel>
+                    <Input
+                      {...field}
+                      value={field.value ?? ""}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      id="form-name"
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Enter department name"
+                      autoComplete="off"
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
                     )}
-                    {uploading && (
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        Uploading...
-                      </p>
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="description"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="form-description">Description</FieldLabel>
+                    <textarea
+                      {...field}
+                      value={field.value ?? ""}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      id="form-description"
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Enter department description"
+                      autoComplete="off"
+                      className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:bg-input/30"
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
                     )}
-                  </div>
-                </Field>
+                  </Field>
+                )}
+              />
+            </FieldGroup>
+
+            {/* Right Column */}
+            <div className="space-y-4">
+              <Controller
+                name="color"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="form-color">Color</FieldLabel>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="color"
+                        {...field}
+                        value={field.value ?? "#000000"}
+                        onChange={(e) => field.onChange(e.target.value)}
+                        id="form-color"
+                        className="size-9 cursor-pointer rounded-md border border-input bg-transparent p-1"
+                      />
+                      <Input
+                        value={field.value ?? ""}
+                        onChange={(e) => field.onChange(e.target.value)}
+                        placeholder="#16a34a"
+                        autoComplete="off"
+                        className="flex-1"
+                      />
+                    </div>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              {isEdit && (
+                <Controller
+                  name="status"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="form-status">Status</FieldLabel>
+                      <Select
+                        value={field.value ?? ""}
+                        onValueChange={(value) => field.onChange(value)}
+                      >
+                        <SelectTrigger id="form-status" className="w-full">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="active">Active</SelectItem>
+                          <SelectItem value="inactive">Inactive</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
               )}
-            />
 
-          </FieldGroup>
+              <Controller
+                name="logo"
+                control={form.control}
+                render={() => (
+                  <Field>
+                    <FieldLabel>Logo</FieldLabel>
+                    <div className="mt-2">
+                      {logoPreview ? (
+                        <div className="relative inline-block">
+                          <Image
+                            src={logoPreview}
+                            unoptimized
+                            alt="Department logo preview"
+                            width={96}
+                            height={96}
+                            className="size-24 rounded-md object-cover border"
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon-xs"
+                            className="absolute -top-2 -right-2"
+                            onClick={clearSelection}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <FileUploadArea onFileSelect={handleFileSelect} />
+                      )}
+                      {uploading && (
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Uploading...
+                        </p>
+                      )}
+                    </div>
+                  </Field>
+                )}
+              />
+            </div>
+          </div>
 
           <DialogFooter>
             <Button
