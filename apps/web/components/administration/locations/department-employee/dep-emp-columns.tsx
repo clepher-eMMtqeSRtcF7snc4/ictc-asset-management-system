@@ -33,8 +33,8 @@ export const depEmpColumns: ColumnDef<Department>[] = [
       ),
   },
   { accessorKey: "description", header: "Description", cell: ({ row }) => row.original.description || "—" },
-  { accessorKey: "supervisor", header: "Department Head", cell: ({ row }) => row.original.supervisor || "—" },
-  { accessorKey: "custodian", header: "Custodian", cell: ({ row }) => row.original.custodian || "—" },
+  { accessorKey: "supervisorId", header: "Department Head", cell: ({ row }) => row.original.supervisorId ? `ID: ${row.original.supervisorId}` : "—" },
+  { accessorKey: "custodianId", header: "Custodian", cell: ({ row }) => row.original.custodianId ? `ID: ${row.original.custodianId}` : "—" },
   {
     accessorKey: "status",
     header: "Status",

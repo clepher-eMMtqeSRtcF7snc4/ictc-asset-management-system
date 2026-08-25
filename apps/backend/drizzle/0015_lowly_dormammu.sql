@@ -1,0 +1,2 @@
+ALTER TABLE "department" ADD CONSTRAINT "department_supervisor_id_employee_id_fk" FOREIGN KEY ("supervisor_id") REFERENCES "public"."employee"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "department" ADD CONSTRAINT "department_custodian_id_employee_id_fk" FOREIGN KEY ("custodian_id") REFERENCES "public"."employee"("id") ON DELETE no action ON UPDATE no action;

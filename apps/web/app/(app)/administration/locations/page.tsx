@@ -72,6 +72,54 @@ export default function Page() {
   const departments = departmentsQuery.data?.items ?? [];
   const deptTotalPages = departmentsQuery.data?.totalPages ?? 1;
 
+  const activeEmployeesQuery = trpc.employeeRouter.getEmployees.useQuery(
+    { status: "active", pageSize: 100 },
+    { enabled: deptEditId !== null }
+  );
+  const employeeMap = useMemo(() => {
+    const map = new Map<number, { firstName: string; lastName: string; middleName: string }>();
+    (activeEmployeesQuery.data?.items ?? []).forEach((e: any) => {
+      map.set(e.id, { firstName: e.firstName, lastName: e.lastName, middleName: e.middleName });
+    });
+    return map;
+  }, [activeEmployeesQuery.data]);
+
+  const enrichedDepartments = useMemo(() => {
+    return departments.map((dept) => {
+      const rawSupervisor = (dept as { supervisor?: string }).supervisor;
+      const rawCustodian = (dept as { custodian?: string }).custodian;
+      return {
+        id: dept.id,
+        name: dept.name,
+        code: dept.code,
+        description: dept.description,
+        logo: dept.logo,
+        color: dept.color,
+        status: dept.status,
+        createdAt: dept.createdAt as Date | undefined,
+        updatedAt: dept.updatedAt as Date | undefined,
+        supervisorId: dept.supervisorId ?? null,
+        custodianId: dept.custodianId ?? null,
+        supervisorName: (
+          dept.supervisorId != null && employeeMap.has(dept.supervisorId)
+            ? (() => {
+                const e = employeeMap.get(dept.supervisorId)!;
+                return `${e.lastName}, ${e.firstName}${e.middleName ? ` ${e.middleName[0]}.` : ""}`;
+              })()
+            : rawSupervisor ?? null
+        ),
+        custodianName: (
+          dept.custodianId != null && employeeMap.has(dept.custodianId)
+            ? (() => {
+                const e = employeeMap.get(dept.custodianId)!;
+                return `${e.lastName}, ${e.firstName}${e.middleName ? ` ${e.middleName[0]}.` : ""}`;
+              })()
+            : rawCustodian ?? null
+        ),
+      };
+    });
+  }, [departments, employeeMap]);
+
   const deptEditDefaults = useMemo(() => {
     const dept = editDepartmentQuery.data;
     return dept
@@ -79,8 +127,8 @@ export default function Page() {
           code: dept.code,
           name: dept.name,
           description: dept.description || "",
-          supervisor: dept.supervisor,
-          custodian: dept.custodian || "",
+          supervisorId: dept.supervisorId,
+          custodianId: dept.custodianId,
           logo: dept.logo || null,
           color: dept.color || null,
           status: dept.status,
@@ -344,7 +392,7 @@ export default function Page() {
             </div>
           ) : (
             <DepartmentTable
-              data={departments as Department[]}
+              data={enrichedDepartments}
               page={deptPage}
               pageSize={deptPageSize}
               totalPages={deptTotalPages}
@@ -405,6 +453,7 @@ export default function Page() {
             department={selectedDepartment}
             mode={assignMode}
             onSuccess={() => {
+              utils.departmentRouter.getDepartments.invalidate();
               toast.success("Assignment updated successfully.");
             }}
           />

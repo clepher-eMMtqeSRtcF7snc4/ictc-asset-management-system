@@ -6,7 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { getImageUrl } from "@/lib/image";
 import Image from "next/image";
 
-export const departmentColumns: ColumnDef<Department>[] = [
+export interface EnrichedDepartment extends Department {
+  supervisorName: string | null;
+  custodianName: string | null;
+}
+
+export const departmentColumns: ColumnDef<EnrichedDepartment>[] = [
   {
     accessorKey: "logo",
     header: "Logo",
@@ -33,8 +38,16 @@ export const departmentColumns: ColumnDef<Department>[] = [
       ),
   },
   { accessorKey: "description", header: "Description", cell: ({ row }) => row.original.description || "—" },
-  { accessorKey: "supervisor", header: "Department Head", cell: ({ row }) => row.original.supervisor || "—" },
-  { accessorKey: "custodian", header: "Custodian", cell: ({ row }) => row.original.custodian || "—" },
+  {
+    accessorKey: "supervisorName",
+    header: "Department Head",
+    cell: ({ row }) => row.original.supervisorName || "—",
+  },
+  {
+    accessorKey: "custodianName",
+    header: "Custodian",
+    cell: ({ row }) => row.original.custodianName || "—",
+  },
   {
     accessorKey: "status",
     header: "Status",

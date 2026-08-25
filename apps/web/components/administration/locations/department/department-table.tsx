@@ -13,20 +13,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MoreHorizontal, Pen, Trash2, UserRound, UsersRoundIcon } from "lucide-react";
-import { departmentColumns } from "./department-columns";
+import { departmentColumns, type EnrichedDepartment } from "./department-columns";
 import { Department } from "@repo/trpc/schemas";
 import Link from "next/link";
 
 interface DepartmentTableProps {
-  data: Department[];
+  data: EnrichedDepartment[];
   page: number;
   pageSize: number;
   totalPages: number;
   onPaginationChange: (next: { page: number; pageSize: number }) => void;
-  onEdit: (department: Department) => void;
-  onDelete: (department: Department) => void;
-  onAssignHead: (department: Department) => void;
-  onAssignCustodian: (department: Department) => void;
+  onEdit: (department: EnrichedDepartment) => void;
+  onDelete: (department: EnrichedDepartment) => void;
+  onAssignHead: (department: EnrichedDepartment) => void;
+  onAssignCustodian: (department: EnrichedDepartment) => void;
 }
 
 export function DepartmentTable({
@@ -49,7 +49,7 @@ export function DepartmentTable({
         if (column.id === "actions") {
           return {
             ...column,
-            cell: ({ row }: { row: { original: Department } }) => (
+            cell: ({ row }: { row: { original: EnrichedDepartment } }) => (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button size="icon-xs" variant="ghost" aria-label={`Actions for ${row.original.name}`}>

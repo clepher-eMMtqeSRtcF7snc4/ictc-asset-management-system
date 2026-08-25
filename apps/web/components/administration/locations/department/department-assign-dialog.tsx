@@ -68,16 +68,13 @@ export function DepartmentAssignDialog({
   const handleSubmit = async (values: { employeeId: string }) => {
     if (!department) return;
 
-    const employee = employees.find((e) => e.id === Number(values.employeeId));
-    if (!employee) return;
-
     setSubmitting(true);
     try {
       await updateDepartment.mutateAsync({
         id: department.id,
         ...(mode === "supervisor"
-          ? { supervisor: employee.email }
-          : { custodian: employee.email }),
+          ? { supervisorId: Number(values.employeeId) }
+          : { custodianId: Number(values.employeeId) }),
       });
     } finally {
       setSubmitting(false);
@@ -98,6 +95,9 @@ export function DepartmentAssignDialog({
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="form-employee">
+                  Select Active Employee
+                </FieldLabel>
                 <Combobox
                   options={employees.map((e) => ({
                     id: String(e.id),

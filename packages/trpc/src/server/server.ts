@@ -279,8 +279,8 @@ const appRouter = t.router({
         .max(50)
         .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
       description: z.string().trim().max(500).optional().nullable(),
-      supervisor: z.string().trim().optional().nullable(),
-      custodian: z.string().trim().optional().nullable(),
+      supervisorId: z.number().int().positive().optional().nullable(),
+      custodianId: z.number().int().positive().optional().nullable(),
       logo: z.string().nullable(),
       color: z.string().trim().nullable()
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
@@ -293,8 +293,8 @@ const appRouter = t.router({
         .max(50)
         .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
       description: z.string().trim().max(500).optional().nullable(),
-      supervisor: z.string().trim().optional().nullable(),
-      custodian: z.string().trim().optional().nullable(),
+      supervisorId: z.number().int().positive().optional().nullable(),
+      custodianId: z.number().int().positive().optional().nullable(),
       logo: z.string().nullable(),
       color: z.string().trim().nullable()
     }).extend({
@@ -302,11 +302,12 @@ const appRouter = t.router({
     }).partial().extend({
       id: z.number().int().positive(),
     }).refine(
-      ({ name, code, description, supervisor, status }) =>
+      ({ name, code, description, supervisorId, custodianId, status }) =>
         name !== undefined ||
         code !== undefined ||
         description !== undefined ||
-        supervisor !== undefined ||
+        supervisorId !== undefined ||
+        custodianId !== undefined ||
         status !== undefined,
       { message: "Provide at least one field to update" },
     )).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
@@ -319,8 +320,8 @@ const appRouter = t.router({
         .max(50)
         .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
       description: z.string().trim().max(500).optional().nullable(),
-      supervisor: z.string().trim().optional().nullable(),
-      custodian: z.string().trim().optional().nullable(),
+      supervisorId: z.number().int().positive().optional().nullable(),
+      custodianId: z.number().int().positive().optional().nullable(),
       logo: z.string().nullable(),
       color: z.string().trim().nullable()
     }).extend({
@@ -338,8 +339,8 @@ const appRouter = t.router({
         .max(50)
         .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
       description: z.string().trim().max(500).optional().nullable(),
-      supervisor: z.string().trim().optional().nullable(),
-      custodian: z.string().trim().optional().nullable(),
+      supervisorId: z.number().int().positive().optional().nullable(),
+      custodianId: z.number().int().positive().optional().nullable(),
       logo: z.string().nullable(),
       color: z.string().trim().nullable()
     }).extend({
@@ -356,8 +357,8 @@ const appRouter = t.router({
         .max(50)
         .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
       description: z.string().trim().max(500).optional().nullable(),
-      supervisor: z.string().trim().optional().nullable(),
-      custodian: z.string().trim().optional().nullable(),
+      supervisorId: z.number().int().positive().optional().nullable(),
+      custodianId: z.number().int().positive().optional().nullable(),
       logo: z.string().nullable(),
       color: z.string().trim().nullable()
     }).extend({
@@ -383,8 +384,8 @@ const appRouter = t.router({
             .max(50)
             .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
           description: z.string().trim().max(500).optional().nullable(),
-          supervisor: z.string().trim().optional().nullable(),
-          custodian: z.string().trim().optional().nullable(),
+          supervisorId: z.number().int().positive().optional().nullable(),
+          custodianId: z.number().int().positive().optional().nullable(),
           logo: z.string().nullable(),
           color: z.string().trim().nullable()
         }).extend({

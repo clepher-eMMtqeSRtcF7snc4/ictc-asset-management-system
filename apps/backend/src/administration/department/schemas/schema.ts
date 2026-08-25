@@ -1,5 +1,6 @@
-import { pgEnum, timestamp, varchar, serial, text } from 'drizzle-orm/pg-core';
+import { pgEnum, timestamp, varchar, serial, text, integer } from 'drizzle-orm/pg-core';
 import { pgTable } from 'drizzle-orm/pg-core';
+import { employee } from '../../employee/schemas/schema';
 
 export const departmentStatusEnum = pgEnum('department_status', [
   'active',
@@ -11,8 +12,8 @@ export const department = pgTable('department', {
   name: varchar('name', { length: 150 }).notNull().unique(),
   code: varchar('code', { length: 50 }).notNull().unique(),
   description: text('description'),
-  supervisor: varchar('supervisor', { length: 150 }),
-  custodian: varchar('custodian', { length: 150 }),
+  supervisorId: integer('supervisor_id').references(() => employee.id),
+  custodianId: integer('custodian_id').references(() => employee.id),
   logo: text('logo'),
   color: varchar('color', { length: 20 }),
   status: departmentStatusEnum('status').notNull().default('active'),

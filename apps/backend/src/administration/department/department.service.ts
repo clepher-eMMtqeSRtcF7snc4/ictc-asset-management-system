@@ -90,11 +90,11 @@ export class DepartmentService {
         ...(input.description !== undefined
           ? { description: input.description }
           : {}),
-        ...(input.supervisor !== undefined
-          ? { supervisor: input.supervisor }
+        ...(input.supervisorId !== undefined
+          ? { supervisorId: input.supervisorId }
           : {}),
-        ...(input.custodian !== undefined
-          ? { custodian: input.custodian }
+        ...(input.custodianId !== undefined
+          ? { custodianId: input.custodianId }
           : {}),
         ...(input.logo !== undefined ? { logo: input.logo } : {}),
         ...(input.color !== undefined ? { color: input.color } : {}),
@@ -127,8 +127,8 @@ export class DepartmentService {
       name: createDepartmentInput.name,
       code: createDepartmentInput.code,
       description: createDepartmentInput.description ?? null,
-      supervisor: createDepartmentInput.supervisor,
-      custodian: createDepartmentInput.custodian ?? null,
+      supervisorId: createDepartmentInput.supervisorId ?? null,
+      custodianId: createDepartmentInput.custodianId ?? null,
       logo: createDepartmentInput.logo ?? null,
       color: createDepartmentInput.color ?? null,
       status: 'active',
