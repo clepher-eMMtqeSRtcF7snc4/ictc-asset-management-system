@@ -13,13 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 import { CreateEmployeeInput, createEmployeeInputSchema } from "@repo/trpc/schemas";
 import FileUploadArea from "@/components/ui/file-upload-area";
 import { getImageUrl } from "@/lib/image";
@@ -64,6 +58,22 @@ export function EmployeeDialog({
 
   const positions = positionsQuery.data?.items ?? [];
   const designations = designationsQuery.data?.items ?? [];
+
+  const statusOptions = [
+    { id: "active", name: "Active" },
+    { id: "casual", name: "Casual" },
+    { id: "contractual", name: "Contractual" },
+    { id: "deceased", name: "Deceased" },
+    { id: "end-of-contract", name: "End of Contract" },
+    { id: "inactive", name: "Inactive" },
+    { id: "on-leave", name: "On Leave" },
+    { id: "permanent", name: "Permanent" },
+    { id: "probationary", name: "Probationary" },
+    { id: "retired", name: "Retired" },
+    { id: "suspended", name: "Suspended" },
+    { id: "temporary", name: "Temporary" },
+    { id: "terminated", name: "Terminated" },
+  ];
 
   const form = useForm<CreateEmployeeInput>({
     resolver: zodResolver(createEmployeeInputSchema),
@@ -278,69 +288,43 @@ export function EmployeeDialog({
               <Controller
                 name="position"
                 control={form.control}
-                render={({ field, fieldState }) => {
-                  const selectedVal =
-                    positions.find((p) => p.id === field.value || p.name === field.value)?.id ??
-                    field.value ??
-                    "";
-                  return (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="form-position">Position</FieldLabel>
-                      <Select
-                        value={selectedVal}
-                        onValueChange={(value) => field.onChange(value)}
-                      >
-                        <SelectTrigger id="form-position" className="w-full">
-                          <SelectValue placeholder="Select position" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {positions.map((pos) => (
-                            <SelectItem key={pos.id} value={pos.id}>
-                              {pos.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  );
-                }}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="form-position">Position</FieldLabel>
+                    <Combobox
+                      options={positions}
+                      value={field.value ?? ""}
+                      onValueChange={(value) => field.onChange(value)}
+                      placeholder="Select position"
+                      className="w-full"
+                      fullWidth
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
               />
 
               <Controller
                 name="designation"
                 control={form.control}
-                render={({ field, fieldState }) => {
-                  const selectedVal =
-                    designations.find((d) => d.id === field.value || d.name === field.value)?.id ??
-                    field.value ??
-                    "";
-                  return (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="form-designation">Designation</FieldLabel>
-                      <Select
-                        value={selectedVal}
-                        onValueChange={(value) => field.onChange(value)}
-                      >
-                        <SelectTrigger id="form-designation" className="w-full">
-                          <SelectValue placeholder="Select designation" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {designations.map((des) => (
-                            <SelectItem key={des.id} value={des.id}>
-                              {des.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  );
-                }}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="form-designation">Designation</FieldLabel>
+                    <Combobox
+                      options={designations}
+                      value={field.value ?? ""}
+                      onValueChange={(value) => field.onChange(value)}
+                      placeholder="Select designation"
+                      className="w-full"
+                      fullWidth
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
               />
             </FieldGroup>
 
@@ -352,21 +336,14 @@ export function EmployeeDialog({
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="form-department">Primary Department</FieldLabel>
-                    <Select
+                    <Combobox
+                      options={departments.map((d) => ({ id: String(d.id), name: d.name }))}
                       value={field.value ? String(field.value) : ""}
-                      onValueChange={(value) => field.onChange(Number(value))}
-                    >
-                      <SelectTrigger id="form-department" className="w-full">
-                        <SelectValue placeholder="Select primary department" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {departments.map((dept) => (
-                          <SelectItem key={dept.id} value={String(dept.id)}>
-                            {dept.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      onValueChange={(value) => field.onChange(value ? Number(value) : 0)}
+                      placeholder="Select primary department"
+                      className="w-full"
+                      fullWidth
+                    />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
@@ -381,29 +358,14 @@ export function EmployeeDialog({
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel htmlFor="form-status">Status</FieldLabel>
-                  <Select
-                    value={field.value ?? "active"}
-                    onValueChange={(value) => field.onChange(value as any)}
-                  >
-                    <SelectTrigger id="form-status" className="w-full">
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="casual">Casual</SelectItem>
-                      <SelectItem value="contractual">Contractual</SelectItem>
-                      <SelectItem value="deceased">Deceased</SelectItem>
-                      <SelectItem value="end-of-contract">End of Contract</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                      <SelectItem value="on-leave">On Leave</SelectItem>
-                      <SelectItem value="permanent">Permanent</SelectItem>
-                      <SelectItem value="probationary">Probationary</SelectItem>
-                      <SelectItem value="retired">Retired</SelectItem>
-                      <SelectItem value="suspended">Suspended</SelectItem>
-                      <SelectItem value="temporary">Temporary</SelectItem>
-                      <SelectItem value="terminated">Terminated</SelectItem>
-                    </SelectContent>
-                  </Select>
+                      <Combobox
+                        options={statusOptions}
+                        value={field.value ?? "active"}
+                        onValueChange={(value) => field.onChange(value as any)}
+                        placeholder="Select status"
+                        className="w-full"
+                        fullWidth
+                      />
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
                       )}

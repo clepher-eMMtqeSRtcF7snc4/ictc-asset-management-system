@@ -17,6 +17,7 @@ interface ComboboxProps {
   onValueChange: (value: string) => void;
   placeholder: string;
   className?: string;
+  fullWidth?: boolean;
 }
 
 export function Combobox({
@@ -25,9 +26,11 @@ export function Combobox({
   onValueChange,
   placeholder,
   className,
+  fullWidth = false,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
 
   React.useEffect(() => {
     if (!open) {
@@ -48,16 +51,26 @@ export function Combobox({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          ref={triggerRef}
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn("w-40 justify-between", className)}
+          className={cn(
+            "justify-between",
+            fullWidth ? "w-full" : "w-40",
+            className
+          )}
         >
           {selectedOption ? selectedOption.name : placeholder}
           <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-40 p-0" align="start">
+      <PopoverContent
+        className={cn("p-0", fullWidth ? "" : "w-40")}
+        align="start"
+        sideOffset={4}
+        style={fullWidth && triggerRef.current ? { width: `${triggerRef.current.offsetWidth}px` } : undefined}
+      >
         <div className="p-2 border-b">
           <Input
             placeholder="Search..."
