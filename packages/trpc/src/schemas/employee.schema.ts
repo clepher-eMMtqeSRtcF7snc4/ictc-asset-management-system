@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const employeeStatusSchema = z.enum([
+export const EMPLOYEE_STATUSES = [
   'active',
   'casual',
   'contractual',
@@ -12,10 +12,15 @@ export const employeeStatusSchema = z.enum([
   'permanent',
   'probationary',
   'retired',
+  'regular',
   'suspended',
   'temporary',
   'terminated',
-]);
+] as const;
+
+export type EmployeeStatus = typeof EMPLOYEE_STATUSES[number];
+
+export const employeeStatusSchema = z.enum(EMPLOYEE_STATUSES);
 
 export const employeeFieldsSchema = z.object({
   firstName: z.string().min(1, "First name is required"),

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { getImageUrl } from "@/lib/image";
 import Image from "next/image";
 import { EmployeeRow } from "./dep-emp-types";
+import type { EmployeeStatus } from "@repo/trpc/schemas";
 
 export const departmentEmployeeColumns: ColumnDef<EmployeeRow>[] = [
   {
@@ -75,7 +76,7 @@ export const departmentEmployeeColumns: ColumnDef<EmployeeRow>[] = [
     header: "Status",
     cell: ({ row }) => {
       const status = row.original.status;
-      const getVariant = (s: string): "success" | "info" | "warning" | "destructive" => {
+      const getVariant = (s: EmployeeStatus): "success" | "info" | "warning" | "destructive" => {
         if (s === "active" || s === "contractual" || s === "permanent") return "success";
         if (s === "job-order" || s === "casual" || s === "temporary" || s === "probationary") return "info";
         if (s === "on-leave") return "warning";

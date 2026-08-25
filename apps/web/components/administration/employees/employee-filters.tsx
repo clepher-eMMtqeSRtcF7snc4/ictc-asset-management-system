@@ -3,6 +3,7 @@
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { Combobox } from "@/components/ui/combobox";
+import { EMPLOYEE_STATUSES } from "@repo/trpc/schemas";
 
 interface EmployeeFiltersProps {
   search: string;
@@ -70,20 +71,7 @@ export function EmployeeFilters({
       <Combobox
         options={[
           { id: "all", name: "All Status" },
-          { id: "active", name: "Active" },
-          { id: "casual", name: "Casual" },
-          { id: "contractual", name: "Contractual" },
-          { id: "deceased", name: "Deceased" },
-          { id: "end-of-contract", name: "End of Contract" },
-          { id: "inactive", name: "Inactive" },
-          { id: "job-order", name: "Job Order" },
-          { id: "on-leave", name: "On Leave" },
-          { id: "permanent", name: "Permanent" },
-          { id: "probationary", name: "Probationary" },
-          { id: "retired", name: "Retired" },
-          { id: "suspended", name: "Suspended" },
-          { id: "temporary", name: "Temporary" },
-          { id: "terminated", name: "Terminated" },
+          ...EMPLOYEE_STATUSES.map((s) => ({ id: s, name: s.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) })),
         ]}
         value={status}
         onValueChange={(value) => onStatusChange(value as any)}

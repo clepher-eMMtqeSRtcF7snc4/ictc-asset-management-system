@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Combobox } from "@/components/ui/combobox";
-import { CreateEmployeeInput, createEmployeeInputSchema } from "@repo/trpc/schemas";
+import { CreateEmployeeInput, createEmployeeInputSchema, EMPLOYEE_STATUSES } from "@repo/trpc/schemas";
 import FileUploadArea from "@/components/ui/file-upload-area";
 import { getImageUrl } from "@/lib/image";
 import Image from "next/image";
@@ -26,6 +26,8 @@ interface DepartmentEmployeeDialogProps {
   onOpenChange: (open: boolean) => void;
   onSubmit: (values: CreateEmployeeInput & { id?: number }) => void | Promise<void>;
   defaultValues?: CreateEmployeeInput;
+  editId?: number;
+  defaultDepartmentId?: number;
   title?: string;
   errorMessage?: string | null;
   onClearError?: () => void;
@@ -37,6 +39,8 @@ export function DepartmentEmployeeDialog({
   onOpenChange,
   onSubmit,
   defaultValues,
+  editId,
+  defaultDepartmentId,
   title = "Create Employee",
   errorMessage,
   onClearError,
@@ -59,22 +63,7 @@ export function DepartmentEmployeeDialog({
   const positions = positionsQuery.data?.items ?? [];
   const designations = designationsQuery.data?.items ?? [];
 
-  const statusOptions = [
-    { id: "active", name: "Active" },
-    { id: "casual", name: "Casual" },
-    { id: "contractual", name: "Contractual" },
-    { id: "deceased", name: "Deceased" },
-    { id: "end-of-contract", name: "End of Contract" },
-    { id: "inactive", name: "Inactive" },
-    { id: "job-order", name: "Job Order" },
-    { id: "on-leave", name: "On Leave" },
-    { id: "permanent", name: "Permanent" },
-    { id: "probationary", name: "Probationary" },
-    { id: "retired", name: "Retired" },
-    { id: "suspended", name: "Suspended" },
-    { id: "temporary", name: "Temporary" },
-    { id: "terminated", name: "Terminated" },
-  ];
+  const statusOptions = EMPLOYEE_STATUSES.map((s) => ({ id: s, name: s.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) }));
 
   const form = useForm<CreateEmployeeInput>({
     resolver: zodResolver(createEmployeeInputSchema),
@@ -109,7 +98,7 @@ export function DepartmentEmployeeDialog({
           email: "",
           position: "",
           designation: "",
-          departmentId: 0,
+          departmentId: defaultDepartmentId ?? 0,
           role: null,
           status: "active",
           photo: null,
@@ -118,6 +107,25 @@ export function DepartmentEmployeeDialog({
       }
     }
   }, [open, defaultValues, form]);
+
+  useEffect(() => {
+    if (!open) {
+      form.reset({
+        firstName: "",
+        middleName: null,
+        lastName: "",
+        email: "",
+        position: "",
+        designation: "",
+        departmentId: defaultDepartmentId ?? 0,
+        role: null,
+        status: "active",
+        photo: null,
+      });
+      setPhotoPreview(null);
+      setSelectedFile(null);
+    }
+  }, [open, form]);
 
   useEffect(() => {
     const subscription = form.watch(() => {
@@ -174,6 +182,7 @@ export function DepartmentEmployeeDialog({
     await onSubmit({
       ...values,
       photo: photoFilename,
+      id: editId,
     });
   };
 
@@ -334,7 +343,11 @@ export function DepartmentEmployeeDialog({
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="form-department">Department</FieldLabel>
                     <Combobox
-                      options={departments.map((d) => ({ id: String(d.id), name: d.name }))}
+                      options={
+                        defaultDepartmentId
+                          ? departments.filter((d) => d.id === defaultDepartmentId).map((d) => ({ id: String(d.id), name: d.name }))
+                          : departments.map((d) => ({ id: String(d.id), name: d.name }))
+                      }
                       value={field.value ? String(field.value) : ""}
                       onValueChange={(value) => field.onChange(value ? Number(value) : 0)}
                       placeholder="Select department"

@@ -240,6 +240,7 @@ export default function Page() {
         title="Create Employee"
         errorMessage={errorMessage}
         onClearError={() => setErrorMessage(null)}
+        defaultDepartmentId={departmentId ?? undefined}
         departments={departmentsQuery.data?.items ?? []}
       />
 
@@ -249,6 +250,7 @@ export default function Page() {
           if (!open) setEditEmployee(null);
         }}
         onSubmit={handleUpdate}
+        editId={editEmployee?.id}
         defaultValues={editEmployee ? {
           firstName: editEmployee.firstName,
           middleName: editEmployee.middleName,

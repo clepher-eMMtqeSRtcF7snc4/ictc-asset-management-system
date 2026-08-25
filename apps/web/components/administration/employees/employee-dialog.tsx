@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Combobox } from "@/components/ui/combobox";
-import { CreateEmployeeInput, createEmployeeInputSchema } from "@repo/trpc/schemas";
+import { CreateEmployeeInput, createEmployeeInputSchema, EMPLOYEE_STATUSES } from "@repo/trpc/schemas";
 import FileUploadArea from "@/components/ui/file-upload-area";
 import { getImageUrl } from "@/lib/image";
 import Image from "next/image";
@@ -59,22 +59,7 @@ export function EmployeeDialog({
   const positions = positionsQuery.data?.items ?? [];
   const designations = designationsQuery.data?.items ?? [];
 
-  const statusOptions = [
-    { id: "active", name: "Active" },
-    { id: "casual", name: "Casual" },
-    { id: "contractual", name: "Contractual" },
-    { id: "deceased", name: "Deceased" },
-    { id: "end-of-contract", name: "End of Contract" },
-    { id: "inactive", name: "Inactive" },
-    { id: "job-order", name: "Job Order" },
-    { id: "on-leave", name: "On Leave" },
-    { id: "permanent", name: "Permanent" },
-    { id: "probationary", name: "Probationary" },
-    { id: "retired", name: "Retired" },
-    { id: "suspended", name: "Suspended" },
-    { id: "temporary", name: "Temporary" },
-    { id: "terminated", name: "Terminated" },
-  ];
+  const statusOptions = EMPLOYEE_STATUSES.map((s) => ({ id: s, name: s.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) }));
 
   const form = useForm<CreateEmployeeInput>({
     resolver: zodResolver(createEmployeeInputSchema),
