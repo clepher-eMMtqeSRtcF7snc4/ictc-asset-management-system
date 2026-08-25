@@ -64,7 +64,7 @@ export const updateEmployeeInputSchema = employeeFieldsSchema
     id: z.number().int().positive(),
   })
   .refine(
-    ({ firstName, lastName, email, position, designation, departmentId, status, role }) =>
+    ({ firstName, lastName, email, position, designation, departmentId, status, role, photo }) =>
       firstName !== undefined ||
       lastName !== undefined ||
       email !== undefined ||
@@ -72,7 +72,8 @@ export const updateEmployeeInputSchema = employeeFieldsSchema
       designation !== undefined ||
       departmentId !== undefined ||
       status !== undefined ||
-      role !== undefined,
+      role !== undefined ||
+      photo !== undefined,
     { message: "Provide at least one field to update" },
   );
 

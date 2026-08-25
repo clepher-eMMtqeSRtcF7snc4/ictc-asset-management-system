@@ -34,6 +34,7 @@ export default function Page() {
   const [editId, setEditId] = useState<number | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [editError, setEditError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("employees");
 
   const departmentsQuery = trpc.departmentRouter.getDepartments.useQuery(
@@ -76,8 +77,21 @@ export default function Page() {
   const designations = designationsQuery.data?.items ?? [];
 
   const enrichedEmployees = useMemo(() => {
-    return employees as (Employee & { departmentCode: string; departmentColor: string | null })[];
-  }, [employees]);
+    const positionMap = new Map(positions.map((p) => [p.id, p.name]));
+    const designationMap = new Map(designations.map((d) => [d.id, d.name]));
+    const departmentMap = new Map(departments.map((d) => [d.id, { code: d.code, color: d.color }]));
+
+    return employees.map((emp) => {
+      const dept = departmentMap.get(emp.departmentId ?? 0);
+      return {
+        ...emp,
+        position: (emp.position != null ? positionMap.get(emp.position) : null) ?? "—",
+        designation: (emp.designation != null ? designationMap.get(emp.designation) : null) ?? "—",
+        departmentCode: dept?.code ?? "—",
+        departmentColor: dept?.color ?? null,
+      } as Employee & { departmentCode: string; departmentColor: string | null };
+    });
+  }, [employees, positions, designations, departments]);
 
   const editDefaults = useMemo(() => {
     const emp = editEmployeeQuery.data;
@@ -122,9 +136,11 @@ export default function Page() {
       utils.employeeRouter.getEmployeeById.invalidate();
       setEditOpen(false);
       setSelectedEmployee(null);
+      setEditError(null);
       toast.success("Employee updated successfully.");
     },
     onError: (error) => {
+      setEditError(error.message ?? "Failed to update employee.");
       toast.error(error.message ?? "Failed to update employee.");
     },
   });
@@ -256,6 +272,8 @@ export default function Page() {
               }}
               onSubmit={handleUpdateEmployee}
               defaultValues={editDefaults}
+              errorMessage={editError}
+              onClearError={() => setEditError(null)}
               title="Edit Employee"
               departments={departments.map(d => ({ id: d.id, name: d.name }))}
             />

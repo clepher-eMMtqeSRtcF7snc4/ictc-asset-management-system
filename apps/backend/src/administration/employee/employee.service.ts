@@ -29,8 +29,8 @@ export class EmployeeService {
         middleName: employee.middleName,
         lastName: employee.lastName,
         email: employee.email,
-        position: position.name ?? null,
-        designation: designation.name ?? null,
+        positionId: employee.positionId,
+        designationId: employee.designationId,
         departmentId: employee.departmentId,
         role: employee.role,
         status: employee.status,
@@ -48,7 +48,11 @@ export class EmployeeService {
       throw new NotFoundException(`Employee with id ${id} not found`);
     }
 
-    return result;
+    return {
+      ...result,
+      position: result.positionId != null ? String(result.positionId) : null,
+      designation: result.designationId != null ? String(result.designationId) : null,
+    };
   }
 
   async findAll(input?: {
@@ -80,11 +84,11 @@ export class EmployeeService {
     }
 
     if (input?.positionId) {
-      conditions.push(eq(position.id, Number(input.positionId)));
+      conditions.push(eq(employee.positionId, Number(input.positionId)));
     }
 
     if (input?.designationId) {
-      conditions.push(eq(designation.id, Number(input.designationId)));
+      conditions.push(eq(employee.designationId, Number(input.designationId)));
     }
 
     if (input?.status) {
@@ -103,8 +107,8 @@ export class EmployeeService {
           middleName: employee.middleName,
           lastName: employee.lastName,
           email: employee.email,
-          position: position.name ?? null,
-          designation: designation.name ?? null,
+          positionId: employee.positionId,
+          designationId: employee.designationId,
           departmentId: employee.departmentId,
           role: employee.role,
           status: employee.status,
@@ -127,25 +131,27 @@ export class EmployeeService {
     const total = totals[0]?.total ?? 0;
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
-    return { items, total, page, pageSize, totalPages };
+    const mappedItems = items.map((item) => ({
+      ...item,
+      position: item.positionId != null ? String(item.positionId) : null,
+      designation: item.designationId != null ? String(item.designationId) : null,
+    }));
+
+    return { items: mappedItems, total, page, pageSize, totalPages };
   }
 
   async update(input: UpdateEmployeeInput) {
-    await this.database
+    const result = await this.database
       .update(employee)
       .set({
-        ...(input.firstName !== undefined
-          ? { firstName: input.firstName }
-          : {}),
-        ...(input.middleName !== undefined
-          ? { middleName: input.middleName }
-          : {}),
+        ...(input.firstName !== undefined ? { firstName: input.firstName } : {}),
+        ...(input.middleName !== undefined ? { middleName: input.middleName } : {}),
         ...(input.lastName !== undefined ? { lastName: input.lastName } : {}),
         ...(input.email !== undefined ? { email: input.email } : {}),
-        ...(input.position !== undefined
+        ...(input.position !== undefined && input.position !== ""
           ? { positionId: Number(input.position) }
           : {}),
-        ...(input.designation !== undefined
+        ...(input.designation !== undefined && input.designation !== ""
           ? { designationId: Number(input.designation) }
           : {}),
         ...(input.departmentId !== undefined
@@ -157,7 +163,14 @@ export class EmployeeService {
           : {}),
         ...(input.photo !== undefined ? { photo: input.photo } : {}),
       })
-      .where(eq(employee.id, input.id));
+      .where(eq(employee.id, input.id))
+      .returning();
+
+    if (!result[0]) {
+      throw new NotFoundException(`Employee with id ${input.id} not found`);
+    }
+
+    return result[0];
   }
 
   async delete(id: number) {
@@ -180,8 +193,8 @@ export class EmployeeService {
       middleName: createEmployeeInput.middleName ?? null,
       lastName: createEmployeeInput.lastName,
       email: createEmployeeInput.email,
-      positionId: Number(createEmployeeInput.position),
-      designationId: Number(createEmployeeInput.designation),
+      positionId: createEmployeeInput.position ? Number(createEmployeeInput.position) : null,
+      designationId: createEmployeeInput.designation ? Number(createEmployeeInput.designation) : null,
       departmentId: createEmployeeInput.departmentId,
       role: createEmployeeInput.role ?? null,
       status: ((createEmployeeInput.status as string) === 'retire' ? 'retired' : createEmployeeInput.status) as any,
