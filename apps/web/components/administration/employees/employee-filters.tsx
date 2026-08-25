@@ -16,8 +16,8 @@ interface EmployeeFiltersProps {
   onDesignationChange: (value: string) => void;
   positions: { id: string; name: string }[];
   designations: { id: string; name: string }[];
-  status: "all" | "active" | "inactive" | "retire";
-  onStatusChange: (value: "all" | "active" | "inactive" | "retire") => void;
+  status: "all" | string;
+  onStatusChange: (value: "all" | string) => void;
 }
 
 export function EmployeeFilters({
@@ -71,11 +71,21 @@ export function EmployeeFilters({
         options={[
           { id: "all", name: "All Status" },
           { id: "active", name: "Active" },
+          { id: "casual", name: "Casual" },
+          { id: "contractual", name: "Contractual" },
+          { id: "deceased", name: "Deceased" },
+          { id: "end-of-contract", name: "End of Contract" },
           { id: "inactive", name: "Inactive" },
-          { id: "retire", name: "Retire" },
+          { id: "on-leave", name: "On Leave" },
+          { id: "permanent", name: "Permanent" },
+          { id: "probationary", name: "Probationary" },
+          { id: "retired", name: "Retired" },
+          { id: "suspended", name: "Suspended" },
+          { id: "temporary", name: "Temporary" },
+          { id: "terminated", name: "Terminated" },
         ]}
         value={status}
-        onValueChange={(value) => onStatusChange(value as "all" | "active" | "inactive" | "retire")}
+        onValueChange={(value) => onStatusChange(value as any)}
         placeholder="Status"
       />
     </div>

@@ -25,7 +25,7 @@ export default function Page() {
   const [departmentId, setDepartmentId] = useState<string>(initialDepartmentId ?? "all");
   const [position, setPosition] = useState("");
   const [designation, setDesignation] = useState("");
-  const [status, setStatus] = useState<"active" | "inactive" | "retire" | "all">("all");
+  const [status, setStatus] = useState<"all" | string>("all");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [createOpen, setCreateOpen] = useState(false);
