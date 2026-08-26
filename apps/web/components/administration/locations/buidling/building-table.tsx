@@ -99,7 +99,7 @@ export function BuildingTable({
   });
 
   return (
-    <div className="rounded-lg border pb-3">
+    <div className="rounded-lg pb-3">
       <div className="overflow-x-auto mb-3">
         <Table>
           <TableHeader>
