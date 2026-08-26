@@ -56,6 +56,7 @@ const data = {
         { title: "Asset Returns", url: "/assets/return" },
         { title: "Maintenance & Warranty", url: "/maintenance" },
         { title: "Disposal", url: "/disposal" },
+        { title: "Settings", url: "/assets/settings" },
       ],
     },
     {
