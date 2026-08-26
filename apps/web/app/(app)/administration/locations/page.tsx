@@ -54,26 +54,26 @@ export default function Page() {
     setAssignMode("custodian");
   };
 
-  const departmentsQuery = trpc.departmentRouter.getDepartments.useQuery(
-    {
-      search: deptSearch || undefined,
-      status: deptStatus === "all" ? undefined : (deptStatus as "active" | "inactive"),
-      page: deptPage,
-      pageSize: deptPageSize,
-    },
-    { placeholderData: keepPreviousData },
-  );
+const departmentsQuery = trpc.departmentRouter.getDepartments.useQuery(
+     {
+       search: deptSearch || undefined,
+       status: deptStatus === "all" ? undefined : (deptStatus as "active" | "inactive"),
+       page: deptPage,
+       pageSize: deptPageSize,
+     },
+     { placeholderData: keepPreviousData },
+   );
 
   const editDepartmentQuery = trpc.departmentRouter.getDepartmentById.useQuery(
     { id: deptEditId! },
     { enabled: deptEditId !== null },
-  );
-
+);
+  
   const departments = departmentsQuery.data?.items ?? [];
   const deptTotalPages = departmentsQuery.data?.totalPages ?? 1;
 
   const allEmployeesQuery = trpc.employeeRouter.getEmployees.useQuery(
-    { pageSize: 200 },
+    { pageSize: 100 },
   );
   const employeeMap = useMemo(() => {
     const map = new Map<number, { firstName: string; lastName: string; middleName: string }>();
@@ -83,41 +83,30 @@ export default function Page() {
     return map;
   }, [allEmployeesQuery.data]);
 
-  const enrichedDepartments = useMemo(() => {
-    return departments.map((dept) => {
-      const rawSupervisor = (dept as { supervisor?: string }).supervisor;
-      const rawCustodian = (dept as { custodian?: string }).custodian;
-      return {
-        id: dept.id,
-        name: dept.name,
-        code: dept.code,
-        description: dept.description,
-        logo: dept.logo,
-        color: dept.color,
-        status: dept.status,
-        createdAt: dept.createdAt as Date | undefined,
-        updatedAt: dept.updatedAt as Date | undefined,
-        supervisorId: dept.supervisorId ?? null,
-        custodianId: dept.custodianId ?? null,
-        supervisorName: (
-          dept.supervisorId != null && employeeMap.has(dept.supervisorId)
-            ? (() => {
-                const e = employeeMap.get(dept.supervisorId)!;
-                return `${e.lastName}, ${e.firstName}${e.middleName ? ` ${e.middleName[0]}.` : ""}`;
-              })()
-            : rawSupervisor ?? null
-        ),
-        custodianName: (
-          dept.custodianId != null && employeeMap.has(dept.custodianId)
-            ? (() => {
-                const e = employeeMap.get(dept.custodianId)!;
-                return `${e.lastName}, ${e.firstName}${e.middleName ? ` ${e.middleName[0]}.` : ""}`;
-              })()
-            : rawCustodian ?? null
-        ),
-      };
-    });
-  }, [departments, employeeMap]);
+  const enrichedDepartments = useMemo(() => departments.map((dept) => {
+    const raw = dept as Record<string, unknown>;
+    const createdAt = raw.createdAt ? new Date(raw.createdAt as string) : undefined;
+    const updatedAt = raw.updatedAt ? new Date(raw.updatedAt as string) : undefined;
+    const supId = dept.supervisorId;
+    const custId = dept.custodianId;
+    return {
+      ...dept,
+      createdAt,
+      updatedAt,
+      supervisorName: supId != null && employeeMap.has(supId)
+        ? (() => {
+            const e = employeeMap.get(supId)!;
+            return [e.firstName, e.middleName, e.lastName].filter(Boolean).join(" ").trim();
+          })()
+        : null,
+      custodianName: custId != null && employeeMap.has(custId)
+        ? (() => {
+            const e = employeeMap.get(custId)!;
+            return [e.firstName, e.middleName, e.lastName].filter(Boolean).join(" ").trim();
+          })()
+        : null,
+    };
+  }), [departments, employeeMap]);
 
   const deptEditDefaults = useMemo(() => {
     const dept = editDepartmentQuery.data;

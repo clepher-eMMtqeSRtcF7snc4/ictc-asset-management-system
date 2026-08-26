@@ -41,11 +41,12 @@ export function DepartmentAssignDialog({
 }: DepartmentAssignDialogProps) {
   const [submitting, setSubmitting] = useState(false);
 
-  const employeesQuery = trpc.departmentRouter.getDepartmentsEmployee.useQuery(
-    { pageSize: 200 },
+  const employeesQuery = trpc.employeeRouter.getEmployees.useQuery(
+    { pageSize: 100 },
   );
 
-  const employees = (employeesQuery.data?.items ?? []);
+  const employees = (employeesQuery.data?.items ?? [])
+    .filter((e) => e.status === "regular" || e.status === "permanent" || e.status === "contractual");
 
   const updateDepartment = trpc.departmentRouter.update.useMutation({
     onSuccess: () => {
@@ -96,7 +97,7 @@ export function DepartmentAssignDialog({
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor="form-employee">
-                  Select Employee (Regular, Permanent, Contractual)
+                  
                 </FieldLabel>
                 <Combobox
                   options={employees.map((e) => ({
