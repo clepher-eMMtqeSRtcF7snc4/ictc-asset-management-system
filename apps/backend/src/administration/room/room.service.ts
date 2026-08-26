@@ -8,7 +8,7 @@ import { DATABASE_CONNECTION } from '../../database/database-connection';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres/driver';
 import { schema } from '../../database/database.module';
 import { CreateRoomInput } from '@repo/trpc/schemas';
-import { and, asc, count, eq, ilike, type SQL } from 'drizzle-orm';
+import { and, asc, count, eq, ilike, type SQL, sql } from 'drizzle-orm';
 import { room } from './schemas/schema';
 
 @Injectable()
@@ -109,6 +109,22 @@ export class RoomService {
 
   async delete(id: number) {
     await this.database.delete(room).where(eq(room.id, id));
+  }
+
+  async countRoomsByBuilding(): Promise<Record<number, number>> {
+    const rows = await this.database
+      .select({
+        buildingId: room.buildingId,
+        total: count(),
+      })
+      .from(room)
+      .groupBy(room.buildingId);
+
+    const result: Record<number, number> = {};
+    for (const row of rows) {
+      result[row.buildingId] = row.total;
+    }
+    return result;
   }
 
   async create(createRoomInput: CreateRoomInput) {

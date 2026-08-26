@@ -8,6 +8,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { pgTable } from 'drizzle-orm/pg-core';
 import { roomType } from '../../room-type/schemas/schema';
+import { department } from '../../department/schemas/schema';
 
 export const buildingStatusEnum = pgEnum('building_status', [
   'active',
@@ -46,7 +47,7 @@ export const room = pgTable('room', {
     .notNull()
     .references(() => building.id, { onDelete: 'cascade' }),
   floor: roomFloorEnum('floor').notNull(),
-  departmentId: integer('department_id'),
+  departmentId: integer('department_id').references(() => department.id),
   status: roomStatusEnum('status').notNull().default('active'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')

@@ -26,6 +26,7 @@ import {
   InputGroupTextarea,
 } from "@/components/ui/input-group";
 import { CreateRoomInput, roomFieldSchema } from "@repo/trpc/schemas";
+import { trpc } from "@/lib/trpc/client";
 
 interface RoomDialogProps {
   open: boolean;
@@ -36,6 +37,9 @@ interface RoomDialogProps {
   errorMessage?: string | null;
   onClearError?: () => void;
 }
+
+// Type alias to make it clear this is a foreign key to departments
+type DepartmentId = number; // References department.id
 
 export function RoomDialog({
   open,
@@ -54,7 +58,7 @@ export function RoomDialog({
       roomTypeId: 1,
       buildingId: 1,
       floor: "1st floor",
-      departmentId: null,
+      departmentId: null as DepartmentId | null,
     },
   });
 
@@ -71,15 +75,26 @@ export function RoomDialog({
     return () => subscription.unsubscribe();
   }, [form, errorMessage, onClearError]);
 
-  const roomTypes = [
-    { id: 1, name: "Conference" },
-    { id: 2, name: "Office" },
-    { id: 3, name: "Storage" },
-    { id: 4, name: "Executive" },
-    { id: 5, name: "Training" },
-    { id: 6, name: "Server" },
-    { id: 7, name: "Pantry" },
-  ];
+const roomTypesQuery = trpc.roomTypeRouter.getRoomTypes.useQuery({
+    page: 1,
+    pageSize: 100,
+  });
+
+  const departmentsQuery = trpc.departmentRouter.getDepartments.useQuery({
+    status: "active",
+    page: 1,
+    pageSize: 100,
+  });
+
+  const roomTypes = roomTypesQuery.data?.items.map((item) => ({
+    id: item.id,
+    name: item.name,
+  })) ?? [];
+
+  const departmentOptions = departmentsQuery.data?.items.map((dept) => ({
+    id: dept.id,
+    name: dept.name,
+  })) ?? [];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -202,37 +217,37 @@ export function RoomDialog({
               )}
             />
 
-            <Controller
-              name="departmentId"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-department">Department (Optional)</FieldLabel>
-                  <Select
-                    name={field.name}
-                    value={form.watch("departmentId") ? String(form.watch("departmentId")) : "none"}
-                    onValueChange={(value) => form.setValue("departmentId", value === "none" ? null : Number(value))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select department" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectItem value="none">None</SelectItem>
-                        <SelectItem value="1">Administration</SelectItem>
-                        <SelectItem value="2">IT</SelectItem>
-                        <SelectItem value="3">HR</SelectItem>
-                        <SelectItem value="4">Finance</SelectItem>
-                        <SelectItem value="5">Executive</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
+<Controller
+               name="departmentId"
+               control={form.control}
+               render={({ field, fieldState }) => (
+                 <Field data-invalid={fieldState.invalid}>
+                   <FieldLabel htmlFor="form-department">Department (Optional)</FieldLabel>
+                   <Select
+                     name={field.name}
+                     value={form.watch("departmentId") ? String(form.watch("departmentId")) : "none"}
+                     onValueChange={(value) => form.setValue("departmentId", value === "none" ? null : Number(value) as DepartmentId | null)}
+                   >
+                     <SelectTrigger>
+                       <SelectValue placeholder="Select department" />
+                     </SelectTrigger>
+                     <SelectContent>
+                       <SelectGroup>
+                         <SelectItem value="none">None</SelectItem>
+                         {departmentOptions.map((dept) => (
+                           <SelectItem key={dept.id} value={String(dept.id)}>
+                             {dept.name}
+                           </SelectItem>
+                         ))}
+                       </SelectGroup>
+                     </SelectContent>
+                   </Select>
+                   {fieldState.invalid && (
+                     <FieldError errors={[fieldState.error]} />
+                   )}
+                 </Field>
+               )}
+             />
           </FieldGroup>
 
           <DialogFooter>

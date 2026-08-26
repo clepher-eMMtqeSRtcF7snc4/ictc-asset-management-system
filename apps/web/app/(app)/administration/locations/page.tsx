@@ -187,6 +187,9 @@ const departmentsQuery = trpc.departmentRouter.getDepartments.useQuery(
     { placeholderData: keepPreviousData },
   );
 
+  const roomCountsQuery = trpc.roomRouter.getRoomCountsByBuilding.useQuery({});
+  const roomCounts = roomCountsQuery.data ?? {};
+
   const editBuildingQuery = trpc.buildingRouter.getBuildingById.useQuery(
     { id: editId! },
     { enabled: editId !== null },
@@ -315,6 +318,7 @@ const departmentsQuery = trpc.departmentRouter.getDepartments.useQuery(
               setSelectedBuilding(building);
               setDeleteOpen(true);
             }}
+            roomCounts={roomCounts}
           />
         </CardContent>
 

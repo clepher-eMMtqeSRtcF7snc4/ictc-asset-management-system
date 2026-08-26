@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { BuildingIcon, MoreHorizontal, Pen, Trash2 } from "lucide-react";
-import { buildingColumn } from "./building-columns";
+import { buildingColumns } from "./building-columns";
 import { Building } from "@repo/trpc/schemas";
 import Link from "next/link";
 
@@ -27,6 +27,7 @@ interface BuildingTableProps {
   onPaginationChange: (next: { page: number; pageSize: number }) => void;
   onEdit: (building: Building) => void;
   onDelete: (building: Building) => void;
+  roomCounts?: Record<number, number>;
 }
 
 export function BuildingTable({
@@ -37,13 +38,14 @@ export function BuildingTable({
   onPaginationChange,
   onEdit,
   onDelete,
+  roomCounts = {},
 }: BuildingTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const columns = useMemo(
     () =>
-      buildingColumn.map((column) => {
+      buildingColumns({ roomCounts }).map((column) => {
         if (column.id === "actions") {
           return {
             ...column,
@@ -70,7 +72,7 @@ export function BuildingTable({
         }
         return column;
       }),
-    [onEdit, onDelete]
+    [onEdit, onDelete, roomCounts]
   );
 
   const table = useReactTable({
@@ -126,7 +128,7 @@ export function BuildingTable({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={buildingColumn.length} className="h-36 text-center">
+                <TableCell colSpan={columns.length} className="h-36 text-center">
                   <p className="font-medium">No building found</p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     No building match your current search and filters.

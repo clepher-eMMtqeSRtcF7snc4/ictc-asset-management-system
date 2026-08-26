@@ -56,4 +56,9 @@ export class RoomRouter {
   async getRooms(@Input() input: RoomListInput) {
     return this.roomService.findAll(input);
   }
+
+  @Query({ input: z.object({}), output: z.record(z.string(), z.number().int().nonnegative()) })
+  async getRoomCountsByBuilding() {
+    return this.roomService.countRoomsByBuilding();
+  }
 }

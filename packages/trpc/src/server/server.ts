@@ -220,7 +220,8 @@ const appRouter = t.router({
         page: z.number().int().positive(),
         pageSize: z.number().int().positive(),
         totalPages: z.number().int().nonnegative(),
-      })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+      })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getRoomCountsByBuilding: publicProcedure.input(z.object({})).output(z.record(z.string(), z.number().int().nonnegative())).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
   roomTypeRouter: t.router({
     create: publicProcedure.input(z.object({

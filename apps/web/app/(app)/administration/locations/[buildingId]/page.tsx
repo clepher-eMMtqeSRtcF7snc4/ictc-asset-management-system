@@ -66,6 +66,12 @@ export default function Page() {
     pageSize: DEFAULT_PAGE_SIZE,
   });
 
+  const departmentsQuery = trpc.departmentRouter.getDepartments.useQuery({
+    status: "active",
+    page: 1,
+    pageSize: 100,
+  });
+
   const createRoomMutation = trpc.roomRouter.create.useMutation({
     onSuccess: () => {
       utils.roomRouter.getRooms.invalidate();
@@ -150,6 +156,7 @@ export default function Page() {
     ...rt,
   })) as RoomType[];
   const roomTypeTotalPages = roomTypesQuery.data?.totalPages ?? 1;
+  const departments = departmentsQuery.data?.items ?? [];
 
   const selectedRoom = rooms.find((r) => r.id === selectedRoomId);
   const selectedRoomType = roomTypes.find((rt) => rt.id === selectedRoomTypeId);
@@ -271,6 +278,8 @@ export default function Page() {
               }}
               onEdit={handleEditRoom}
               onDelete={handleDeleteRoomClick}
+              roomTypes={roomTypes}
+              departments={departments}
             />
           )}
         </CardContent>

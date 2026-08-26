@@ -1,0 +1,1 @@
+ALTER TABLE "room" ADD CONSTRAINT "room_department_id_department_id_fk" FOREIGN KEY ("department_id") REFERENCES "public"."department"("id") ON DELETE no action ON UPDATE no action;

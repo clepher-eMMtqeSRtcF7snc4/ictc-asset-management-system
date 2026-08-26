@@ -127,6 +127,13 @@
       "when": 1787686464553,
       "tag": "0017_fluffy_luminals",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1787714787312,
+      "tag": "0018_silky_black_cat",
+      "breakpoints": true
     }
   ]
 }

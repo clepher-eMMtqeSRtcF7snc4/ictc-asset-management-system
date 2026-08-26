@@ -12,8 +12,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreHorizontal } from "lucide-react";
-import { roomColumn } from "./room-columns";
+import { Boxes, MoreHorizontal, Pen, Trash2 } from "lucide-react";
+import { roomColumns } from "./room-columns";
 import { Room } from "@repo/trpc/schemas";
 
 interface RoomTableProps {
@@ -24,6 +24,8 @@ interface RoomTableProps {
   onPaginationChange: (next: { page: number; pageSize: number }) => void;
   onEdit: (room: Room) => void;
   onDelete: (room: Room) => void;
+  roomTypes?: { id: number; name: string }[];
+  departments?: { id: number; name: string }[];
 }
 
 export function RoomTable({
@@ -34,13 +36,15 @@ export function RoomTable({
   onPaginationChange,
   onEdit,
   onDelete,
+  roomTypes = [],
+  departments = [],
 }: RoomTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const columns = useMemo(
     () =>
-      roomColumn.map((column) => {
+      roomColumns({ roomTypes, departments }).map((column) => {
         if (column.id === "actions") {
           return {
             ...column,
@@ -52,11 +56,11 @@ export function RoomTable({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => onEdit(row.original)}>View Details</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onEdit(row.original)}>Edit</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onEdit(row.original)}><Boxes/> Assigned Assets</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onEdit(row.original)}><Pen /> Edit</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-destructive" onClick={() => onDelete(row.original)}>
-                    Delete
+                    <Trash2/> Delete
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -65,7 +69,7 @@ export function RoomTable({
         }
         return column;
       }),
-    [onEdit, onDelete]
+    [onEdit, onDelete, roomTypes, departments]
   );
 
   const table = useReactTable({
@@ -121,7 +125,7 @@ export function RoomTable({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={roomColumn.length} className="h-36 text-center">
+                <TableCell colSpan={columns.length} className="h-36 text-center">
                   <p className="font-medium">No rooms found</p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     No rooms match your current search and filters.
