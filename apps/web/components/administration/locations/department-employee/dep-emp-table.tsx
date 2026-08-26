@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreHorizontal, Pen, Trash2 } from "lucide-react";
+import { Boxes, MoreHorizontal, Pen, Trash2 } from "lucide-react";
 import { departmentEmployeeColumns } from "./dep-emp-columns";
 import { Employee } from "@repo/trpc/schemas";
 import Link from "next/link";
@@ -54,6 +54,9 @@ export function DepartmentEmployeeTable({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => onEdit(row.original)}>
+                    <Boxes /> Assigned Asset
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onEdit(row.original)}>
                     <Pen /> Edit
                   </DropdownMenuItem>

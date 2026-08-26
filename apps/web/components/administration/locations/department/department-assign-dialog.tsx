@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -40,12 +41,11 @@ export function DepartmentAssignDialog({
 }: DepartmentAssignDialogProps) {
   const [submitting, setSubmitting] = useState(false);
 
-  const employeesQuery = trpc.employeeRouter.getEmployees.useQuery(
-    { status: "active", pageSize: 100 },
-    { enabled: open }
+  const employeesQuery = trpc.departmentRouter.getDepartmentsEmployee.useQuery(
+    { pageSize: 200 },
   );
 
-  const employees = employeesQuery.data?.items ?? [];
+  const employees = (employeesQuery.data?.items ?? []);
 
   const updateDepartment = trpc.departmentRouter.update.useMutation({
     onSuccess: () => {
@@ -96,38 +96,51 @@ export function DepartmentAssignDialog({
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor="form-employee">
-                  Select Active Employee
+                  Select Employee (Regular, Permanent, Contractual)
                 </FieldLabel>
                 <Combobox
                   options={employees.map((e) => ({
                     id: String(e.id),
                     name: `${e.lastName}, ${e.firstName}${e.middleName ? ` ${e.middleName[0]}.` : ""}`,
                     photoUrl: e.photo ? getImageUrl(e.photo) : null,
+                    status: e.status,
                   }))}
                   value={field.value}
                   onValueChange={field.onChange}
                   placeholder="Search employee..."
                   className="w-full"
                   fullWidth
-                  renderOption={(option) => (
-                    <div className="flex items-center gap-2">
-                      {option.photoUrl ? (
-                        <Image
-                          src={option.photoUrl}
-                          alt="Employee photo"
-                          unoptimized
-                          width={24}
-                          height={24}
-                          className="size-6 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex size-6 items-center justify-center rounded-full bg-muted text-[10px] font-medium">
-                          {option.name.slice(0, 1)}
-                        </div>
-                      )}
-                      <span>{option.name}</span>
-                    </div>
-                  )}
+                  renderOption={(option) => {
+                    const status = (option as any).status;
+                    const getVariant = (s: string): "success" | "info" | "warning" | "destructive" => {
+                      if (s === "active" || s === "contractual" || s === "permanent") return "success";
+                      if (s === "job-order" || s === "casual" || s === "temporary" || s === "probationary") return "info";
+                      if (s === "on-leave") return "warning";
+                      return "destructive";
+                    };
+                    return (
+                      <div className="flex items-center gap-2">
+                        {option.photoUrl ? (
+                          <Image
+                            src={option.photoUrl}
+                            alt="Employee photo"
+                            unoptimized
+                            width={24}
+                            height={24}
+                            className="size-6 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex size-6 items-center justify-center rounded-full bg-muted text-[10px] font-medium">
+                            {option.name.slice(0, 1)}
+                          </div>
+                        )}
+                        <span className="flex-1">{option.name}</span>
+                        <Badge variant={getVariant(status ?? "active")}>
+                          {status === "active" ? "Regular" : status?.replace(/-/g, " ")}
+                        </Badge>
+                      </div>
+                    );
+                  }}
                 />
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
@@ -143,7 +156,7 @@ export function DepartmentAssignDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={submitting || !employeesQuery.data}>
+            <Button type="submit" disabled={submitting || employeesQuery.isLoading}>
               {submitting ? "Assigning..." : "Assign"}
             </Button>
           </DialogFooter>

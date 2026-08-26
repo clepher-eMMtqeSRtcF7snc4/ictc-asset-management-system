@@ -51,7 +51,8 @@ export class EmployeeService {
     return {
       ...result,
       position: result.positionId != null ? String(result.positionId) : null,
-      designation: result.designationId != null ? String(result.designationId) : null,
+      designation:
+        result.designationId != null ? String(result.designationId) : null,
     };
   }
 
@@ -92,9 +93,7 @@ export class EmployeeService {
     }
 
     if (input?.status) {
-      conditions.push(
-        eq(employee.status, input.status as any),
-      );
+      conditions.push(eq(employee.status, input.status as any));
     }
 
     const where = conditions.length ? and(...conditions) : undefined;
@@ -134,7 +133,8 @@ export class EmployeeService {
     const mappedItems = items.map((item) => ({
       ...item,
       position: item.positionId != null ? String(item.positionId) : null,
-      designation: item.designationId != null ? String(item.designationId) : null,
+      designation:
+        item.designationId != null ? String(item.designationId) : null,
     }));
 
     return { items: mappedItems, total, page, pageSize, totalPages };
@@ -144,14 +144,18 @@ export class EmployeeService {
     const result = await this.database
       .update(employee)
       .set({
-        ...(input.firstName !== undefined ? { firstName: input.firstName } : {}),
-        ...(input.middleName !== undefined ? { middleName: input.middleName } : {}),
+        ...(input.firstName !== undefined
+          ? { firstName: input.firstName }
+          : {}),
+        ...(input.middleName !== undefined
+          ? { middleName: input.middleName }
+          : {}),
         ...(input.lastName !== undefined ? { lastName: input.lastName } : {}),
         ...(input.email !== undefined ? { email: input.email } : {}),
-        ...(input.position !== undefined && input.position !== ""
+        ...(input.position !== undefined && input.position !== ''
           ? { positionId: Number(input.position) }
           : {}),
-        ...(input.designation !== undefined && input.designation !== ""
+        ...(input.designation !== undefined && input.designation !== ''
           ? { designationId: Number(input.designation) }
           : {}),
         ...(input.departmentId !== undefined
@@ -159,7 +163,11 @@ export class EmployeeService {
           : {}),
         ...(input.role !== undefined ? { role: input.role } : {}),
         ...(input.status !== undefined
-          ? { status: ((input.status as string) === 'retire' ? 'retired' : input.status) as any }
+          ? {
+              status: ((input.status as string) === 'retire'
+                ? 'retired'
+                : input.status) as any,
+            }
           : {}),
         ...(input.photo !== undefined ? { photo: input.photo } : {}),
       })
@@ -193,11 +201,17 @@ export class EmployeeService {
       middleName: createEmployeeInput.middleName ?? null,
       lastName: createEmployeeInput.lastName,
       email: createEmployeeInput.email,
-      positionId: createEmployeeInput.position ? Number(createEmployeeInput.position) : null,
-      designationId: createEmployeeInput.designation ? Number(createEmployeeInput.designation) : null,
+      positionId: createEmployeeInput.position
+        ? Number(createEmployeeInput.position)
+        : null,
+      designationId: createEmployeeInput.designation
+        ? Number(createEmployeeInput.designation)
+        : null,
       departmentId: createEmployeeInput.departmentId,
       role: createEmployeeInput.role ?? null,
-      status: ((createEmployeeInput.status as string) === 'retire' ? 'retired' : createEmployeeInput.status) as any,
+      status: ((createEmployeeInput.status as string) === 'retire'
+        ? 'retired'
+        : createEmployeeInput.status) as any,
       photo: createEmployeeInput.photo ?? null,
       createdAt: new Date(),
       updatedAt: new Date(),

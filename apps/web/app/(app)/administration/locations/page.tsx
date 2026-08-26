@@ -72,17 +72,16 @@ export default function Page() {
   const departments = departmentsQuery.data?.items ?? [];
   const deptTotalPages = departmentsQuery.data?.totalPages ?? 1;
 
-  const activeEmployeesQuery = trpc.employeeRouter.getEmployees.useQuery(
-    { status: "active", pageSize: 100 },
-    { enabled: deptEditId !== null }
+  const allEmployeesQuery = trpc.employeeRouter.getEmployees.useQuery(
+    { pageSize: 200 },
   );
   const employeeMap = useMemo(() => {
     const map = new Map<number, { firstName: string; lastName: string; middleName: string }>();
-    (activeEmployeesQuery.data?.items ?? []).forEach((e: any) => {
+    (allEmployeesQuery.data?.items ?? []).forEach((e: any) => {
       map.set(e.id, { firstName: e.firstName, lastName: e.lastName, middleName: e.middleName });
     });
     return map;
-  }, [activeEmployeesQuery.data]);
+  }, [allEmployeesQuery.data]);
 
   const enrichedDepartments = useMemo(() => {
     return departments.map((dept) => {
@@ -454,6 +453,7 @@ export default function Page() {
             mode={assignMode}
             onSuccess={() => {
               utils.departmentRouter.getDepartments.invalidate();
+              utils.employeeRouter.getEmployees.invalidate();
               toast.success("Assignment updated successfully.");
             }}
           />
