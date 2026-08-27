@@ -800,6 +800,142 @@ const appRouter = t.router({
         totalPages: z.number().int().nonnegative(),
       })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
+  assetTypeRouter: t.router({
+    create: publicProcedure.input(z.object({
+      name: z.string().trim().min(1, "This field is required").max(150),
+      code: z
+        .string()
+        .trim()
+        .min(1, "This field is required")
+        .max(50)
+        .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
+      assetCategoryId: z.number().int().positive(),
+      description: z.string().trim().max(500).optional().nullable(),
+      depreciable: z.boolean(),
+      defaultUsefulLife: z.number().int().positive().optional().nullable(),
+      status: z.enum(["active", "inactive"]),
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    update: publicProcedure.input(z.object({
+      name: z.string().trim().min(1, "This field is required").max(150),
+      code: z
+        .string()
+        .trim()
+        .min(1, "This field is required")
+        .max(50)
+        .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
+      assetCategoryId: z.number().int().positive(),
+      description: z.string().trim().max(500).optional().nullable(),
+      depreciable: z.boolean(),
+      defaultUsefulLife: z.number().int().positive().optional().nullable(),
+      status: z.enum(["active", "inactive"]),
+    }).extend({
+      id: z.number().int().positive(),
+      createdAt: z.date().optional(),
+      updatedAt: z.date().optional(),
+      createdBy: z.string().optional().nullable(),
+      updatedBy: z.string().optional().nullable(),
+    }).partial().refine(({ name, code, assetCategoryId, description, depreciable, defaultUsefulLife, status }) =>
+      name !== undefined ||
+      code !== undefined ||
+      assetCategoryId !== undefined ||
+      description !== undefined ||
+      depreciable !== undefined ||
+      defaultUsefulLife !== undefined ||
+      status !== undefined,
+      { message: "Provide at least one field to update" }
+    )).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    delete: publicProcedure.input(z.object({
+      name: z.string().trim().min(1, "This field is required").max(150),
+      code: z
+        .string()
+        .trim()
+        .min(1, "This field is required")
+        .max(50)
+        .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
+      assetCategoryId: z.number().int().positive(),
+      description: z.string().trim().max(500).optional().nullable(),
+      depreciable: z.boolean(),
+      defaultUsefulLife: z.number().int().positive().optional().nullable(),
+      status: z.enum(["active", "inactive"]),
+    }).extend({
+      id: z.number().int().positive(),
+      createdAt: z.date().optional(),
+      updatedAt: z.date().optional(),
+      createdBy: z.string().optional().nullable(),
+      updatedBy: z.string().optional().nullable(),
+    }).pick({ id: true })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getAssetTypeById: publicProcedure.input(z.object({
+      name: z.string().trim().min(1, "This field is required").max(150),
+      code: z
+        .string()
+        .trim()
+        .min(1, "This field is required")
+        .max(50)
+        .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
+      assetCategoryId: z.number().int().positive(),
+      description: z.string().trim().max(500).optional().nullable(),
+      depreciable: z.boolean(),
+      defaultUsefulLife: z.number().int().positive().optional().nullable(),
+      status: z.enum(["active", "inactive"]),
+    }).extend({
+      id: z.number().int().positive(),
+      createdAt: z.date().optional(),
+      updatedAt: z.date().optional(),
+      createdBy: z.string().optional().nullable(),
+      updatedBy: z.string().optional().nullable(),
+    }).pick({ id: true })).output(z.object({
+      name: z.string().trim().min(1, "This field is required").max(150),
+      code: z
+        .string()
+        .trim()
+        .min(1, "This field is required")
+        .max(50)
+        .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
+      assetCategoryId: z.number().int().positive(),
+      description: z.string().trim().max(500).optional().nullable(),
+      depreciable: z.boolean(),
+      defaultUsefulLife: z.number().int().positive().optional().nullable(),
+      status: z.enum(["active", "inactive"]),
+    }).extend({
+      id: z.number().int().positive(),
+      createdAt: z.date().optional(),
+      updatedAt: z.date().optional(),
+      createdBy: z.string().optional().nullable(),
+      updatedBy: z.string().optional().nullable(),
+    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getAssetTypes: publicProcedure.input(z.object({
+      search: z.string().trim().optional(),
+      status: z.enum(['active', 'inactive']).optional(),
+      categoryId: z.number().int().positive().optional(),
+      page: z.number().int().min(1).optional(),
+      pageSize: z.number().int().min(1).max(100).optional(),
+    }).default({})).output(z.object({
+      items: z.array(z.object({
+        name: z.string().trim().min(1, "This field is required").max(150),
+        code: z
+          .string()
+          .trim()
+          .min(1, "This field is required")
+          .max(50)
+          .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
+        assetCategoryId: z.number().int().positive(),
+        description: z.string().trim().max(500).optional().nullable(),
+        depreciable: z.boolean(),
+        defaultUsefulLife: z.number().int().positive().optional().nullable(),
+        status: z.enum(["active", "inactive"]),
+      }).extend({
+        id: z.number().int().positive(),
+        createdAt: z.date().optional(),
+        updatedAt: z.date().optional(),
+        createdBy: z.string().optional().nullable(),
+        updatedBy: z.string().optional().nullable(),
+      })),
+      total: z.number().int().nonnegative(),
+      page: z.number().int().positive(),
+      pageSize: z.number().int().positive(),
+      totalPages: z.number().int().nonnegative(),
+    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+  }),
   assetCategoryRouter: t.router({
     create: publicProcedure.input(z.object({
       name: z.string().trim().min(1, "This field is required").max(150),

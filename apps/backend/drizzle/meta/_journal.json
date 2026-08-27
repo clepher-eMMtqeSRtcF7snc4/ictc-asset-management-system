@@ -141,6 +141,20 @@
       "when": 1787808912434,
       "tag": "0019_stormy_inhumans",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1787816974490,
+      "tag": "0020_melted_sebastian_shaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1787817692551,
+      "tag": "0021_soft_bug",
+      "breakpoints": true
     }
   ]
 }

@@ -49,12 +49,3 @@ export type SettingsAssetCategory = z.infer<typeof settingsAssetCategorySchema>;
 export type CategoryListInput = z.infer<typeof settingsAssetCategorySchema>;
 export type CreateCategoryInput = z.infer<typeof settingsAssetCreateCategoryInputSchema>;
 export type UpdateCategoryInput = z.infer<typeof settingsAssetUpdateCategoryInputSchema>;
-
-export const assetSettingsMockCategories: SettingsAssetCategory[] = [
-  { id: 1, name: "IT Equipment", description: "Portable computer devices", status: "active", createdAt: new Date(), updatedAt: new Date(), createdBy: null, updatedBy: null },
-  { id: 2, name: "Furniture", description: "Stationary computer systems", status: "active", createdAt: new Date(), updatedAt: new Date(), createdBy: null, updatedBy: null },
-  { id: 3, name: "Laboratory Equipment", description: "Display screens and monitors", status: "active", createdAt: new Date(), updatedAt: new Date(), createdBy: null, updatedBy: null },
-  { id: 4, name: "Office Supplies", description: "Printing devices", status: "active", createdAt: new Date(), updatedAt: new Date(), createdBy: null, updatedBy: null },
-  { id: 5, name: "Server", description: "Server hardware and rack units", status: "active", createdAt: new Date(), updatedAt: new Date(), createdBy: null, updatedBy: null },
-  { id: 6, name: "Network Switch", description: "Network switching equipment", status: "active", createdAt: new Date(), updatedAt: new Date(), createdBy: null, updatedBy: null },
-];

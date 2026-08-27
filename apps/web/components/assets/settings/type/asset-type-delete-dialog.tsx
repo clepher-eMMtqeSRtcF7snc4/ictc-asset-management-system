@@ -12,19 +12,19 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Trash2 } from "lucide-react";
 
-interface TypeDeleteDialogProps {
+interface AssetTypeDeleteDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
   typeName: string;
 }
 
-export function TypeDeleteDialog({
+export function AssetTypeDeleteDialog({
   open,
   onOpenChange,
   onConfirm,
   typeName,
-}: TypeDeleteDialogProps) {
+}: AssetTypeDeleteDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>

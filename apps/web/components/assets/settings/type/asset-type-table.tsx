@@ -1,63 +1,66 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { flexRender, getCoreRowModel, getPaginationRowModel, getSortedRowModel, type SortingState, useReactTable, type VisibilityState } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
+import { flexRender, getCoreRowModel, getSortedRowModel, type PaginationState, type SortingState, useReactTable, type VisibilityState } from "@tanstack/react-table";
 import { DataTablePagination } from "@/components/ui/datatable-pagination";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreHorizontal } from "lucide-react";
-import { typeColumns } from "./type-columns";
-import type { SettingsAssetType } from "@repo/trpc/schemas";
-import { mockCategories } from "@/components/administration/master-data/mock-data";
+import type { SettingsAssetType, SettingsAssetCategory } from "@repo/trpc/schemas";
+import { getAssetTypeColumns } from "./asset-type-columns";
 
 interface AssetTypeTableProps {
   data: SettingsAssetType[];
+  categories: SettingsAssetCategory[];
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  onPaginationChange: (next: { page: number; pageSize: number }) => void;
   onEdit: (assetType: SettingsAssetType) => void;
   onDelete: (assetType: SettingsAssetType) => void;
 }
 
-export function AssetTypeTable({ data, onEdit, onDelete }: AssetTypeTableProps) {
+export function AssetTypeTable({
+  data,
+  categories,
+  page,
+  pageSize,
+  totalPages,
+  onPaginationChange,
+  onEdit,
+  onDelete,
+}: AssetTypeTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
-  // Create a map of categories for looking up category names
-  const categoriesMap = useMemo(() => {
-    return new Map(mockCategories.map(category => [category.id, category]));
-  }, [mockCategories]);
+  const categoryMap = useMemo(() => {
+    return new Map(categories.map((category) => [category.id, category.name]));
+  }, [categories]);
 
-  const columns = useMemo(() => {
-    return typeColumns.map(column => {
-      if ((column as any).accessorKey === "categoryId") {
-        return {
-          ...column,
-          header: "Category",
-          cell: ({ row }: { row: { original: SettingsAssetType } }) => {
-            const category = categoriesMap.get(row.original.categoryId);
-            return <span className="font-medium">{category ? category.name : `Unknown (${row.original.categoryId})`}</span>;
-          }
-        };
-      }
-      return column;
-    });
-  }, [typeColumns, categoriesMap]);
+  const columns = useMemo(
+    () => getAssetTypeColumns({ onEdit, onDelete, categoryMap }),
+    [onEdit, onDelete, categoryMap],
+  );
 
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    manualPagination: true,
+    pageCount: totalPages,
+    state: {
+      sorting,
+      columnVisibility,
+      pagination: { pageIndex: page - 1, pageSize },
+    },
     onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
-    state: { sorting, columnVisibility },
-    initialState: { pagination: { pageSize: 10 } },
+    onPaginationChange: (updater) => {
+      const next: PaginationState =
+        typeof updater === "function"
+          ? updater({ pageIndex: page - 1, pageSize })
+          : updater;
+      onPaginationChange({ page: next.pageIndex + 1, pageSize: next.pageSize });
+    },
   });
 
   return (
@@ -91,9 +94,9 @@ export function AssetTypeTable({ data, onEdit, onDelete }: AssetTypeTableProps) 
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-36 text-center">
-                  <p className="font-medium">No types found</p>
+                  <p className="font-medium">No asset types found</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    No types match your current search and filters.
+                    No asset types match your current search and filters.
                   </p>
                 </TableCell>
               </TableRow>

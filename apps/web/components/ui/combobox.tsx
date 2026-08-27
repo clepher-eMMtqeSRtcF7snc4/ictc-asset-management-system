@@ -17,6 +17,7 @@ interface ComboboxProps {
   onValueChange: (value: string) => void;
   placeholder: string;
   className?: string;
+  popperClassName?: string;
   fullWidth?: boolean;
   renderOption?: (option: { id: string; name: string; photoUrl?: string | null }) => React.ReactNode;
 }
@@ -27,6 +28,7 @@ export function Combobox({
   onValueChange,
   placeholder,
   className,
+  popperClassName,
   fullWidth = false,
   renderOption,
 }: ComboboxProps) {
@@ -68,7 +70,7 @@ export function Combobox({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className={cn("p-0", fullWidth ? "" : "w-40")}
+        className={cn("p-0", fullWidth ? "" : "w-40", popperClassName)}
         align="start"
         sideOffset={4}
         style={fullWidth && triggerRef.current ? { width: `${triggerRef.current.offsetWidth}px` } : undefined}
