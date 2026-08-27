@@ -1,10 +1,17 @@
+"use client";
+
 import { CategorySection } from "@/components/assets/settings/categories/category-section";
 import { ConditionsSection } from "@/components/assets/settings/conditions/conditions-section";
 import { StatusesSection } from "@/components/assets/settings/statuses/statuses-section";
+import { TypeSection } from "@/components/assets/settings/type/type-section";
 import { PageHeader } from "@/components/layout/page-header";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState } from "react";
 
 
-export default async function MasterDataPage() {
+export default function MasterDataPage() {
+  
+  const [activeTab, setActiveTab] = useState("category");
 
   return (
     <div className="mx-auto max-w-[1440px] space-y-5">
@@ -13,9 +20,23 @@ export default async function MasterDataPage() {
         description="Manage standardized reference data used throughout the Asset & Inventory Management System."
       />
 
-      <CategorySection />
-      <StatusesSection />
-      <ConditionsSection />
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList variant="line">
+          <TabsTrigger value="assetType">Asset Type</TabsTrigger>
+          <TabsTrigger value="status">Asset Status</TabsTrigger>
+          <TabsTrigger value="condition">Asset Condition</TabsTrigger>
+        </TabsList>
+        <TabsContent value="assetType" className="mt-4 space-y-6">
+          <TypeSection/>
+          <CategorySection />
+        </TabsContent>
+        <TabsContent value="status" className="mt-4 space-y-4">
+          <StatusesSection />
+        </TabsContent>
+        <TabsContent value="condition" className="mt-4 space-y-4">
+          <ConditionsSection />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -53,26 +53,11 @@ export const updateCategoryInputSchema = categoryFieldsSchema
     { message: "Provide at least one field to update" },
   );
 
-// export const setCategoryStatusInputSchema = z.object({
-//   id: z.number().int().positive(),
-//   status: categoryStatusSchema,
-// });
-
 export type Category = z.infer<typeof categorySchema>;
 export type CategoryListInput = z.infer<typeof categoryListInputSchema>;
 export type CategoryListOutput = z.infer<typeof categoryListOutputSchema>;
 export type CreateCategoryInput = z.infer<typeof createCategoryInputSchema>;
 export type UpdateCategoryInput = z.infer<typeof updateCategoryInputSchema>;
-// export type SetCategoryStatusInput = z.infer<
-//   typeof setCategoryStatusInputSchema
-// >;
-
-// Added for form schema
-// export const categoryFormSchema = categoryFieldsSchema.extend({
-//   status: categoryStatusSchema,
-// });
-
-// export type CategoryFormValues = z.infer<typeof categoryFormSchema>;
 
 export const mockCategories: Category[] = [
   { id: 1, code: "ICT-LAPTOP", name: "Laptop", type: "Asset", description: "Portable computer devices", depreciable: true, defaultUsefulLife: 3, status: "active", createdAt: new Date(), updatedAt: new Date(), createdBy: null, updatedBy: null },
