@@ -12,8 +12,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Field,
   FieldError,
@@ -27,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CreateCategoryInput, createCategoryInputSchema } from "@repo/trpc/schemas";  
+import { CreateCategoryInput, settingsAssetCreateCategoryInputSchema } from "@repo/trpc/schemas";
 import { useEffect } from "react";
 
 interface CategoryDialogProps {
@@ -46,14 +44,11 @@ export function CategoryDialog({
   title = "Create Category",
 }: CategoryDialogProps) {
   const form = useForm<CreateCategoryInput>({
-    resolver: zodResolver(createCategoryInputSchema),
+    resolver: zodResolver(settingsAssetCreateCategoryInputSchema),
     defaultValues: defaultValues ?? {
-      code: "",
       name: "",
-      description: "",
-      type: "",
-      depreciable: false,
-      defaultUsefulLife: null,
+      description: null,
+      status: "active" as const,
     },
   });
 
@@ -71,27 +66,6 @@ export function CategoryDialog({
         </DialogHeader>
 <form className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
         <FieldGroup>
-          <Controller
-            name="code"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="form-code">Category Code</FieldLabel>
-                <Input
-                  {...field}
-                  value={field.value ?? ""}
-                  onChange={(e) => field.onChange(e.target.value)}
-                  id="form-code"
-                  aria-invalid={fieldState.invalid}
-                  placeholder="Enter category code"
-                />
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-
           <Controller
             name="name"
             control={form.control}
@@ -135,84 +109,28 @@ export function CategoryDialog({
           )}
         />
 
-        <FieldGroup>
-          <Controller
-            name="type"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="form-type">
-                  Asset Type
-                </FieldLabel>
-
-                <Select
-                  value={field.value}
-                  onValueChange={field.onChange}
-                >
-                  <SelectTrigger
-                    id="form-type"
-                    className="mt-1 w-full"
-                    aria-invalid={fieldState.invalid}
-                  >
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-
-                  <SelectContent>
-                    <SelectItem value="Asset">Asset</SelectItem>
-                    <SelectItem value="Equipment">Equipment</SelectItem>
-                    <SelectItem value="Furniture">Furniture</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-
-          <Controller
-            name="defaultUsefulLife"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="form-defaultUsefulLife">Default Useful Life (years)</FieldLabel>
-                <Input
-                  {...field}
-                  value={field.value ?? ""}
-                  onChange={(e) => {
-                    field.onChange(e.target.value === "" ? null : Number(e.target.value));
-                  }}
-                  id="form-defaultUsefulLife"
-                  type="number"
-                  aria-invalid={fieldState.invalid}
-                  placeholder="Enter useful life"
-                />
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-        </FieldGroup>
-
         <Controller
-          name="depreciable"
+          name="status"
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="form-depreciable"
-                  checked={field.value ?? false}
-                  onCheckedChange={(checked) => field.onChange(checked)}
+              <FieldLabel htmlFor="form-status">Status</FieldLabel>
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+              >
+                <SelectTrigger
+                  id="form-status"
+                  className="mt-1 w-full"
                   aria-invalid={fieldState.invalid}
-                />
-                <Label htmlFor="form-depreciable" className="text-sm font-normal">
-                  Depreciable
-                </Label>
-              </div>
+                >
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
               {fieldState.invalid && (
                 <FieldError errors={[fieldState.error]} />
               )}

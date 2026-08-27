@@ -14,12 +14,12 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MoreHorizontal } from "lucide-react";
 import { categoryColumns } from "./category-columns";
-import type { Category } from "@repo/trpc/schemas";
+import type { SettingsAssetCategory } from "@repo/trpc/schemas";
 
 interface CategoryTableProps {
-  data: Category[];
-  onEdit: (category: Category) => void;
-  onDelete: (category: Category) => void;
+  data: SettingsAssetCategory[];
+  onEdit: (category: SettingsAssetCategory) => void;
+  onDelete: (category: SettingsAssetCategory) => void;
 }
 
 export function CategoryTable({ data, onEdit, onDelete }: CategoryTableProps) {
@@ -32,7 +32,7 @@ export function CategoryTable({ data, onEdit, onDelete }: CategoryTableProps) {
         if (column.id === "actions") {
           return {
             ...column,
-            cell: ({ row }: { row: { original: Category } }) => (
+            cell: ({ row }: { row: { original: SettingsAssetCategory } }) => (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button size="icon-xs" variant="ghost" aria-label={`Actions for ${row.original.name}`}>

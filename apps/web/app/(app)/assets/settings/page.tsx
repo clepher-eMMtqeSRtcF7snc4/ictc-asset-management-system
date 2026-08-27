@@ -11,7 +11,7 @@ import { useState } from "react";
 
 export default function MasterDataPage() {
   
-  const [activeTab, setActiveTab] = useState("category");
+  const [activeTab, setActiveTab] = useState("assetType");
 
   return (
     <div className="mx-auto max-w-[1440px] space-y-5">

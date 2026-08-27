@@ -4,11 +4,10 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Pencil, Trash2, Eye } from "lucide-react";
-import type { Category } from "@repo/trpc/schemas"; 
+import type { SettingsAssetCategory } from "@repo/trpc/schemas";
 import { Badge } from "@/components/ui/badge";
 
-export const categoryColumns: ColumnDef<Category>[] = [
-  { accessorKey: "code", header: "Code", cell: ({ row }) => <span className="font-mono text-xs">{row.original.code}</span> },
+export const categoryColumns: ColumnDef<SettingsAssetCategory>[] = [
   { accessorKey: "name", header: "Category", cell: ({ row }) => <span className="font-medium">{row.original.name}</span> },
   { accessorKey: "description", header: "Description" },
   {

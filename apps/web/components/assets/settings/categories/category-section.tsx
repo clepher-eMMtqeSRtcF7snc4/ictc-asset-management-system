@@ -16,43 +16,42 @@ import { toast } from "sonner";
 import { CategoryDialog } from "./category-dialog";
 import { CategoryDeleteDialog } from "./category-delete-dialog";
 import { CategoryTable } from "./category-table";
-import type { Category, CreateCategoryInput } from "@repo/trpc/schemas";
-import { mockCategories } from "@/components/administration/master-data/mock-data";
+import type { SettingsAssetCategory, CreateCategoryInput } from "@repo/trpc/schemas";
+import { assetSettingsMockCategories } from "@repo/trpc/schemas";
 
-// TODO: Replace mockCategories with tRPC query when backend integration is implemented.
+// TODO: Replace assetSettingsMockCategories with tRPC query when backend integration is implemented.
 
 export function CategorySection() {
-  const [categories, setCategories] = useState<Category[]>(mockCategories);
+  const [categories, setCategories] = useState<SettingsAssetCategory[]>(assetSettingsMockCategories);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [typeFilter, setTypeFilter] = useState("all");
+
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<SettingsAssetCategory | null>(null);
 
   const filteredCategories = useMemo(() => {
     return categories.filter((category) => {
       const matchesSearch =
         !search ||
         category.name.toLowerCase().includes(search.toLowerCase()) ||
-        category.code.toLowerCase().includes(search.toLowerCase());
+        (category.description?.toLowerCase() ?? "").includes(search.toLowerCase());
       const matchesStatus = statusFilter === "all" || category.status === statusFilter;
-      const matchesType = typeFilter === "all" || category.type === typeFilter;
-      return matchesSearch && matchesStatus && matchesType;
+      return matchesSearch && matchesStatus;
     });
-  }, [categories, search, statusFilter, typeFilter]);
+  }, [categories, search, statusFilter]);
 
   const handleCreate = (values: CreateCategoryInput) => {
-    const newCategory: Category = {
+    const newCategory: SettingsAssetCategory = {
       id: Date.now(),
-      code: values.code,
       name: values.name,
-      type: values.type,
       description: values.description ?? null,
-      depreciable: values.depreciable,
-      defaultUsefulLife: values.defaultUsefulLife,
       status: values.status,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      createdBy: null,
+      updatedBy: null,
     };
     setCategories([...categories, newCategory]);
     setCreateOpen(false);
@@ -67,12 +66,8 @@ export function CategorySection() {
         category.id === selectedCategory.id
           ? {
               ...category,
-              code: values.code ?? category.code,
               name: values.name ?? category.name,
-              type: values.type ?? category.type,
               description: values.description ?? category.description,
-              depreciable: values.depreciable ?? category.depreciable,
-              defaultUsefulLife: values.defaultUsefulLife ?? category.defaultUsefulLife,
               status: values.status ?? category.status,
               updatedAt: new Date(),
             }
@@ -126,18 +121,7 @@ export function CategorySection() {
             </SelectContent>
           </Select>
 
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="Asset">Asset</SelectItem>
-              <SelectItem value="Equipment">Equipment</SelectItem>
-              <SelectItem value="Furniture">Furniture</SelectItem>
-              <SelectItem value="Other">Other</SelectItem>
-            </SelectContent>
-          </Select>
+
         </div>
         <CategoryTable
           data={filteredCategories}
@@ -166,13 +150,9 @@ export function CategorySection() {
         defaultValues={
           selectedCategory
             ? {
-                code: selectedCategory.code,
                 name: selectedCategory.name,
                 description: selectedCategory.description,
-                type: selectedCategory.type,
-                depreciable: selectedCategory.depreciable,
-                defaultUsefulLife: selectedCategory.defaultUsefulLife,
-                status: selectedCategory.status
+                status: selectedCategory.status,
               }
             : undefined
         }
