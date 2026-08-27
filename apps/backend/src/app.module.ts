@@ -20,6 +20,7 @@ import { DepartmentModule } from './administration/department/department.module'
 import { EmployeeModule } from './administration/employee/employee.module';
 import { PositionModule } from './administration/position/position.module';
 import { DesignationModule } from './administration/designation/designation.module';
+import { AssetTypeModule } from './assets/settings/asset-type/asset-type.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -53,6 +54,7 @@ import { DesignationModule } from './administration/designation/designation.modu
     UploadModule,
     PositionModule,
     DesignationModule,
+    AssetTypeModule,
   ],
   controllers: [AppController],
   providers: [
