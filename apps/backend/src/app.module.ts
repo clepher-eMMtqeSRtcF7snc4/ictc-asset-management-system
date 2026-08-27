@@ -21,6 +21,7 @@ import { EmployeeModule } from './administration/employee/employee.module';
 import { PositionModule } from './administration/position/position.module';
 import { DesignationModule } from './administration/designation/designation.module';
 import { AssetTypeModule } from './assets/settings/asset-type/asset-type.module';
+import { AssetCategoryModule } from './assets/settings/asset-category/asset-category.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -55,6 +56,7 @@ import { AssetTypeModule } from './assets/settings/asset-type/asset-type.module'
     PositionModule,
     DesignationModule,
     AssetTypeModule,
+    AssetCategoryModule,
   ],
   controllers: [AppController],
   providers: [
