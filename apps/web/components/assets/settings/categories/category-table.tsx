@@ -1,7 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { flexRender, getCoreRowModel, getPaginationRowModel, getSortedRowModel, type SortingState, useReactTable, type VisibilityState } from "@tanstack/react-table";
+import {
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  type PaginationState,
+  type SortingState,
+  type VisibilityState,
+  useReactTable,
+} from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { DataTablePagination } from "@/components/ui/datatable-pagination";
 import {
@@ -12,17 +20,29 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Pen, Trash2 } from "lucide-react";
 import { categoryColumns } from "./category-columns";
 import type { SettingsAssetCategory } from "@repo/trpc/schemas";
 
 interface CategoryTableProps {
   data: SettingsAssetCategory[];
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  onPaginationChange: (next: { page: number; pageSize: number }) => void;
   onEdit: (category: SettingsAssetCategory) => void;
   onDelete: (category: SettingsAssetCategory) => void;
 }
 
-export function CategoryTable({ data, onEdit, onDelete }: CategoryTableProps) {
+export function CategoryTable({
+  data,
+  page,
+  pageSize,
+  totalPages,
+  onPaginationChange,
+  onEdit,
+  onDelete,
+}: CategoryTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
@@ -40,11 +60,10 @@ export function CategoryTable({ data, onEdit, onDelete }: CategoryTableProps) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem>View</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onEdit(row.original)}>Edit</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onEdit(row.original)}> <Pen/> Edit</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-destructive" onClick={() => onDelete(row.original)}>
-                    Delete
+                    <Trash2/> Delete
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -53,7 +72,7 @@ export function CategoryTable({ data, onEdit, onDelete }: CategoryTableProps) {
         }
         return column;
       }),
-    [onEdit, onDelete]
+    [onEdit, onDelete],
   );
 
   const table = useReactTable({
@@ -61,11 +80,22 @@ export function CategoryTable({ data, onEdit, onDelete }: CategoryTableProps) {
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    manualPagination: true,
+    pageCount: totalPages,
+    state: {
+      sorting,
+      columnVisibility,
+      pagination: { pageIndex: page - 1, pageSize },
+    },
     onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
-    state: { sorting, columnVisibility },
-    initialState: { pagination: { pageSize: 10 } },
+    onPaginationChange: (updater) => {
+      const next: PaginationState =
+        typeof updater === "function"
+          ? updater({ pageIndex: page - 1, pageSize })
+          : updater;
+      onPaginationChange({ page: next.pageIndex + 1, pageSize: next.pageSize });
+    },
   });
 
   return (

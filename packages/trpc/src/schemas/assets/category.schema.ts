@@ -37,7 +37,13 @@ export const settingsAssetUpdateCategoryInputSchema = settingsAssetCategoryField
     { message: "Provide at least one field to update" },
   );
 
-  export const settingsAssetCategoryListOutputSchema = z.array(settingsAssetCategorySchema);
+  export const settingsAssetCategoryListSchema = z.object({
+    items: z.array(settingsAssetCategorySchema),
+    total: z.number().int().nonnegative(),
+    page: z.number().int().positive(),
+    pageSize: z.number().int().positive(),
+    totalPages: z.number().int().nonnegative(),
+  });
 
 export type SettingsAssetCategory = z.infer<typeof settingsAssetCategorySchema>;
 export type CategoryListInput = z.infer<typeof settingsAssetCategorySchema>;

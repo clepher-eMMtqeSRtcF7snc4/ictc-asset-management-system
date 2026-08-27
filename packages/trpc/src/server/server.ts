@@ -799,6 +799,69 @@ const appRouter = t.router({
         pageSize: z.number().int().positive(),
         totalPages: z.number().int().nonnegative(),
       })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+  }),
+  assetCategoryRouter: t.router({
+    create: publicProcedure.input(z.object({
+      name: z.string().trim().min(1, "This field is required").max(150),
+      description: z.string().trim().max(500).optional().nullable(),
+      status: z.enum(["active", "inactive"]),
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    update: publicProcedure.input(z.object({
+      name: z.string().trim().min(1, "This field is required").max(150),
+      description: z.string().trim().max(500).optional().nullable(),
+      status: z.enum(["active", "inactive"]),
+    }).partial().extend({
+      id: z.number().int().positive(),
+    }).refine(
+      ({ name, description }) =>
+        name !== undefined ||
+        description !== undefined ||
+        { message: "Provide at least one field to update" },
+    )).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    delete: publicProcedure.input(z.object({
+      name: z.string().trim().min(1, "This field is required").max(150),
+      description: z.string().trim().max(500).optional().nullable(),
+      status: z.enum(["active", "inactive"]),
+    }).extend({
+      id: z.number().int().positive(),
+      createdAt: z.date().optional(),
+      updatedAt: z.date().optional(),
+      createdBy: z.string().optional().nullable(),
+      updatedBy: z.string().optional().nullable(),
+    }).pick({ id: true })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getCategoryById: publicProcedure.input(z.object({ id: z.number().int().positive() })).output(z.object({
+      name: z.string().trim().min(1, "This field is required").max(150),
+      description: z.string().trim().max(500).optional().nullable(),
+      status: z.enum(["active", "inactive"]),
+    }).extend({
+      id: z.number().int().positive(),
+      createdAt: z.date().optional(),
+      updatedAt: z.date().optional(),
+      createdBy: z.string().optional().nullable(),
+      updatedBy: z.string().optional().nullable(),
+    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getCategories: publicProcedure.input(z.object({
+      search: z.string().trim().optional(),
+      status: z.enum(['active', 'inactive']).optional(),
+      page: z.number().int().min(1).optional(),
+      pageSize: z.number().int().min(1).max(100).optional(),
+    }).default({})).output(z.object({
+      items: z.array(z.object({
+        name: z.string().trim().min(1, "This field is required").max(150),
+        description: z.string().trim().max(500).optional().nullable(),
+        status: z.enum(["active", "inactive"]),
+      }).extend({
+        id: z.number().int().positive(),
+        createdAt: z.date().optional(),
+        updatedAt: z.date().optional(),
+        createdBy: z.string().optional().nullable(),
+        updatedBy: z.string().optional().nullable(),
+      })),
+      total: z.number().int().nonnegative(),
+      page: z.number().int().positive(),
+      pageSize: z.number().int().positive(),
+      totalPages: z.number().int().nonnegative(),
+    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   })
 });
 export type AppRouter = typeof appRouter;

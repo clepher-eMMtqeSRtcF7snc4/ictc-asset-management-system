@@ -134,6 +134,13 @@
       "when": 1787714787312,
       "tag": "0018_silky_black_cat",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1787808912434,
+      "tag": "0019_stormy_inhumans",
+      "breakpoints": true
     }
   ]
 }

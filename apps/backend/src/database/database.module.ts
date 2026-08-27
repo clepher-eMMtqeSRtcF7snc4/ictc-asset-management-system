@@ -10,6 +10,7 @@ import * as departmentSchema from '../administration/department/schemas/schema';
 import * as positionSchema from '../administration/position/schemas/schema';
 import * as designationSchema from '../administration/designation/schemas/schema';
 import * as employeeSchema from '../administration/employee/schemas/schema';
+import * as assetCategorySchema from '../assets/settings/asset-category/schemas/schema';
 
 export const schema = {
   ...authSchema,
@@ -19,6 +20,7 @@ export const schema = {
   ...positionSchema,
   ...designationSchema,
   ...employeeSchema,
+  ...assetCategorySchema,
 };
 
 @Module({

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
+import { keepPreviousData } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,80 +14,88 @@ import {
 } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import { trpc } from "@/lib/trpc/client";
+import { CreateCategoryInput, SettingsAssetCategory } from "@repo/trpc/schemas";
 import { CategoryDialog } from "./category-dialog";
 import { CategoryDeleteDialog } from "./category-delete-dialog";
 import { CategoryTable } from "./category-table";
-import type { SettingsAssetCategory, CreateCategoryInput } from "@repo/trpc/schemas";
-import { assetSettingsMockCategories } from "@repo/trpc/schemas";
-
-// TODO: Replace assetSettingsMockCategories with tRPC query when backend integration is implemented.
 
 export function CategorySection() {
-  const [categories, setCategories] = useState<SettingsAssetCategory[]>(assetSettingsMockCategories);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<SettingsAssetCategory | null>(null);
 
-  const filteredCategories = useMemo(() => {
-    return categories.filter((category) => {
-      const matchesSearch =
-        !search ||
-        category.name.toLowerCase().includes(search.toLowerCase()) ||
-        (category.description?.toLowerCase() ?? "").includes(search.toLowerCase());
-      const matchesStatus = statusFilter === "all" || category.status === statusFilter;
-      return matchesSearch && matchesStatus;
-    });
-  }, [categories, search, statusFilter]);
+  const categoriesQuery = trpc.assetCategoryRouter.getCategories.useQuery(
+    {
+      search: search || undefined,
+      status: statusFilter === "all" ? undefined : (statusFilter as "active" | "inactive"),
+      page,
+      pageSize,
+    },
+    { placeholderData: keepPreviousData },
+  );
+
+  const categories = (categoriesQuery.data?.items ?? []).map((item) => ({
+    ...item,
+    createdAt: item.createdAt ? new Date(item.createdAt as unknown as string) : undefined,
+    updatedAt: item.updatedAt ? new Date(item.updatedAt as unknown as string) : undefined,
+  })) as SettingsAssetCategory[];
+  const totalPages = categoriesQuery.data?.totalPages ?? 1;
+
+  const utils = trpc.useUtils();
+
+  const createCategory = trpc.assetCategoryRouter.create.useMutation({
+    onSuccess: () => {
+      utils.assetCategoryRouter.getCategories.invalidate();
+      setCreateOpen(false);
+      toast.success("Category created successfully.");
+    },
+    onError: (error) => {
+      toast.error(error.message ?? "Failed to create category.");
+    },
+  });
+
+  const updateCategory = trpc.assetCategoryRouter.update.useMutation({
+    onSuccess: () => {
+      utils.assetCategoryRouter.getCategories.invalidate();
+      setEditOpen(false);
+      setSelectedCategory(null);
+      toast.success("Category updated successfully.");
+    },
+    onError: (error) => {
+      toast.error(error.message ?? "Failed to update category.");
+    },
+  });
+
+  const deleteCategory = trpc.assetCategoryRouter.delete.useMutation({
+    onSuccess: () => {
+      utils.assetCategoryRouter.getCategories.invalidate();
+      setDeleteOpen(false);
+      setSelectedCategory(null);
+      toast.success("Category deleted successfully.");
+    },
+    onError: (error) => {
+      toast.error(error.message ?? "Failed to delete category.");
+    },
+  });
 
   const handleCreate = (values: CreateCategoryInput) => {
-    const newCategory: SettingsAssetCategory = {
-      id: Date.now(),
-      name: values.name,
-      description: values.description ?? null,
-      status: values.status,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      createdBy: null,
-      updatedBy: null,
-    };
-    setCategories([...categories, newCategory]);
-    setCreateOpen(false);
-    toast.success("Category created successfully.");
+    createCategory.mutate(values);
   };
 
   const handleEdit = (values: CreateCategoryInput) => {
     if (!selectedCategory) return;
-
-    setCategories((prev) =>
-      prev.map((category) =>
-        category.id === selectedCategory.id
-          ? {
-              ...category,
-              name: values.name ?? category.name,
-              description: values.description ?? category.description,
-              status: values.status ?? category.status,
-              updatedAt: new Date(),
-            }
-          : category,
-      ),
-    );
-
-    setEditOpen(false);
-    setSelectedCategory(null);
-
-    toast.success("Category updated successfully.");
+    updateCategory.mutate({ id: selectedCategory.id, ...values });
   };
 
   const handleDelete = () => {
     if (!selectedCategory) return;
-    setCategories(categories.filter((c) => c.id !== selectedCategory.id));
-    setDeleteOpen(false);
-    setSelectedCategory(null);
-    toast.success("Category deleted successfully.");
+    deleteCategory.mutate({ id: selectedCategory.id });
   };
 
   return (
@@ -108,9 +117,18 @@ export function CategorySection() {
             className="max-w-sm"
             placeholder="Search categories..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
           />
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select
+            value={statusFilter}
+            onValueChange={(value) => {
+              setStatusFilter(value);
+              setPage(1);
+            }}
+          >
             <SelectTrigger className="w-32">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
@@ -120,20 +138,32 @@ export function CategorySection() {
               <SelectItem value="inactive">Inactive</SelectItem>
             </SelectContent>
           </Select>
-
-
         </div>
-        <CategoryTable
-          data={filteredCategories}
-          onEdit={(category) => {
-            setSelectedCategory(category);
-            setEditOpen(true);
-          }}
-          onDelete={(category) => {
-            setSelectedCategory(category);
-            setDeleteOpen(true);
-          }}
-        />
+
+        {categoriesQuery.isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <p className="text-muted-foreground">Loading categories...</p>
+          </div>
+        ) : (
+          <CategoryTable
+            data={categories}
+            page={page}
+            pageSize={pageSize}
+            totalPages={totalPages}
+            onPaginationChange={(next) => {
+              setPage(next.page);
+              setPageSize(next.pageSize);
+            }}
+            onEdit={(category) => {
+              setSelectedCategory(category);
+              setEditOpen(true);
+            }}
+            onDelete={(category) => {
+              setSelectedCategory(category);
+              setDeleteOpen(true);
+            }}
+          />
+        )}
       </CardContent>
 
       <CategoryDialog
@@ -141,6 +171,7 @@ export function CategorySection() {
         onOpenChange={setCreateOpen}
         onSubmit={handleCreate}
         title="Create Category"
+        isLoading={createCategory.isPending}
       />
 
       <CategoryDialog
@@ -157,6 +188,7 @@ export function CategorySection() {
             : undefined
         }
         title="Edit Category"
+        isLoading={updateCategory.isPending}
       />
 
       <CategoryDeleteDialog
