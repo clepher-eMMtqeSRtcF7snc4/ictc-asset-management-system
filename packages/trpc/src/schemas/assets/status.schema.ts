@@ -2,7 +2,7 @@ import z from "zod";
 
 export const settingsAssetStatusStatusSchema = z.enum(["active", "inactive"]);
 
-const settingsAssetStatusFieldsSchema = z.object({
+const assetStatusFieldsSchema = z.object({
   name: z.string().trim().min(1, "This field is required").max(150),
   code: z
     .string()
@@ -14,7 +14,7 @@ const settingsAssetStatusFieldsSchema = z.object({
   status: settingsAssetStatusStatusSchema,
 });
 
-export const settingsAssetStatusSchema = settingsAssetStatusFieldsSchema.extend({
+export const settingsAssetStatusSchema = assetStatusFieldsSchema.extend({
   id: z.number().int().positive(),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
@@ -22,9 +22,9 @@ export const settingsAssetStatusSchema = settingsAssetStatusFieldsSchema.extend(
   updatedBy: z.string().optional().nullable(),
 });
 
-export const createSettingsAssetStatusInputSchema = settingsAssetStatusFieldsSchema;
+export const createAssetStatusInputSchema = assetStatusFieldsSchema;
 
-export const updateSettingsAssetStatusInputSchema = settingsAssetStatusSchema
+export const updateAssetStatusInputSchema = settingsAssetStatusSchema
   .partial()
   .refine(
     ({ name, code, description, status }) =>
@@ -36,5 +36,5 @@ export const updateSettingsAssetStatusInputSchema = settingsAssetStatusSchema
   );
 
 export type SettingsAssetStatus = z.infer<typeof settingsAssetStatusSchema>;
-export type CreateSettingsAssetStatusInput = z.infer<typeof createSettingsAssetStatusInputSchema>;
-export type UpdateSettingsAssetStatusInput = z.infer<typeof updateSettingsAssetStatusInputSchema>;
+export type CreateAssetStatusInput = z.infer<typeof createAssetStatusInputSchema>;
+export type UpdateAssetStatusInput = z.infer<typeof updateAssetStatusInputSchema>;

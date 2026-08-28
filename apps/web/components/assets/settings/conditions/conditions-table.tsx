@@ -1,7 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { flexRender, getCoreRowModel, getPaginationRowModel, getSortedRowModel, type SortingState, useReactTable, type VisibilityState } from "@tanstack/react-table";
+import {
+  flexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  PaginationState,
+  type SortingState,
+  useReactTable,
+  type VisibilityState,
+} from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { DataTablePagination } from "@/components/ui/datatable-pagination";
 import {
@@ -11,18 +20,37 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreHorizontal } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { MoreHorizontal, Pen, Trash2 } from "lucide-react";
 import { conditionColumns } from "./condition-columns";
-import type { AssetCondition } from "@/components/master-data/types";
+import { AssetCondition } from "@repo/trpc/schemas";
 
 interface ConditionsTableProps {
   data: AssetCondition[];
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  onPaginationChange: (next: { page: number; pageSize: number }) => void;
   onEdit: (condition: AssetCondition) => void;
   onDelete: (condition: AssetCondition) => void;
 }
 
-export function ConditionsTable({ data, onEdit, onDelete }: ConditionsTableProps) {
+export function ConditionsTable({
+  data,
+  page,
+  pageSize,
+  totalPages,
+  onPaginationChange,
+  onEdit,
+  onDelete,
+}: ConditionsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
@@ -35,16 +63,24 @@ export function ConditionsTable({ data, onEdit, onDelete }: ConditionsTableProps
             cell: ({ row }: { row: { original: AssetCondition } }) => (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button size="icon-xs" variant="ghost" aria-label={`Actions for ${row.original.name}`}>
+                  <Button
+                    size="icon-xs"
+                    variant="ghost"
+                    aria-label={`Actions for ${row.original.name}`}
+                  >
                     <MoreHorizontal />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem>View</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onEdit(row.original)}>Edit</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onEdit(row.original)}>
+                    <Pen/> Edit
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive" onClick={() => onDelete(row.original)}>
-                    Delete
+                  <DropdownMenuItem
+                    className="text-destructive"
+                    onClick={() => onDelete(row.original)}
+                  >
+                    <Trash2/> Delete
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -53,7 +89,7 @@ export function ConditionsTable({ data, onEdit, onDelete }: ConditionsTableProps
         }
         return column;
       }),
-    [onEdit, onDelete]
+    [onEdit, onDelete],
   );
 
   const table = useReactTable({
@@ -62,15 +98,27 @@ export function ConditionsTable({ data, onEdit, onDelete }: ConditionsTableProps
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    manualPagination: true,
+    pageCount: totalPages,
+    state: {
+      sorting,
+      columnVisibility,
+      pagination: { pageIndex: page - 1, pageSize },
+    },
     onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
-    state: { sorting, columnVisibility },
-    initialState: { pagination: { pageSize: 10 } },
+    onPaginationChange: (updater) => {
+      const next: PaginationState =
+        typeof updater === "function"
+          ? updater({ pageIndex: page - 1, pageSize })
+          : updater;
+      onPaginationChange({ page: next.pageIndex + 1, pageSize: next.pageSize });
+    },
   });
 
   return (
-    <div className="rounded-lg border">
-      <div className="overflow-x-auto">
+    <div className="rounded-lg pb-3">
+      <div className="overflow-x-auto mb-3">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((group) => (
@@ -79,7 +127,10 @@ export function ConditionsTable({ data, onEdit, onDelete }: ConditionsTableProps
                   <TableHead key={header.id} className="whitespace-nowrap">
                     {header.isPlaceholder
                       ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -91,14 +142,20 @@ export function ConditionsTable({ data, onEdit, onDelete }: ConditionsTableProps
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id} className="whitespace-nowrap">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={conditionColumns.length} className="h-36 text-center">
+                <TableCell
+                  colSpan={conditionColumns.length}
+                  className="h-36 text-center"
+                >
                   <p className="font-medium">No conditions found</p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     No conditions match your current search and filters.

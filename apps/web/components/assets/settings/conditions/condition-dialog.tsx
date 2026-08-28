@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,6 +11,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import {
   Select,
   SelectContent,
@@ -18,17 +25,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { conditionFormSchema } from "./condition-form-schema";
-import type { ConditionFormValues } from "./condition-form-schema";
+import { useEffect } from "react";
+import { CreateAssetConditionInput, CreateAssetConditionInputSchema, } from "@repo/trpc/schemas";
 
-interface ConditionDialogProps {
+interface StatusDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (values: ConditionFormValues) => void;
-  defaultValues?: ConditionFormValues;
+  onSubmit: (values: CreateAssetConditionInput) => void;
+  defaultValues?: CreateAssetConditionInput;
   title?: string;
+  isLoading?: boolean;
 }
 
 export function ConditionDialog({
@@ -36,17 +42,24 @@ export function ConditionDialog({
   onOpenChange,
   onSubmit,
   defaultValues,
-  title = "Create Condition",
-}: ConditionDialogProps) {
-  const form = useForm<ConditionFormValues>({
-    resolver: zodResolver(conditionFormSchema),
+  title = "Create Status",
+  isLoading = false,
+}: StatusDialogProps) {
+  const form = useForm<CreateAssetConditionInput>({
+    resolver: zodResolver(CreateAssetConditionInputSchema),
     defaultValues: defaultValues ?? {
       code: "",
       name: "",
-      description: "",
+      description: null,
       status: "active",
     },
   });
+
+  useEffect(() => {
+    if (open && defaultValues) {
+      form.reset();
+    }
+  }, [open, defaultValues, form]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -55,50 +68,100 @@ export function ConditionDialog({
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <form className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <Label>Condition Code</Label>
-              <Input className="mt-1" {...form.register("code")} />
-              {form.formState.errors.code && (
-                <p className="mt-1 text-xs text-destructive">
-                  {form.formState.errors.code.message}
-                </p>
+          <FieldGroup>
+            <Controller
+              name="code"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="form-code">Status Code</FieldLabel>
+                  <Input
+                    {...field}
+                    value={field.value ?? ""}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    id="form-code"
+                    aria-invalid={fieldState.invalid}
+                    placeholder="Enter status code (e.g., NEW, DAMAGED)"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
               )}
-            </div>
-            <div>
-              <Label>Condition Name</Label>
-              <Input className="mt-1" {...form.register("name")} />
-              {form.formState.errors.name && (
-                <p className="mt-1 text-xs text-destructive">
-                  {form.formState.errors.name.message}
-                </p>
+            />
+
+            <Controller
+              name="name"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="form-name">Status Name</FieldLabel>
+                  <Input
+                    {...field}
+                    value={field.value ?? ""}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    id="form-name"
+                    aria-invalid={fieldState.invalid}
+                    placeholder="Enter status name"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
               )}
-            </div>
-          </div>
-          <div>
-            <Label>Description</Label>
-            <Textarea className="mt-1" {...form.register("description")} />
-          </div>
-          <div>
-            <Label>Status</Label>
-            <Select
-              value={form.watch("status")}
-              onValueChange={(value) => form.setValue("status", value as ConditionFormValues["status"])}
-            >
-              <SelectTrigger className="mt-1 w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
-            {form.formState.errors.status && (
-              <p className="mt-1 text-xs text-destructive">
-                {form.formState.errors.status.message}
-              </p>
+            />
+          </FieldGroup>
+
+          <Controller
+            name="description"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="form-description">Description</FieldLabel>
+                <Textarea
+                  {...field}
+                  value={field.value ?? ""}
+                  onChange={(e) => field.onChange(e.target.value || null)}
+                  id="form-description"
+                  aria-invalid={fieldState.invalid}
+                  placeholder="Enter description"
+                />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
             )}
-          </div>
+          />
+
+          <Controller
+            name="status"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="form-status">Status</FieldLabel>
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                >
+                  <SelectTrigger
+                    id="form-status"
+                    className="mt-1 w-full"
+                    aria-invalid={fieldState.invalid}
+                  >
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+
           <DialogFooter>
             <Button
               type="button"
@@ -107,7 +170,9 @@ export function ConditionDialog({
             >
               Cancel
             </Button>
-            <Button type="submit">Save</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Saving..." : "Save"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -10,6 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 
 interface AssetTypeDeleteDialogProps {
@@ -31,14 +32,18 @@ export function AssetTypeDeleteDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Type?</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete "{typeName}"? This
-            action cannot be undone.
+            Are you sure you want to delete "{typeName}"? This action cannot be
+            undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>
-            <Trash2 /> Delete
+        <AlertDialogFooter className="flex items-end gap-2">
+          <AlertDialogCancel asChild>
+            <Button variant="outline">Cancel</Button>
+          </AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm} asChild>
+            <Button variant="destructive">
+              <Trash2 /> Delete
+            </Button>
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

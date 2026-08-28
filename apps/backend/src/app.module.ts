@@ -24,6 +24,7 @@ import { AssetTypeModule } from './assets/settings/asset-type/asset-type.module'
 import { AssetCategoryModule } from './assets/settings/asset-category/asset-category.module';
 import { AssetStatusService } from './assets/settings/asset-status/asset-status.service';
 import { AssetStatusModule } from './assets/settings/asset-status/asset-status.module';
+import { AssetConditionModule } from './assets/settings/asset-condition/asset-condition.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -60,6 +61,7 @@ import { AssetStatusModule } from './assets/settings/asset-status/asset-status.m
     AssetTypeModule,
     AssetCategoryModule,
     AssetStatusModule,
+    AssetConditionModule,
   ],
   controllers: [AppController],
   providers: [

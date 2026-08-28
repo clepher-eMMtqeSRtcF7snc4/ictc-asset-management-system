@@ -2,11 +2,11 @@ import { AssetStatusService } from './asset-status.service';
 import { Input, Mutation, Query, Router, UseMiddlewares } from 'nestjs-trpc-v2';
 import { z } from 'zod';
 import {
-  createSettingsAssetStatusInputSchema,
-  updateSettingsAssetStatusInputSchema,
+  createAssetStatusInputSchema,
+  updateAssetStatusInputSchema,
   settingsAssetStatusSchema,
-  CreateSettingsAssetStatusInput,
-  UpdateSettingsAssetStatusInput,
+  CreateAssetStatusInput,
+  UpdateAssetStatusInput,
 } from '@repo/trpc/schemas';
 import { AuthTrpcMiddleware } from '../../../auth/auth-trpc.middleware';
 
@@ -15,16 +15,16 @@ import { AuthTrpcMiddleware } from '../../../auth/auth-trpc.middleware';
 export class AssetStatusRouter {
   constructor(private readonly assetStatusService: AssetStatusService) {}
 
-  @Mutation({ input: createSettingsAssetStatusInputSchema })
+  @Mutation({ input: createAssetStatusInputSchema })
   async create(
-    @Input() createSettingsAssetStatusInput: CreateSettingsAssetStatusInput,
+    @Input() createSettingsAssetStatusInput: CreateAssetStatusInput,
   ) {
     return this.assetStatusService.create(createSettingsAssetStatusInput);
   }
 
-  @Mutation({ input: updateSettingsAssetStatusInputSchema })
+  @Mutation({ input: updateAssetStatusInputSchema })
   async update(
-    @Input() updateSettingsAssetStatusInput: UpdateSettingsAssetStatusInput,
+    @Input() updateSettingsAssetStatusInput: UpdateAssetStatusInput,
   ) {
     const id = updateSettingsAssetStatusInput.id;
     if (!id) {

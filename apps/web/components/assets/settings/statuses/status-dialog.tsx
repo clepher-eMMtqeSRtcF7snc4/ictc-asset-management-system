@@ -25,15 +25,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { statusFormSchema } from "./status-form-schema";
-import type { StatusFormValues } from "./status-form-schema";
 import { useEffect } from "react";
+import { CreateAssetStatusInput, createAssetStatusInputSchema } from "@repo/trpc/schemas";
 
 interface StatusDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (values: StatusFormValues) => void;
-  defaultValues?: StatusFormValues;
+  onSubmit: (values: CreateAssetStatusInput) => void;
+  defaultValues?: CreateAssetStatusInput;
   title?: string;
   isLoading?: boolean;
 }
@@ -46,8 +45,8 @@ export function StatusDialog({
   title = "Create Status",
   isLoading = false,
 }: StatusDialogProps) {
-  const form = useForm<StatusFormValues>({
-    resolver: zodResolver(statusFormSchema),
+  const form = useForm<CreateAssetStatusInput>({
+    resolver: zodResolver(createAssetStatusInputSchema),
     defaultValues: defaultValues ?? {
       code: "",
       name: "",

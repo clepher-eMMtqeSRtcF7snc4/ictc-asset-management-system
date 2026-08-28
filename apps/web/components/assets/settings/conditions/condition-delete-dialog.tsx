@@ -10,6 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 
 interface ConditionDeleteDialogProps {
@@ -35,10 +36,12 @@ export function ConditionDeleteDialog({
             action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>
-            <Trash2 /> Delete
+        <AlertDialogFooter className="flex items-end gap-2">
+          <AlertDialogCancel asChild>
+            <Button variant="outline">Cancel</Button>
+          </AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm} asChild>
+            <Button variant="destructive"><Trash2 /> Delete</Button>
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

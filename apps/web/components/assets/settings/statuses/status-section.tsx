@@ -10,8 +10,7 @@ import { trpc } from "@/lib/trpc/client";
 import { StatusDialog } from "./status-dialog";
 import { StatusDeleteDialog } from "./status-delete-dialog";
 import { StatusesTable } from "./statuses-table";
-import type { SettingsAssetStatus } from "@repo/trpc/schemas";
-import type { StatusFormValues } from "./status-form-schema";
+import type { CreateAssetStatusInput, SettingsAssetStatus, UpdateAssetStatusInput } from "@repo/trpc/schemas";
 import { StatusFilters } from "./status-filters";
 
 export function StatusesSection() {
@@ -77,11 +76,11 @@ export function StatusesSection() {
     },
   });
 
-  const handleCreate = (values: StatusFormValues) => {
+  const handleCreate = (values: CreateAssetStatusInput) => {
     createStatus.mutate(values);
   };
 
-  const handleEdit = (values: StatusFormValues) => {
+  const handleEdit = (values: UpdateAssetStatusInput) => {
     if (!selectedStatus) return;
     updateStatus.mutate({ id: selectedStatus.id, ...values });
   };

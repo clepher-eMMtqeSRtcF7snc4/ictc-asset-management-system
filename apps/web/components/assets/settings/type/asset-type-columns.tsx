@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pen, Trash2 } from "lucide-react";
 
 interface AssetTypeColumnParams {
   onEdit: (assetType: SettingsAssetType) => void;
@@ -72,6 +72,22 @@ export function getAssetTypeColumns(params: AssetTypeColumnParams): ColumnDef<Se
     {
       id: "actions",
       header: "Actions",
+      cell: ({ row }) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="icon-xs" variant="ghost" aria-label={`Actions for ${row.original.name}`}>
+              <MoreHorizontal />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onEdit(row.original)}> <Pen/> Edit</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="text-destructive" onClick={() => onDelete(row.original)}>
+              <Trash2/> Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
     },
   ];
 }
