@@ -3,7 +3,7 @@
 import { AssetTypeSection } from "@/components/assets/settings/type/asset-type-section";
 import { CategorySection } from "@/components/assets/settings/categories/category-section";
 import { ConditionsSection } from "@/components/assets/settings/conditions/conditions-section";
-import { StatusesSection } from "@/components/assets/settings/statuses/statuses-section";
+import { StatusesSection } from "@/components/assets/settings/statuses/status-section";
 import { PageHeader } from "@/components/layout/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";

@@ -1,59 +1,37 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { flexRender, getCoreRowModel, getPaginationRowModel, getSortedRowModel, type SortingState, useReactTable, type VisibilityState } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
+import { flexRender, getCoreRowModel, getSortedRowModel, type PaginationState, type SortingState, useReactTable, type VisibilityState } from "@tanstack/react-table";
 import { DataTablePagination } from "@/components/ui/datatable-pagination";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreHorizontal } from "lucide-react";
-import { statusColumns } from "./status-columns";
-import type { AssetStatus } from "@/components/master-data/types";
+import type { SettingsAssetStatus } from "@repo/trpc/schemas";
+import { getStatusColumns } from "./status-columns";
 
 interface StatusesTableProps {
-  data: AssetStatus[];
-  onEdit: (status: AssetStatus) => void;
-  onDelete: (status: AssetStatus) => void;
+  data: SettingsAssetStatus[];
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  onPaginationChange: (next: { page: number; pageSize: number }) => void;
+  onEdit: (status: SettingsAssetStatus) => void;
+  onDelete: (status: SettingsAssetStatus) => void;
 }
 
-export function StatusesTable({ data, onEdit, onDelete }: StatusesTableProps) {
+export function StatusesTable({
+  data,
+  page,
+  pageSize,
+  totalPages,
+  onPaginationChange,
+  onEdit,
+  onDelete,
+}: StatusesTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const columns = useMemo(
-    () =>
-      statusColumns.map((column) => {
-        if (column.id === "actions") {
-          return {
-            ...column,
-            cell: ({ row }: { row: { original: AssetStatus } }) => (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button size="icon-xs" variant="ghost" aria-label={`Actions for ${row.original.name}`}>
-                    <MoreHorizontal />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem>View</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onEdit(row.original)}>Edit</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive" onClick={() => onDelete(row.original)}>
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ),
-          };
-        }
-        return column;
-      }),
-    [onEdit, onDelete]
+    () => getStatusColumns({ onEdit, onDelete }),
+    [onEdit, onDelete],
   );
 
   const table = useReactTable({
@@ -61,16 +39,27 @@ export function StatusesTable({ data, onEdit, onDelete }: StatusesTableProps) {
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    manualPagination: true,
+    pageCount: totalPages,
+    state: {
+      sorting,
+      columnVisibility,
+      pagination: { pageIndex: page - 1, pageSize },
+    },
     onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
-    state: { sorting, columnVisibility },
-    initialState: { pagination: { pageSize: 10 } },
+    onPaginationChange: (updater) => {
+      const next: PaginationState =
+        typeof updater === "function"
+          ? updater({ pageIndex: page - 1, pageSize })
+          : updater;
+      onPaginationChange({ page: next.pageIndex + 1, pageSize: next.pageSize });
+    },
   });
 
   return (
-    <div className="rounded-lg border">
-      <div className="overflow-x-auto">
+    <div className="rounded-lg pb-3">
+      <div className="overflow-x-auto mb-3">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((group) => (
@@ -98,10 +87,10 @@ export function StatusesTable({ data, onEdit, onDelete }: StatusesTableProps) {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={statusColumns.length} className="h-36 text-center">
-                  <p className="font-medium">No statuses found</p>
+                <TableCell colSpan={columns.length} className="h-36 text-center">
+                  <p className="font-medium">No asset statuses found</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    No statuses match your current search and filters.
+                    No asset statuses match your current search and filters.
                   </p>
                 </TableCell>
               </TableRow>

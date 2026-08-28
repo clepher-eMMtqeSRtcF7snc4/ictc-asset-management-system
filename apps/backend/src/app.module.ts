@@ -22,6 +22,8 @@ import { PositionModule } from './administration/position/position.module';
 import { DesignationModule } from './administration/designation/designation.module';
 import { AssetTypeModule } from './assets/settings/asset-type/asset-type.module';
 import { AssetCategoryModule } from './assets/settings/asset-category/asset-category.module';
+import { AssetStatusService } from './assets/settings/asset-status/asset-status.service';
+import { AssetStatusModule } from './assets/settings/asset-status/asset-status.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -57,6 +59,7 @@ import { AssetCategoryModule } from './assets/settings/asset-category/asset-cate
     DesignationModule,
     AssetTypeModule,
     AssetCategoryModule,
+    AssetStatusModule,
   ],
   controllers: [AppController],
   providers: [
@@ -66,6 +69,7 @@ import { AssetCategoryModule } from './assets/settings/asset-category/asset-cate
       provide: APP_GUARD,
       useClass: AuthGuard,
     },
+    AssetStatusService,
   ],
 })
 export class AppModule {}
