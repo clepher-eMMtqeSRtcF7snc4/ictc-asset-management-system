@@ -28,7 +28,7 @@ import {
 import { useEffect } from "react";
 import { CreateAssetConditionInput, CreateAssetConditionInputSchema, } from "@repo/trpc/schemas";
 
-interface StatusDialogProps {
+interface ConditionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (values: CreateAssetConditionInput) => void;
@@ -42,9 +42,9 @@ export function ConditionDialog({
   onOpenChange,
   onSubmit,
   defaultValues,
-  title = "Create Status",
+  title = "Create Condition",
   isLoading = false,
-}: StatusDialogProps) {
+}: ConditionDialogProps) {
   const form = useForm<CreateAssetConditionInput>({
     resolver: zodResolver(CreateAssetConditionInputSchema),
     defaultValues: defaultValues ?? {
@@ -56,10 +56,15 @@ export function ConditionDialog({
   });
 
   useEffect(() => {
-    if (open && defaultValues) {
-      form.reset();
+    if (open) {
+      form.reset({
+        code: defaultValues?.code ?? "",
+        name: defaultValues?.name ?? "",
+        description: defaultValues?.description ?? null,
+        status: defaultValues?.status ?? "active",
+      });
     }
-  }, [open, defaultValues, form]);
+  }, [open]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -74,14 +79,14 @@ export function ConditionDialog({
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-code">Status Code</FieldLabel>
+                  <FieldLabel htmlFor="form-code">Code</FieldLabel>
                   <Input
                     {...field}
                     value={field.value ?? ""}
                     onChange={(e) => field.onChange(e.target.value)}
                     id="form-code"
                     aria-invalid={fieldState.invalid}
-                    placeholder="Enter status code (e.g., NEW, DAMAGED)"
+                    placeholder="Enter condition code (e.g., NEW, DAMAGED)"
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -95,14 +100,14 @@ export function ConditionDialog({
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-name">Status Name</FieldLabel>
+                  <FieldLabel htmlFor="form-name">Name</FieldLabel>
                   <Input
                     {...field}
                     value={field.value ?? ""}
                     onChange={(e) => field.onChange(e.target.value)}
                     id="form-name"
                     aria-invalid={fieldState.invalid}
-                    placeholder="Enter status name"
+                    placeholder="Enter condition name"
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
