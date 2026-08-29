@@ -5,7 +5,6 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { AssetImageUpload } from "./asset-image-upload";
 import { AssetStickerPreview } from "./asset-sticker-preview";
 import { AssetStickerPrintLayout } from "./asset-sticker-print-layout";
 import { AssetRegistrationStepper } from "./asset-registration-stepper";
@@ -61,13 +60,6 @@ export function AssetRegistrationContentSection({
         </section>
 
         <aside className="space-y-4 print:hidden">
-          <Card className="shadow-sm">
-            <CardContent className="p-4">
-              <PanelTitle title="Asset image" />
-              <AssetImageUpload />
-            </CardContent>
-          </Card>
-
           <Card className="shadow-sm">
             <CardContent className="p-4">
               <div className="mb-3 flex items-center justify-between">

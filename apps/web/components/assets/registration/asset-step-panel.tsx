@@ -2,22 +2,26 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
+import { useState } from "react";
 import { trpc } from "@/lib/trpc/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Combobox } from "@/components/ui/combobox";
+import { Field, FieldLabel, FieldError, FieldGroup } from "@/components/ui/field";
+import FileUploadArea from "@/components/ui/file-upload-area";
+import { ArrowLeft, ArrowRight, Save, X } from "lucide-react";
 import {
   assetRegistrationSchema,
   type AssetRegistrationInput,
 } from "@repo/trpc/schemas";
-import { ArrowLeft, ArrowRight, Save } from "lucide-react";
+import Image from "next/image";
 
 const STEP_FIELDS: Record<number, (keyof AssetRegistrationInput)[]> = {
   0: ["assetName", "categoryId", "assetTypeId", "brand", "model", "conditionId", "quantity"],
-  1: ["serialNumber"],
+  1: ["serialNumber", "qrCode"],
   2: ["acquisitionDate", "acquisitionCost", "supportingDocs"],
-  3: ["departmentId", "custodianId"],
+  3: ["departmentId", "custodianId", "buildingId", "roomId"],
 };
 
 const STEP_TITLES = [
@@ -54,6 +58,9 @@ export function RegistrationStepPanel({
   onSubmit: (data: AssetRegistrationInput) => Promise<void> | void;
   isSubmitting?: boolean;
 }) {
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
   const form = useForm<AssetRegistrationInput>({
     resolver: zodResolver(assetRegistrationSchema),
     defaultValues: {
@@ -129,6 +136,23 @@ export function RegistrationStepPanel({
     name: `${e.firstName} ${e.lastName}`,
   }));
 
+  const handleFileSelect = (file: File) => {
+    if (file && file.type.startsWith("image/")) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPhotoPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedFile(null);
+    setPhotoPreview(null);
+    form.setValue("assetPhoto", null);
+  };
+
   const validateAndNext = async () => {
     const fields = STEP_FIELDS[step] ?? [];
     const result = await form.trigger(fields);
@@ -140,13 +164,14 @@ export function RegistrationStepPanel({
   const handleBack = () => {
     if (step === 0) {
       form.reset();
+      clearSelection();
     }
     onStepChange(Math.max(step - 1, 0));
   };
 
-  const handleFormSubmit = form.handleSubmit(async (data) => {
+  const handleFormSubmit = async (data: AssetRegistrationInput) => {
     await onSubmit(data);
-  });
+  };
 
   return (
     <section className="rounded-md border p-4">
@@ -155,512 +180,505 @@ export function RegistrationStepPanel({
         {STEP_DESCRIPTIONS[step]}
       </p>
 
-      <form onSubmit={handleFormSubmit}>
-        <div className="grid gap-3 md:grid-cols-2">
-          {step === 0 && (
-            <>
-              <div className="md:col-span-2">
-                <Field label="Asset name *">
-                  <Controller
-                    name="assetName"
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <>
-                        <Input
-                          value={field.value ?? ""}
-                          onChange={(e) => field.onChange(e.target.value)}
-                        />
-                        {fieldState.invalid && (
-                          <p className="text-xs text-red-500">
-                            {fieldState.error?.message}
-                          </p>
-                        )}
-                      </>
-                    )}
-                  />
-                </Field>
-              </div>
-
-              <Field label="Category *">
-                <Controller
-                  name="categoryId"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <>
-                      <Combobox
-                        options={categories.map((c) => ({
-                          id: String(c.id),
-                          name: c.name,
-                        }))}
-                        value={field.value ? String(field.value) : ""}
-                        onValueChange={(value) =>
-                          field.onChange(value ? Number(value) : undefined)
-                        }
-                        placeholder="Select category"
-                        fullWidth
-                      />
-                      {fieldState.invalid && (
-                        <p className="text-xs text-red-500">
-                          {fieldState.error?.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </Field>
-
-              <Field label="Asset type *">
-                <Controller
-                  name="assetTypeId"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <>
-                      <Combobox
-                        options={assetTypes.map((t) => ({
-                          id: String(t.id),
-                          name: t.name,
-                        }))}
-                        value={field.value ? String(field.value) : ""}
-                        onValueChange={(value) =>
-                          field.onChange(value ? Number(value) : undefined)
-                        }
-                        placeholder="Select asset type"
-                        fullWidth
-                      />
-                      {fieldState.invalid && (
-                        <p className="text-xs text-red-500">
-                          {fieldState.error?.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </Field>
-
-              <Field label="Brand *">
-                <Controller
-                  name="brand"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <>
-                      <Input
-                        value={field.value ?? ""}
-                        onChange={(e) => field.onChange(e.target.value)}
-                      />
-                      {fieldState.invalid && (
-                        <p className="text-xs text-red-500">
-                          {fieldState.error?.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </Field>
-
-              <Field label="Model *">
-                <Controller
-                  name="model"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <>
-                      <Input
-                        value={field.value ?? ""}
-                        onChange={(e) => field.onChange(e.target.value)}
-                      />
-                      {fieldState.invalid && (
-                        <p className="text-xs text-red-500">
-                          {fieldState.error?.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </Field>
-
-              <div className="md:col-span-2">
-                <Field label="Description">
-                  <Controller
-                    name="description"
-                    control={form.control}
-                    render={({ field }) => (
-                      <Textarea
-                        className="min-h-16"
-                        value={field.value ?? ""}
-                        onChange={(e) => field.onChange(e.target.value)}
-                      />
-                    )}
-                  />
-                </Field>
-              </div>
-
-              <Field label="Condition *">
-                <Controller
-                  name="conditionId"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <>
-                      <Combobox
-                        options={conditions.map((c) => ({
-                          id: String(c.id),
-                          name: c.name,
-                        }))}
-                        value={field.value ? String(field.value) : ""}
-                        onValueChange={(value) =>
-                          field.onChange(value ? Number(value) : undefined)
-                        }
-                        placeholder="Select condition"
-                        fullWidth
-                      />
-                      {fieldState.invalid && (
-                        <p className="text-xs text-red-500">
-                          {fieldState.error?.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </Field>
-
-              <Field label="Quantity *">
-                <Controller
-                  name="quantity"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <>
-                      <Input
-                        type="number"
-                        min={1}
-                        value={field.value ?? 1}
-                        onChange={(e) =>
-                          field.onChange(
-                            e.target.value ? Number(e.target.value) : 1
-                          )
-                        }
-                      />
-                      {fieldState.invalid && (
-                        <p className="text-xs text-red-500">
-                          {fieldState.error?.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </Field>
-            </>
-          )}
-
-          {step === 1 && (
-            <>
-              <Field label="Serial number *">
-                <Controller
-                  name="serialNumber"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <>
-                      <Input
-                        value={field.value ?? ""}
-                        onChange={(e) => field.onChange(e.target.value)}
-                      />
-                      {fieldState.invalid && (
-                        <p className="text-xs text-red-500">
-                          {fieldState.error?.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </Field>
-
-              <Field label="QR Code">
-                <Controller
-                  name="qrCode"
-                  control={form.control}
-                  render={({ field }) => (
+      <form id="asset-registration" onSubmit={form.handleSubmit(handleFormSubmit)} className="grid gap-6">
+        {step === 0 && (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <FieldGroup className="space-y-2">
+              <Controller
+                name="assetName"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="asset-name">Asset name *</FieldLabel>
                     <Input
+                      {...field}
                       value={field.value ?? ""}
                       onChange={(e) => field.onChange(e.target.value)}
+                      id="asset-name"
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Enter asset name"
                     />
-                  )}
-                />
-              </Field>
-            </>
-          )}
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
 
-          {step === 2 && (
-            <>
-              <Field label="Acquisition date *">
-                <Controller
-                  name="acquisitionDate"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <>
-                      <Input
-                        type="date"
-                        value={
-                          field.value
-                            ? formatDateForInput(new Date(field.value))
-                            : ""
-                        }
-                        onChange={(e) => {
-                          const date = e.target.value
-                            ? new Date(e.target.value)
-                            : undefined;
-                          field.onChange(date);
-                        }}
-                      />
-                      {fieldState.invalid && (
-                        <p className="text-xs text-red-500">
-                          {fieldState.error?.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </Field>
+              <Controller
+                name="categoryId"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="category">Category *</FieldLabel>
+                    <Combobox
+                      options={categories.map((c) => ({
+                        id: String(c.id),
+                        name: c.name,
+                      }))}
+                      value={field.value ? String(field.value) : ""}
+                      onValueChange={(value) =>
+                        field.onChange(value ? Number(value) : undefined)
+                      }
+                      placeholder="Select category"
+                      fullWidth
+                    />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
 
-              <Field label="Acquisition cost *">
-                <Controller
-                  name="acquisitionCost"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <>
-                      <Input
-                        type="number"
-                        min={0}
-                        value={field.value ?? ""}
-                        onChange={(e) =>
-                          field.onChange(
-                            e.target.value ? Number(e.target.value) : undefined
-                          )
-                        }
-                      />
-                      {fieldState.invalid && (
-                        <p className="text-xs text-red-500">
-                          {fieldState.error?.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </Field>
+              <Controller
+                name="assetTypeId"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="asset-type">Asset type *</FieldLabel>
+                    <Combobox
+                      options={assetTypes.map((t) => ({
+                        id: String(t.id),
+                        name: t.name,
+                      }))}
+                      value={field.value ? String(field.value) : ""}
+                      onValueChange={(value) =>
+                        field.onChange(value ? Number(value) : undefined)
+                      }
+                      placeholder="Select asset type"
+                      fullWidth
+                    />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
 
-              <Field label="Supplier">
-                <Controller
-                  name="supplierId"
-                  control={form.control}
-                  render={({ field }) => (
+              <Controller
+                name="brand"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="brand">Brand *</FieldLabel>
                     <Input
-                      type="number"
+                      id="brand"
                       value={field.value ?? ""}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      aria-invalid={fieldState.invalid}
+                    />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="description"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="description">Description</FieldLabel>
+                    <Textarea
+                      id="description"
+                      className="min-h-16"
+                      value={field.value ?? ""}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      aria-invalid={fieldState.invalid}
+                    />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+            </FieldGroup>
+
+            <FieldGroup className="space-y-2">
+              <Controller
+                name="model"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="model">Model *</FieldLabel>
+                    <Input
+                      id="model"
+                      value={field.value ?? ""}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      aria-invalid={fieldState.invalid}
+                    />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="conditionId"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="condition">Condition *</FieldLabel>
+                    <Combobox
+                      options={conditions.map((c) => ({
+                        id: String(c.id),
+                        name: c.name,
+                      }))}
+                      value={field.value ? String(field.value) : ""}
+                      onValueChange={(value) =>
+                        field.onChange(value ? Number(value) : undefined)
+                      }
+                      placeholder="Select condition"
+                      fullWidth
+                    />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="quantity"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="quantity">Quantity *</FieldLabel>
+                    <Input
+                      id="quantity"
+                      type="number"
+                      min={1}
+                      value={field.value ?? 1}
                       onChange={(e) =>
                         field.onChange(
-                          e.target.value ? Number(e.target.value) : undefined
+                          e.target.value ? Number(e.target.value) : 1
                         )
                       }
+                      aria-invalid={fieldState.invalid}
                     />
-                  )}
-                />
-              </Field>
-
-              <Field label="Purchase order number">
-                <Controller
-                  name="purchaseOrderNumber"
-                  control={form.control}
-                  render={({ field }) => (
-                    <Input
-                      value={field.value ?? ""}
-                      onChange={(e) => field.onChange(e.target.value)}
-                    />
-                  )}
-                />
-              </Field>
-
-              <Field label="Warranty">
-                <Controller
-                  name="warranty"
-                  control={form.control}
-                  render={({ field }) => (
-                    <Input
-                      value={field.value ?? ""}
-                      onChange={(e) => field.onChange(e.target.value)}
-                    />
-                  )}
-                />
-              </Field>
-
-              <Field label="Supporting documents *">
-                <Controller
-                  name="supportingDocs"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <>
-                      <Input
-                        value={field.value ?? ""}
-                        onChange={(e) => field.onChange(e.target.value)}
-                      />
-                      {fieldState.invalid && (
-                        <p className="text-xs text-red-500">
-                          {fieldState.error?.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </Field>
-            </>
-          )}
-
-          {step === 3 && (
-            <>
-              <Field label="Department *">
-                <Controller
-                  name="departmentId"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <>
-                      <Combobox
-                        options={departments.map((d) => ({
-                          id: String(d.id),
-                          name: d.name,
-                        }))}
-                        value={field.value ? String(field.value) : ""}
-                        onValueChange={(value) =>
-                          field.onChange(value ? Number(value) : undefined)
-                        }
-                        placeholder="Select department"
-                        fullWidth
-                      />
-                      {fieldState.invalid && (
-                        <p className="text-xs text-red-500">
-                          {fieldState.error?.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </Field>
-
-              <Field label="Assigned to *">
-                <Controller
-                  name="custodianId"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <>
-                      <Combobox
-                        options={custodianOptions}
-                        value={field.value ? String(field.value) : ""}
-                        onValueChange={(value) =>
-                          field.onChange(value ? Number(value) : undefined)
-                        }
-                        placeholder="Select custodian"
-                        fullWidth
-                      />
-                      {fieldState.invalid && (
-                        <p className="text-xs text-red-500">
-                          {fieldState.error?.message}
-                        </p>
-                      )}
-                    </>
-                  )}
-                />
-              </Field>
-
-              <Field label="Building">
-                <Controller
-                  name="buildingId"
-                  control={form.control}
-                  render={({ field }) => (
-                    <Combobox
-                      options={buildings.map((b) => ({
-                        id: String(b.id),
-                        name: b.name,
-                      }))}
-                      value={field.value ? String(field.value) : ""}
-                      onValueChange={(value) =>
-                        field.onChange(value ? Number(value) : undefined)
-                      }
-                      placeholder="Select building"
-                      fullWidth
-                    />
-                  )}
-                />
-              </Field>
-
-              <Field label="Room">
-                <Controller
-                  name="roomId"
-                  control={form.control}
-                  render={({ field }) => (
-                    <Combobox
-                      options={rooms.map((r) => ({
-                        id: String(r.id),
-                        name: r.name,
-                      }))}
-                      value={field.value ? String(field.value) : ""}
-                      onValueChange={(value) =>
-                        field.onChange(value ? Number(value) : undefined)
-                      }
-                      placeholder="Select room"
-                      fullWidth
-                    />
-                  )}
-                />
-              </Field>
-            </>
-          )}
-
-          {step === 4 && (
-            <div className="md:col-span-2">
-              <p className="mb-3 text-sm font-semibold">Review & Confirm</p>
-              <ReviewFields
-                values={form.getValues()}
-                categories={categories}
-                assetTypes={assetTypes}
-                conditions={conditions}
-                departments={departments}
-                employees={employees}
-                buildings={buildings}
-                rooms={rooms}
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
               />
-            </div>
-          )}
-        </div>
 
-        {step < 4 && (
-          <div className="mt-5 flex items-center justify-between border-t pt-4">
-            <Button type="button" variant="outline" onClick={handleBack}>
-              <ArrowLeft className="mr-2 size-4" />
-              {step === 0 ? "Cancel" : "Back"}
-            </Button>
-            <Button type="button" onClick={validateAndNext}>
-              Next <ArrowRight className="ml-2 size-4" />
-            </Button>
+              <Controller
+                name="assetPhoto"
+                control={form.control}
+                render={() => (
+                  <Field>
+                    <FieldLabel>Asset Photo</FieldLabel>
+                    <div className="mt-2 flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 text-center">
+                      {photoPreview ? (
+                        <div className="relative inline-block">
+                          <Image
+                            src={photoPreview}
+                            unoptimized
+                            alt="Employee photo preview"
+                            width={112}
+                            height={112}
+                            className="size-28 rounded-md border object-cover"
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon-xs"
+                            className="absolute -top-2 -right-2"
+                            onClick={clearSelection}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                          <FileUploadArea onFileSelect={handleFileSelect} />
+                      )}
+                    </div>
+                  </Field>
+                )}
+              />
+            </FieldGroup>
+          </div>
+        )}
+
+        {step === 1 && (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <Controller
+              name="serialNumber"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="serial-number">Serial number *</FieldLabel>
+                  <Input
+                    id="serial-number"
+                    value={field.value ?? ""}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="qrCode"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="qr-code">QR Code</FieldLabel>
+                  <Input
+                    id="qr-code"
+                    value={field.value ?? ""}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <Controller
+              name="acquisitionDate"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="acquisition-date">Acquisition date *</FieldLabel>
+                  <Input
+                    id="acquisition-date"
+                    type="date"
+                    value={
+                      field.value
+                        ? formatDateForInput(new Date(field.value))
+                        : ""
+                    }
+                    onChange={(e) => {
+                      const date = e.target.value
+                        ? new Date(e.target.value)
+                        : undefined;
+                      field.onChange(date);
+                    }}
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="acquisitionCost"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="acquisition-cost">Acquisition cost *</FieldLabel>
+                  <Input
+                    id="acquisition-cost"
+                    type="number"
+                    min={0}
+                    value={field.value ?? ""}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value ? Number(e.target.value) : undefined
+                      )
+                    }
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="supplierId"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="supplier">Supplier</FieldLabel>
+                  <Input
+                    id="supplier"
+                    type="number"
+                    value={field.value ?? ""}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value ? Number(e.target.value) : undefined
+                      )
+                    }
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="purchaseOrderNumber"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="po-number">Purchase order number</FieldLabel>
+                  <Input
+                    id="po-number"
+                    value={field.value ?? ""}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="warranty"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="warranty">Warranty</FieldLabel>
+                  <Input
+                    id="warranty"
+                    value={field.value ?? ""}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="supportingDocs"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="supporting-docs">Supporting documents *</FieldLabel>
+                  <Input
+                    id="supporting-docs"
+                    value={field.value ?? ""}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <Controller
+              name="departmentId"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="department">Department *</FieldLabel>
+                  <Combobox
+                    options={departments.map((d) => ({
+                      id: String(d.id),
+                      name: d.name,
+                    }))}
+                    value={field.value ? String(field.value) : ""}
+                    onValueChange={(value) =>
+                      field.onChange(value ? Number(value) : undefined)
+                    }
+                    placeholder="Select department"
+                    fullWidth
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="custodianId"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="custodian">Assigned to *</FieldLabel>
+                  <Combobox
+                    options={custodianOptions}
+                    value={field.value ? String(field.value) : ""}
+                    onValueChange={(value) =>
+                      field.onChange(value ? Number(value) : undefined)
+                    }
+                    placeholder="Select custodian"
+                    fullWidth
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="buildingId"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="building">Building</FieldLabel>
+                  <Combobox
+                    options={buildings.map((b) => ({
+                      id: String(b.id),
+                      name: b.name,
+                    }))}
+                    value={field.value ? String(field.value) : ""}
+                    onValueChange={(value) =>
+                      field.onChange(value ? Number(value) : undefined)
+                    }
+                    placeholder="Select building"
+                    fullWidth
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="roomId"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="room">Room</FieldLabel>
+                  <Combobox
+                    options={rooms.map((r) => ({
+                      id: String(r.id),
+                      name: r.name,
+                    }))}
+                    value={field.value ? String(field.value) : ""}
+                    onValueChange={(value) =>
+                      field.onChange(value ? Number(value) : undefined)
+                    }
+                    placeholder="Select room"
+                    fullWidth
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
           </div>
         )}
 
         {step === 4 && (
-          <div className="mt-5 flex items-center justify-between border-t pt-4">
-            <Button type="button" variant="outline" onClick={handleBack}>
-              <ArrowLeft className="mr-2 size-4" />
-              Back
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              <Save className="mr-2 size-4" />
-              {isSubmitting ? "Saving…" : "Save asset"}
-            </Button>
+          <div className="md:col-span-2">
+            <p className="mb-3 text-sm font-semibold">Review & Confirm</p>
+            <ReviewFields
+              values={form.getValues()}
+              categories={categories}
+              assetTypes={assetTypes}
+              conditions={conditions}
+              departments={departments}
+              employees={employees}
+              buildings={buildings}
+              rooms={rooms}
+            />
           </div>
         )}
       </form>
-    </section>
-  );
-}
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="grid gap-1.5 text-xs font-medium">
-      {label}
-      {children}
-    </label>
+      <div className="mt-5 flex items-center justify-between border-t pt-4">
+        <Button type="button" variant="outline" onClick={handleBack}>
+          <ArrowLeft className="mr-2 size-4" />
+          {step === 0 ? "Cancel" : "Back"}
+        </Button>
+        {step < 4 ? (
+          <Button type="button" onClick={validateAndNext}>
+            Next <ArrowRight className="ml-2 size-4" />
+          </Button>
+        ) : (
+          <Button type="submit" form="asset-form" disabled={isSubmitting}>
+            <Save className="mr-2 size-4" />
+            {isSubmitting ? "Saving…" : "Save asset"}
+          </Button>
+        )}
+      </div>
+    </section>
   );
 }
 
