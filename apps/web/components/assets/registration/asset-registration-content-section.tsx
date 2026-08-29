@@ -63,7 +63,10 @@ export function AssetRegistrationContentSection({
           <Card className="shadow-sm">
             <CardContent className="p-4">
               <div className="mb-3 flex items-center justify-between">
-                <PanelTitle title="Sticker preview" />
+                <p className="mb-3 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide">
+                  <span>Sticker preview</span>
+                  <CircleHelp className="size-3 text-muted-foreground" />
+                </p>
                 <Button
                   type="button"
                   variant="outline"
@@ -96,14 +99,5 @@ export function AssetRegistrationContentSection({
         </div>
       </AssetStickerPrintLayout>
     </main>
-  );
-}
-
-function PanelTitle({ title }: { title: string }) {
-  return (
-    <p className="mb-3 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide">
-      <span>{title}</span>
-      <CircleHelp className="size-3 text-muted-foreground" />
-    </p>
   );
 }

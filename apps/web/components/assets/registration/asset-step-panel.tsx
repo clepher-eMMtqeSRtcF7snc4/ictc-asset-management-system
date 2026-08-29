@@ -8,7 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Combobox } from "@/components/ui/combobox";
-import { Field, FieldLabel, FieldError, FieldGroup } from "@/components/ui/field";
+import {
+  Field,
+  FieldLabel,
+  FieldError,
+  FieldGroup,
+} from "@/components/ui/field";
 import FileUploadArea from "@/components/ui/file-upload-area";
 import { ArrowLeft, ArrowRight, Save, X } from "lucide-react";
 import {
@@ -18,7 +23,15 @@ import {
 import Image from "next/image";
 
 const STEP_FIELDS: Record<number, (keyof AssetRegistrationInput)[]> = {
-  0: ["assetName", "categoryId", "assetTypeId", "brand", "model", "conditionId", "quantity"],
+  0: [
+    "assetName",
+    "categoryId",
+    "assetTypeId",
+    "brand",
+    "model",
+    "conditionId",
+    "quantity",
+  ],
   1: ["serialNumber", "qrCode"],
   2: ["acquisitionDate", "acquisitionCost", "supportingDocs"],
   3: ["departmentId", "custodianId", "buildingId", "roomId"],
@@ -63,6 +76,7 @@ export function RegistrationStepPanel({
 
   const form = useForm<AssetRegistrationInput>({
     resolver: zodResolver(assetRegistrationSchema),
+    mode: "onChange",
     defaultValues: {
       assetName: "",
       brand: "",
@@ -90,37 +104,93 @@ export function RegistrationStepPanel({
 
   const categoriesQuery = trpc.assetCategoryRouter.getCategories.useQuery(
     { status: "active" },
-    { placeholderData: { items: [], total: 0, page: 1, pageSize: 10, totalPages: 0 } }
+    {
+      placeholderData: {
+        items: [],
+        total: 0,
+        page: 1,
+        pageSize: 10,
+        totalPages: 0,
+      },
+    },
   );
 
   const assetTypesQuery = trpc.assetTypeRouter.getAssetTypes.useQuery(
     { status: "active" },
-    { placeholderData: { items: [], total: 0, page: 1, pageSize: 10, totalPages: 0 } }
+    {
+      placeholderData: {
+        items: [],
+        total: 0,
+        page: 1,
+        pageSize: 10,
+        totalPages: 0,
+      },
+    },
   );
 
   const conditionsQuery = trpc.assetConditionRouter.getAssetConditions.useQuery(
     { status: "active" },
-    { placeholderData: { items: [], total: 0, page: 1, pageSize: 10, totalPages: 0 } }
+    {
+      placeholderData: {
+        items: [],
+        total: 0,
+        page: 1,
+        pageSize: 10,
+        totalPages: 0,
+      },
+    },
   );
 
   const departmentsQuery = trpc.departmentRouter.getDepartments.useQuery(
     { status: "active" },
-    { placeholderData: { items: [], total: 0, page: 1, pageSize: 10, totalPages: 0 } }
+    {
+      placeholderData: {
+        items: [],
+        total: 0,
+        page: 1,
+        pageSize: 10,
+        totalPages: 0,
+      },
+    },
   );
 
   const employeesQuery = trpc.employeeRouter.getEmployees.useQuery(
     { status: "active" },
-    { placeholderData: { items: [], total: 0, page: 1, pageSize: 10, totalPages: 0 } }
+    {
+      placeholderData: {
+        items: [],
+        total: 0,
+        page: 1,
+        pageSize: 10,
+        totalPages: 0,
+      },
+    },
   );
 
   const buildingsQuery = trpc.buildingRouter.getBuildings.useQuery(
     { status: "active" },
-    { placeholderData: { items: [], total: 0, page: 1, pageSize: 10, totalPages: 0 } }
+    {
+      placeholderData: {
+        items: [],
+        total: 0,
+        page: 1,
+        pageSize: 10,
+        totalPages: 0,
+      },
+    },
   );
 
   const roomsQuery = trpc.roomRouter.getRooms.useQuery(
     { status: "active" },
-    { placeholderData: { items: [], total: 0, page: 1, pageSize: 10, totalPages: 0 } }
+    {
+      placeholderData: {
+        items: [],
+        total: 0,
+        page: 1,
+        pageSize: 10,
+        totalPages: 0,
+      },
+    },
   );
 
   const categories = categoriesQuery.data?.items ?? [];
@@ -180,7 +250,11 @@ export function RegistrationStepPanel({
         {STEP_DESCRIPTIONS[step]}
       </p>
 
-      <form id="asset-registration" onSubmit={form.handleSubmit(handleFormSubmit)} className="grid gap-6">
+      <form
+        id="asset-registration"
+        onSubmit={form.handleSubmit(handleFormSubmit)}
+        className="grid gap-6"
+      >
         {step === 0 && (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <FieldGroup className="space-y-2">
@@ -198,7 +272,9 @@ export function RegistrationStepPanel({
                       aria-invalid={fieldState.invalid}
                       placeholder="Enter asset name"
                     />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
                   </Field>
                 )}
               />
@@ -221,7 +297,9 @@ export function RegistrationStepPanel({
                       placeholder="Select category"
                       fullWidth
                     />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
                   </Field>
                 )}
               />
@@ -244,7 +322,9 @@ export function RegistrationStepPanel({
                       placeholder="Select asset type"
                       fullWidth
                     />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
                   </Field>
                 )}
               />
@@ -256,12 +336,37 @@ export function RegistrationStepPanel({
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="brand">Brand *</FieldLabel>
                     <Input
-                      id="brand"
+                      {...field}
                       value={field.value ?? ""}
                       onChange={(e) => field.onChange(e.target.value)}
+                      id="brand"
+                      placeholder="Enter brand"
                       aria-invalid={fieldState.invalid}
                     />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="model"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="model">Model *</FieldLabel>
+                    <Input
+                      {...field}
+                      value={field.value ?? ""}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      id="model"
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Enter model"
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
                   </Field>
                 )}
               />
@@ -279,30 +384,15 @@ export function RegistrationStepPanel({
                       onChange={(e) => field.onChange(e.target.value)}
                       aria-invalid={fieldState.invalid}
                     />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
                   </Field>
                 )}
               />
             </FieldGroup>
 
             <FieldGroup className="space-y-2">
-              <Controller
-                name="model"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="model">Model *</FieldLabel>
-                    <Input
-                      id="model"
-                      value={field.value ?? ""}
-                      onChange={(e) => field.onChange(e.target.value)}
-                      aria-invalid={fieldState.invalid}
-                    />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                  </Field>
-                )}
-              />
-
               <Controller
                 name="conditionId"
                 control={form.control}
@@ -321,7 +411,9 @@ export function RegistrationStepPanel({
                       placeholder="Select condition"
                       fullWidth
                     />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
                   </Field>
                 )}
               />
@@ -339,12 +431,14 @@ export function RegistrationStepPanel({
                       value={field.value ?? 1}
                       onChange={(e) =>
                         field.onChange(
-                          e.target.value ? Number(e.target.value) : 1
+                          e.target.value ? Number(e.target.value) : 1,
                         )
                       }
                       aria-invalid={fieldState.invalid}
                     />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
                   </Field>
                 )}
               />
@@ -361,10 +455,10 @@ export function RegistrationStepPanel({
                           <Image
                             src={photoPreview}
                             unoptimized
-                            alt="Employee photo preview"
-                            width={112}
-                            height={112}
-                            className="size-28 rounded-md border object-cover"
+                            alt="Asset photo preview"
+                            width={100}
+                            height={100}
+                            className="size-100 rounded-md border"
                           />
                           <Button
                             type="button"
@@ -377,7 +471,7 @@ export function RegistrationStepPanel({
                           </Button>
                         </div>
                       ) : (
-                          <FileUploadArea onFileSelect={handleFileSelect} />
+                        <FileUploadArea onFileSelect={handleFileSelect} />
                       )}
                     </div>
                   </Field>
@@ -394,14 +488,18 @@ export function RegistrationStepPanel({
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="serial-number">Serial number *</FieldLabel>
+                  <FieldLabel htmlFor="serial-number">
+                    Serial number *
+                  </FieldLabel>
                   <Input
                     id="serial-number"
                     value={field.value ?? ""}
                     onChange={(e) => field.onChange(e.target.value)}
                     aria-invalid={fieldState.invalid}
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -418,7 +516,9 @@ export function RegistrationStepPanel({
                     onChange={(e) => field.onChange(e.target.value)}
                     aria-invalid={fieldState.invalid}
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -432,7 +532,9 @@ export function RegistrationStepPanel({
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="acquisition-date">Acquisition date *</FieldLabel>
+                  <FieldLabel htmlFor="acquisition-date">
+                    Acquisition date *
+                  </FieldLabel>
                   <Input
                     id="acquisition-date"
                     type="date"
@@ -449,7 +551,9 @@ export function RegistrationStepPanel({
                     }}
                     aria-invalid={fieldState.invalid}
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -459,7 +563,9 @@ export function RegistrationStepPanel({
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="acquisition-cost">Acquisition cost *</FieldLabel>
+                  <FieldLabel htmlFor="acquisition-cost">
+                    Acquisition cost *
+                  </FieldLabel>
                   <Input
                     id="acquisition-cost"
                     type="number"
@@ -467,12 +573,14 @@ export function RegistrationStepPanel({
                     value={field.value ?? ""}
                     onChange={(e) =>
                       field.onChange(
-                        e.target.value ? Number(e.target.value) : undefined
+                        e.target.value ? Number(e.target.value) : undefined,
                       )
                     }
                     aria-invalid={fieldState.invalid}
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -489,12 +597,14 @@ export function RegistrationStepPanel({
                     value={field.value ?? ""}
                     onChange={(e) =>
                       field.onChange(
-                        e.target.value ? Number(e.target.value) : undefined
+                        e.target.value ? Number(e.target.value) : undefined,
                       )
                     }
                     aria-invalid={fieldState.invalid}
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -504,14 +614,18 @@ export function RegistrationStepPanel({
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="po-number">Purchase order number</FieldLabel>
+                  <FieldLabel htmlFor="po-number">
+                    Purchase order number
+                  </FieldLabel>
                   <Input
                     id="po-number"
                     value={field.value ?? ""}
                     onChange={(e) => field.onChange(e.target.value)}
                     aria-invalid={fieldState.invalid}
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -528,7 +642,9 @@ export function RegistrationStepPanel({
                     onChange={(e) => field.onChange(e.target.value)}
                     aria-invalid={fieldState.invalid}
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -538,14 +654,18 @@ export function RegistrationStepPanel({
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="supporting-docs">Supporting documents *</FieldLabel>
+                  <FieldLabel htmlFor="supporting-docs">
+                    Supporting documents *
+                  </FieldLabel>
                   <Input
                     id="supporting-docs"
                     value={field.value ?? ""}
                     onChange={(e) => field.onChange(e.target.value)}
                     aria-invalid={fieldState.invalid}
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -572,7 +692,9 @@ export function RegistrationStepPanel({
                     placeholder="Select department"
                     fullWidth
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -592,7 +714,9 @@ export function RegistrationStepPanel({
                     placeholder="Select custodian"
                     fullWidth
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -615,7 +739,9 @@ export function RegistrationStepPanel({
                     placeholder="Select building"
                     fullWidth
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -638,7 +764,9 @@ export function RegistrationStepPanel({
                     placeholder="Select room"
                     fullWidth
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -735,7 +863,9 @@ function ReviewFields({
         ],
         [
           "Acquisition cost",
-          values.acquisitionCost != null ? `PHP ${values.acquisitionCost}` : "—",
+          values.acquisitionCost != null
+            ? `PHP ${values.acquisitionCost}`
+            : "—",
         ],
         [
           "Department",
