@@ -21,6 +21,8 @@ import {
   type AssetRegistrationInput,
 } from "@repo/trpc/schemas";
 import Image from "next/image";
+import { getImageUrl } from "@/lib/image";
+import { Badge } from "@/components/ui/badge";
 
 const STEP_FIELDS: Record<number, (keyof AssetRegistrationInput)[]> = {
   0: [
@@ -32,7 +34,7 @@ const STEP_FIELDS: Record<number, (keyof AssetRegistrationInput)[]> = {
     "conditionId",
     "quantity",
   ],
-  1: ["serialNumber", "qrCode"],
+  1: ["serialNumber", "propertyNumber", "qrCode"],
   2: ["acquisitionDate", "acquisitionCost", "supportingDocs"],
   3: ["departmentId", "custodianId", "buildingId", "roomId"],
 };
@@ -82,6 +84,7 @@ export function RegistrationStepPanel({
       brand: "",
       model: "",
       serialNumber: "",
+      propertyNumber: "",
       qrCode: "",
       description: "",
       quantity: 1,
@@ -93,7 +96,7 @@ export function RegistrationStepPanel({
       acquisitionCost: undefined,
       supplierId: undefined,
       purchaseOrderNumber: "",
-      warranty: "",
+      warranty: undefined,
       supportingDocs: "",
       departmentId: undefined as unknown as number,
       custodianId: undefined as unknown as number,
@@ -154,17 +157,20 @@ export function RegistrationStepPanel({
     },
   );
 
+  // const employeesQuery = trpc.employeeRouter.getEmployees.useQuery(
+  //   { status: "active" },
+  //   {
+  //     placeholderData: {
+  //       items: [],
+  //       total: 0,
+  //       page: 1,
+  //       pageSize: 100,
+  //       totalPages: 0,
+  //     },
+  //   },
+  // );
   const employeesQuery = trpc.employeeRouter.getEmployees.useQuery(
-    { status: "active" },
-    {
-      placeholderData: {
-        items: [],
-        total: 0,
-        page: 1,
-        pageSize: 10,
-        totalPages: 0,
-      },
-    },
+    { pageSize: 100 },
   );
 
   const buildingsQuery = trpc.buildingRouter.getBuildings.useQuery(
@@ -197,14 +203,17 @@ export function RegistrationStepPanel({
   const assetTypes = assetTypesQuery.data?.items ?? [];
   const conditions = conditionsQuery.data?.items ?? [];
   const departments = departmentsQuery.data?.items ?? [];
-  const employees = employeesQuery.data?.items ?? [];
+  // const employees = employeesQuery.data?.items ?? [];
   const buildings = buildingsQuery.data?.items ?? [];
   const rooms = roomsQuery.data?.items ?? [];
-
+   const employees = (employeesQuery.data?.items ?? [])
+    .filter((e) => e.status === "regular" || e.status === "permanent" || e.status === "contractual");
   const custodianOptions = employees.map((e) => ({
-    id: String(e.id),
-    name: `${e.firstName} ${e.lastName}`,
-  }));
+                      id: String(e.id),
+                      name: `${e.lastName}, ${e.firstName}${e.middleName ? ` ${e.middleName[0]}.` : ""}`,
+                      photoUrl: e.photo ? getImageUrl(e.photo) : null,
+                      status: e.status,
+                    }))
 
   const handleFileSelect = (file: File) => {
     if (file && file.type.startsWith("image/")) {
@@ -240,6 +249,7 @@ export function RegistrationStepPanel({
   };
 
   const handleFormSubmit = async (data: AssetRegistrationInput) => {
+    console.log(data)
     await onSubmit(data);
   };
 
@@ -456,9 +466,9 @@ export function RegistrationStepPanel({
                             src={photoPreview}
                             unoptimized
                             alt="Asset photo preview"
-                            width={100}
-                            height={100}
-                            className="size-100 rounded-md border"
+                            width={50}
+                            height={50}
+                            className="size-50 rounded-md border object-fit"
                           />
                           <Button
                             type="button"
@@ -492,10 +502,35 @@ export function RegistrationStepPanel({
                     Serial number *
                   </FieldLabel>
                   <Input
-                    id="serial-number"
-                    value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    aria-invalid={fieldState.invalid}
+                   {...field}
+                   value={field.value ?? ""}
+                   onChange={(e) => field.onChange(e.target.value)}
+                   id="serial-number"
+                   aria-invalid={fieldState.invalid}
+                   placeholder="Enter serial number"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="propertyNumber"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="property-number">
+                    Property number *
+                  </FieldLabel>
+                  <Input
+                   {...field}
+                   value={field.value ?? ""}
+                   onChange={(e) => field.onChange(e.target.value)}
+                   id="property-number"
+                   aria-invalid={fieldState.invalid}
+                   placeholder="Enter property number"
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -577,6 +612,7 @@ export function RegistrationStepPanel({
                       )
                     }
                     aria-invalid={fieldState.invalid}
+                    placeholder="Enter acquisition cost"
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -601,6 +637,7 @@ export function RegistrationStepPanel({
                       )
                     }
                     aria-invalid={fieldState.invalid}
+                    placeholder="Enter supplier"
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -622,6 +659,7 @@ export function RegistrationStepPanel({
                     value={field.value ?? ""}
                     onChange={(e) => field.onChange(e.target.value)}
                     aria-invalid={fieldState.invalid}
+                    placeholder="Enter PO number"
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -635,12 +673,18 @@ export function RegistrationStepPanel({
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="warranty">Warranty</FieldLabel>
+                  <FieldLabel htmlFor="warranty">Warranty (years)</FieldLabel>
                   <Input
                     id="warranty"
+                    type="number"
                     value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value)}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value ? Number(e.target.value) : undefined,
+                      )
+                    }
                     aria-invalid={fieldState.invalid}
+                    placeholder="Enter number of years"
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -713,6 +757,37 @@ export function RegistrationStepPanel({
                     }
                     placeholder="Select custodian"
                     fullWidth
+                    renderOption={(option) => {
+                    const status = (option as any).status;
+                    const getVariant = (s: string): "success" | "info" | "warning" | "destructive" => {
+                      if (s === "active" || s === "contractual" || s === "permanent") return "success";
+                      if (s === "job-order" || s === "casual" || s === "temporary" || s === "probationary") return "info";
+                      if (s === "on-leave") return "warning";
+                      return "destructive";
+                    };
+                    return (
+                      <div className="flex items-center gap-2">
+                        {option.photoUrl ? (
+                          <Image
+                            src={option.photoUrl}
+                            alt="Employee photo"
+                            unoptimized
+                            width={24}
+                            height={24}
+                            className="size-6 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex size-6 items-center justify-center rounded-full bg-muted text-[10px] font-medium">
+                            {option.name.slice(0, 1)}
+                          </div>
+                        )}
+                        <span className="flex-1">{option.name}</span>
+                        <Badge variant={getVariant(status ?? "active")}>
+                          {status === "active" ? "Regular" : status?.replace(/-/g, " ")}
+                        </Badge>
+                      </div>
+                    );
+                  }}
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -775,7 +850,7 @@ export function RegistrationStepPanel({
 
         {step === 4 && (
           <div className="md:col-span-2">
-            <p className="mb-3 text-sm font-semibold">Review & Confirm</p>
+            {/* <p className="mb-3 text-sm font-semibold">Review & Confirm</p> */}
             <ReviewFields
               values={form.getValues()}
               categories={categories}
@@ -854,6 +929,7 @@ function ReviewFields({
         ],
         ["Quantity", String(values.quantity ?? "—")],
         ["Serial number", values.serialNumber ?? "—"],
+        ["Property number", values.propertyNumber ?? "—"],
         ["Description", values.description || "—"],
         [
           "Acquisition date",
