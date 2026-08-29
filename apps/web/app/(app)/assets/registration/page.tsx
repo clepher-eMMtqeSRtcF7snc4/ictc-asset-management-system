@@ -120,13 +120,6 @@ export default function AssetRegistrationPage() {
           title="Asset Registration"
           description="Register a new ICT asset and generate a QR sticker for physical
               inventory."
-          // action={
-          //   <Button asChild>
-          //     <Link href="/assets/registration">
-          //       <PackagePlus /> Add asset
-          //     </Link>
-          //   </Button>
-          // }
         />
         <AssetRegistrationContentSection
             categories={categories}
