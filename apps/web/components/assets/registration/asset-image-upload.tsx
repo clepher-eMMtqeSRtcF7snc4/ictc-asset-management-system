@@ -9,11 +9,11 @@ export function AssetImageUpload({
   onChange,
 }: {
   value?: string;
-  onChange: (value: string | undefined) => void;
+  onChange?: (value: string | undefined) => void;
 }) {
   const input = useRef<HTMLInputElement>(null);
   function preview(file: File) {
-    onChange(URL.createObjectURL(file));
+    onChange?.(URL.createObjectURL(file));
   }
   return (
     <div>
@@ -49,7 +49,7 @@ export function AssetImageUpload({
             size="icon-sm"
             className="absolute right-2 bottom-2"
             aria-label="Remove image"
-            onClick={() => onChange(undefined)}
+            onClick={() => onChange?.(undefined)}
           >
             <X className="size-4" />
           </Button>

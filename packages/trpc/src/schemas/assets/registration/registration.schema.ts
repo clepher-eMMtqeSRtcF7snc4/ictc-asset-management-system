@@ -30,9 +30,9 @@ export const assetLocationAssignment = z.object({
     roomId: z.number().int().positive().optional(),
   });
 
-const assetRegistrationSchema = assetInformationSchema
-  .extend(assetAcquisitionSchema)
-  .extend(assetLocationAssignment)
+export const assetRegistrationSchema = assetInformationSchema
+  .merge(assetAcquisitionSchema)
+  .merge(assetLocationAssignment)
 
 
 export type AssetRegistration = z.infer<typeof assetInformationSchema>
@@ -41,41 +41,41 @@ export type AssetLocationAssignment = z.infer<typeof assetLocationAssignment>
 export type AssetRegistrationInput = z.infer<typeof assetRegistrationSchema>
 
 
-export type RegistrationFormValues = Record<string, string | undefined>;
-export type StaticCategory = {
-  id: number;
-  name: string;
-  code: string;
-  type: string;
-  status: "active" | "inactive";
-};
+// export type RegistrationFormValues = Record<string, string | undefined>;
+// export type StaticCategory = {
+//   id: number;
+//   name: string;
+//   code: string;
+//   type: string;
+//   status: "active" | "inactive";
+// };
 
-export type StaticDepartment = StaticCategory;
-export type StaticLocation = StaticCategory;
+// export type StaticDepartment = StaticCategory;
+// export type StaticLocation = StaticCategory;
 
-export type StaticCustodian = {
-  id: string;
-  firstName: string;
-  lastName: string;
-};
+// export type StaticCustodian = {
+//   id: string;
+//   firstName: string;
+//   lastName: string;
+// };
 
-export type StaticRegistrationIdentifiers = {
-  assetTag: string;
-  propertyNumber: string;
-  qrValue: string;
-};
+// export type StaticRegistrationIdentifiers = {
+//   assetTag: string;
+//   propertyNumber: string;
+//   qrValue: string;
+// };
 
 
-export const registrationInitialValues: RegistrationFormValues = {
-  name: "SAMSUNG MONITOR 24″",
-  categoryId: "1",
-  assetType: "ICT Equipment",
-  brand: "Samsung",
-  model: "S24C310",
-  description: "24-inch LED Monitor",
-  condition: "new",
-  acquisitionDate: "2026-08-12",
-  acquisitionCost: "12500",
-  quantity: "1",
-  depreciationMethod: "straight-line",
-};
+// export const registrationInitialValues: RegistrationFormValues = {
+//   name: "SAMSUNG MONITOR 24″",
+//   categoryId: "1",
+//   assetType: "ICT Equipment",
+//   brand: "Samsung",
+//   model: "S24C310",
+//   description: "24-inch LED Monitor",
+//   condition: "new",
+//   acquisitionDate: "2026-08-12",
+//   acquisitionCost: "12500",
+//   quantity: "1",
+//   depreciationMethod: "straight-line",
+// };
