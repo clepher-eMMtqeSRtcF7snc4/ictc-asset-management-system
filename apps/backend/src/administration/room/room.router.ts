@@ -57,7 +57,10 @@ export class RoomRouter {
     return this.roomService.findAll(input);
   }
 
-  @Query({ input: z.object({}), output: z.record(z.string(), z.number().int().nonnegative()) })
+  @Query({
+    input: z.object({}),
+    output: z.record(z.string(), z.number().int().nonnegative()),
+  })
   async getRoomCountsByBuilding() {
     return this.roomService.countRoomsByBuilding();
   }

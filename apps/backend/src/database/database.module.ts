@@ -12,6 +12,8 @@ import * as designationSchema from '../administration/designation/schemas/schema
 import * as employeeSchema from '../administration/employee/schemas/schema';
 import * as assetCategorySchema from '../assets/settings/asset-category/schemas/schema';
 import * as assetTypeSchema from '../assets/settings/asset-type/schemas/schema';
+import * as assetRegistrationSchema from '../assets/registration/schemas/schema';
+import * as supplierSchema from '../assets/supplier/schemas/schema';
 
 export const schema = {
   ...authSchema,
@@ -21,8 +23,10 @@ export const schema = {
   ...positionSchema,
   ...designationSchema,
   ...employeeSchema,
+  ...supplierSchema,
   ...assetCategorySchema,
   ...assetTypeSchema,
+  ...assetRegistrationSchema,
 };
 
 @Module({

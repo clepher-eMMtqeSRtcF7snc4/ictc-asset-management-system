@@ -1,7 +1,4 @@
-import {
-  Inject,
-  Injectable,
-} from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { DATABASE_CONNECTION } from '../../../database/database-connection';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { schema } from '../../../database/database.module';
@@ -55,10 +52,18 @@ export class AssetTypeService {
       .set({
         ...(input.name !== undefined ? { name: input.name } : {}),
         ...(input.code !== undefined ? { code: input.code } : {}),
-        ...(input.assetCategoryId !== undefined ? { assetCategoryId: input.assetCategoryId } : {}),
-        ...(input.description !== undefined ? { description: input.description } : {}),
-        ...(input.depreciable !== undefined ? { depreciable: input.depreciable } : {}),
-        ...(input.defaultUsefulLife !== undefined ? { defaultUsefulLife: input.defaultUsefulLife } : {}),
+        ...(input.assetCategoryId !== undefined
+          ? { assetCategoryId: input.assetCategoryId }
+          : {}),
+        ...(input.description !== undefined
+          ? { description: input.description }
+          : {}),
+        ...(input.depreciable !== undefined
+          ? { depreciable: input.depreciable }
+          : {}),
+        ...(input.defaultUsefulLife !== undefined
+          ? { defaultUsefulLife: input.defaultUsefulLife }
+          : {}),
         ...(input.status !== undefined ? { status: input.status } : {}),
         updatedAt: new Date(),
       })

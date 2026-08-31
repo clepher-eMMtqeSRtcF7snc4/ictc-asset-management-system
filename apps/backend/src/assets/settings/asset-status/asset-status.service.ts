@@ -67,11 +67,15 @@ export class AssetStatusService {
       const [duplicate] = await this.database
         .select({ id: assetStatus.id })
         .from(assetStatus)
-        .where(and(eq(assetStatus.name, input.name), ne(assetStatus.id, input.id)))
+        .where(
+          and(eq(assetStatus.name, input.name), ne(assetStatus.id, input.id)),
+        )
         .limit(1);
-      
+
       if (duplicate) {
-        throw new ConflictException('Asset status with this name already exists');
+        throw new ConflictException(
+          'Asset status with this name already exists',
+        );
       }
     }
 
@@ -79,11 +83,15 @@ export class AssetStatusService {
       const [existingByCode] = await this.database
         .select({ id: assetStatus.id })
         .from(assetStatus)
-        .where(and(eq(assetStatus.code, input.code), ne(assetStatus.id, input.id)))
+        .where(
+          and(eq(assetStatus.code, input.code), ne(assetStatus.id, input.id)),
+        )
         .limit(1);
-      
+
       if (existingByCode) {
-        throw new ConflictException('Asset status with this code already exists');
+        throw new ConflictException(
+          'Asset status with this code already exists',
+        );
       }
     }
 
@@ -92,7 +100,9 @@ export class AssetStatusService {
       .set({
         ...(input.name !== undefined ? { name: input.name } : {}),
         ...(input.code !== undefined ? { code: input.code } : {}),
-        ...(input.description !== undefined ? { description: input.description } : {}),
+        ...(input.description !== undefined
+          ? { description: input.description }
+          : {}),
         ...(input.status !== undefined ? { status: input.status } : {}),
       })
       .where(eq(assetStatus.id, input.id))
@@ -139,9 +149,7 @@ export class AssetStatusService {
     const conditions: SQL[] = [];
 
     if (input?.search) {
-      conditions.push(
-        ilike(assetStatus.name, `%${input.search}%`),
-      );
+      conditions.push(ilike(assetStatus.name, `%${input.search}%`));
     }
 
     if (input?.status) {

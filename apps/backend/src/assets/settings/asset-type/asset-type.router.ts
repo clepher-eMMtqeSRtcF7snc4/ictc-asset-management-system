@@ -31,7 +31,10 @@ export class AssetTypeRouter {
     if (!id) {
       throw new Error('Asset type ID is required for update');
     }
-    return this.assetTypeService.update({ ...updateSettingsAssetTypeInput, id });
+    return this.assetTypeService.update({
+      ...updateSettingsAssetTypeInput,
+      id,
+    });
   }
 
   @Mutation({ input: settingsAssetTypeSchema.pick({ id: true }) })
@@ -48,12 +51,14 @@ export class AssetTypeRouter {
   }
 
   @Query({
-    input: z.object({
-      search: z.string().trim().optional(),
-      status: z.enum(['active', 'inactive']).optional(),
-      page: z.number().int().min(1).optional(),
-      pageSize: z.number().int().min(1).max(100).optional(),
-    }).default({}),
+    input: z
+      .object({
+        search: z.string().trim().optional(),
+        status: z.enum(['active', 'inactive']).optional(),
+        page: z.number().int().min(1).optional(),
+        pageSize: z.number().int().min(1).max(100).optional(),
+      })
+      .default({}),
     output: z.object({
       items: assetTypeListOutputSchema,
       total: z.number().int().nonnegative(),

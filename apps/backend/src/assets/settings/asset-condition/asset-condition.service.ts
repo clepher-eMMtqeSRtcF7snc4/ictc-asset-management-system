@@ -30,7 +30,9 @@ export class AssetConditionService {
       .limit(1);
 
     if (existingByName) {
-      throw new ConflictException('Asset condition with this name already exists');
+      throw new ConflictException(
+        'Asset condition with this name already exists',
+      );
     }
 
     const [existingByCode] = await this.database
@@ -40,7 +42,9 @@ export class AssetConditionService {
       .limit(1);
 
     if (existingByCode) {
-      throw new ConflictException('Asset condition with this code already exists');
+      throw new ConflictException(
+        'Asset condition with this code already exists',
+      );
     }
 
     const [result] = await this.database
@@ -67,11 +71,18 @@ export class AssetConditionService {
       const [duplicate] = await this.database
         .select({ id: assetCondition.id })
         .from(assetCondition)
-        .where(and(eq(assetCondition.name, input.name), ne(assetCondition.id, input.id)))
+        .where(
+          and(
+            eq(assetCondition.name, input.name),
+            ne(assetCondition.id, input.id),
+          ),
+        )
         .limit(1);
-      
+
       if (duplicate) {
-        throw new ConflictException('Asset condition with this name already exists');
+        throw new ConflictException(
+          'Asset condition with this name already exists',
+        );
       }
     }
 
@@ -79,11 +90,18 @@ export class AssetConditionService {
       const [existingByCode] = await this.database
         .select({ id: assetCondition.id })
         .from(assetCondition)
-        .where(and(eq(assetCondition.code, input.code), ne(assetCondition.id, input.id)))
+        .where(
+          and(
+            eq(assetCondition.code, input.code),
+            ne(assetCondition.id, input.id),
+          ),
+        )
         .limit(1);
-      
+
       if (existingByCode) {
-        throw new ConflictException('Asset condition with this code already exists');
+        throw new ConflictException(
+          'Asset condition with this code already exists',
+        );
       }
     }
 
@@ -92,14 +110,18 @@ export class AssetConditionService {
       .set({
         ...(input.name !== undefined ? { name: input.name } : {}),
         ...(input.code !== undefined ? { code: input.code } : {}),
-        ...(input.description !== undefined ? { description: input.description } : {}),
+        ...(input.description !== undefined
+          ? { description: input.description }
+          : {}),
         ...(input.status !== undefined ? { status: input.status } : {}),
       })
       .where(eq(assetCondition.id, input.id))
       .returning();
 
     if (!result) {
-      throw new NotFoundException(`Asset condition with id ${input.id} not found`);
+      throw new NotFoundException(
+        `Asset condition with id ${input.id} not found`,
+      );
     }
 
     return result;
@@ -139,9 +161,7 @@ export class AssetConditionService {
     const conditions: SQL[] = [];
 
     if (input?.search) {
-      conditions.push(
-        ilike(assetCondition.name, `%${input.search}%`),
-      );
+      conditions.push(ilike(assetCondition.name, `%${input.search}%`));
     }
 
     if (input?.status) {
@@ -158,7 +178,10 @@ export class AssetConditionService {
         .orderBy(asc(assetCondition.name))
         .limit(pageSize)
         .offset((page - 1) * pageSize),
-      this.database.select({ total: count() }).from(assetCondition).where(where),
+      this.database
+        .select({ total: count() })
+        .from(assetCondition)
+        .where(where),
     ]);
 
     const total = totals[0]?.total ?? 0;

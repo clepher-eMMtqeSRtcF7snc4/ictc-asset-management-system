@@ -48,8 +48,8 @@ export class DepartmentService {
     if (input?.search) {
       conditions.push(
         or(
-          ilike(department.name, `%${input.search}%`) as SQL,
-          ilike(department.code, `%${input.search}%`) as SQL,
+          ilike(department.name, `%${input.search}%`),
+          ilike(department.code, `%${input.search}%`),
         ) as SQL,
       );
     }

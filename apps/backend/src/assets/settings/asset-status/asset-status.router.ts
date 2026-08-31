@@ -30,7 +30,10 @@ export class AssetStatusRouter {
     if (!id) {
       throw new Error('Asset status ID is required for update');
     }
-    return this.assetStatusService.update({ ...updateSettingsAssetStatusInput, id });
+    return this.assetStatusService.update({
+      ...updateSettingsAssetStatusInput,
+      id,
+    });
   }
 
   @Mutation({ input: settingsAssetStatusSchema.pick({ id: true }) })
@@ -47,12 +50,14 @@ export class AssetStatusRouter {
   }
 
   @Query({
-    input: z.object({
-      search: z.string().trim().optional(),
-      status: z.enum(['active', 'inactive']).optional(),
-      page: z.number().int().min(1).optional(),
-      pageSize: z.number().int().min(1).max(100).optional(),
-    }).default({}),
+    input: z
+      .object({
+        search: z.string().trim().optional(),
+        status: z.enum(['active', 'inactive']).optional(),
+        page: z.number().int().min(1).optional(),
+        pageSize: z.number().int().min(1).max(100).optional(),
+      })
+      .default({}),
     output: z.object({
       items: z.array(settingsAssetStatusSchema),
       total: z.number().int().nonnegative(),

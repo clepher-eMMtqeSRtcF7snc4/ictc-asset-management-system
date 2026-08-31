@@ -15,12 +15,16 @@ export class AssetCategoryRouter {
   constructor(private readonly assetCategoryService: AssetCategoryService) {}
 
   @Mutation({ input: settingsAssetCreateCategoryInputSchema })
-  async create(@Input() input: z.infer<typeof settingsAssetCreateCategoryInputSchema>) {
+  async create(
+    @Input() input: z.infer<typeof settingsAssetCreateCategoryInputSchema>,
+  ) {
     return this.assetCategoryService.create(input);
   }
 
   @Mutation({ input: settingsAssetUpdateCategoryInputSchema })
-  async update(@Input() input: z.infer<typeof settingsAssetUpdateCategoryInputSchema>) {
+  async update(
+    @Input() input: z.infer<typeof settingsAssetUpdateCategoryInputSchema>,
+  ) {
     return this.assetCategoryService.update(input);
   }
 
@@ -29,17 +33,25 @@ export class AssetCategoryRouter {
     return this.assetCategoryService.delete(input.id);
   }
 
-  @Query({ input: z.object({ id: z.number().int().positive() }), output: settingsAssetCategorySchema })
+  @Query({
+    input: z.object({ id: z.number().int().positive() }),
+    output: settingsAssetCategorySchema,
+  })
   async getCategoryById(@Input() input: { id: number }) {
     return this.assetCategoryService.findById(input.id);
   }
 
-  @Query({ input: z.object({
-    search: z.string().trim().optional(),
-    status: z.enum(['active', 'inactive']).optional(),
-    page: z.number().int().min(1).optional(),
-    pageSize: z.number().int().min(1).max(100).optional(),
-  }).default({}), output: settingsAssetCategoryListSchema })
+  @Query({
+    input: z
+      .object({
+        search: z.string().trim().optional(),
+        status: z.enum(['active', 'inactive']).optional(),
+        page: z.number().int().min(1).optional(),
+        pageSize: z.number().int().min(1).max(100).optional(),
+      })
+      .default({}),
+    output: settingsAssetCategoryListSchema,
+  })
   async getCategories(@Input() input: any) {
     return this.assetCategoryService.findAll(input);
   }

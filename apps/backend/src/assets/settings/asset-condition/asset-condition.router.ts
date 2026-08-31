@@ -30,7 +30,10 @@ export class AssetConditionRouter {
     if (!id) {
       throw new Error('Asset condition ID is required for update');
     }
-    return this.assetConditionService.update({ ...updateSettingsAssetConditionInput, id });
+    return this.assetConditionService.update({
+      ...updateSettingsAssetConditionInput,
+      id,
+    });
   }
 
   @Mutation({ input: assetConditionSchema.pick({ id: true }) })
@@ -47,12 +50,14 @@ export class AssetConditionRouter {
   }
 
   @Query({
-    input: z.object({
-      search: z.string().trim().optional(),
-      status: z.enum(['active', 'inactive']).optional(),
-      page: z.number().int().min(1).optional(),
-      pageSize: z.number().int().min(1).max(100).optional(),
-    }).default({}),
+    input: z
+      .object({
+        search: z.string().trim().optional(),
+        status: z.enum(['active', 'inactive']).optional(),
+        page: z.number().int().min(1).optional(),
+        pageSize: z.number().int().min(1).max(100).optional(),
+      })
+      .default({}),
     output: z.object({
       items: z.array(assetConditionSchema),
       total: z.number().int().nonnegative(),

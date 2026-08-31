@@ -25,6 +25,9 @@ import { AssetCategoryModule } from './assets/settings/asset-category/asset-cate
 import { AssetStatusService } from './assets/settings/asset-status/asset-status.service';
 import { AssetStatusModule } from './assets/settings/asset-status/asset-status.module';
 import { AssetConditionModule } from './assets/settings/asset-condition/asset-condition.module';
+import { RegistrationService } from './assets/registration/registration.service';
+import { RegistrationModule } from './assets/registration/registration.module';
+import { SupplierModule } from './assets/supplier/supplier.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -62,6 +65,8 @@ import { AssetConditionModule } from './assets/settings/asset-condition/asset-co
     AssetCategoryModule,
     AssetStatusModule,
     AssetConditionModule,
+    RegistrationModule,
+    SupplierModule,
   ],
   controllers: [AppController],
   providers: [
@@ -72,6 +77,7 @@ import { AssetConditionModule } from './assets/settings/asset-condition/asset-co
       useClass: AuthGuard,
     },
     AssetStatusService,
+    RegistrationService,
   ],
 })
 export class AppModule {}

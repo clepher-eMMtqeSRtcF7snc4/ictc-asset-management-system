@@ -20,9 +20,9 @@ export const assetAcquisitionSchema = z.object({
   acquisitionCost: z.number("This field is required").min(0,"This field is required"),
   supplierId: z.number().optional(),
   purchaseOrderNumber: z.string().optional(),
-  warranty: z.number().optional(),
-  supportingDocs: z.string().min(1, "This field is required")
-})
+  warranty: z.string().optional(),
+  supportingDocs: z.string().optional()
+});
 
 export const assetLocationAssignment = z.object({
     departmentId: z.number().int().positive().min(1, "This field is required"),

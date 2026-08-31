@@ -1,10 +1,4 @@
-import {
-  pgEnum,
-  timestamp,
-  varchar,
-  serial,
-  text,
-} from 'drizzle-orm/pg-core';
+import { pgEnum, timestamp, varchar, serial, text } from 'drizzle-orm/pg-core';
 import { pgTable } from 'drizzle-orm/pg-core';
 
 export const assetCategoryStatusEnum = pgEnum('asset_category_status', [

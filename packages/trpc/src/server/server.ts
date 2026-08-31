@@ -903,37 +903,39 @@ const appRouter = t.router({
       createdBy: z.string().optional().nullable(),
       updatedBy: z.string().optional().nullable(),
     })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
-    getAssetTypes: publicProcedure.input(z.object({
-      search: z.string().trim().optional(),
-      status: z.enum(['active', 'inactive']).optional(),
-      page: z.number().int().min(1).optional(),
-      pageSize: z.number().int().min(1).max(100).optional(),
-    }).default({})).output(z.object({
-      items: z.array(z.object({
-        name: z.string().trim().min(1, "This field is required").max(150),
-        code: z
-          .string()
-          .trim()
-          .min(1, "This field is required")
-          .max(50)
-          .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
-        assetCategoryId: z.number().int().positive(),
-        description: z.string().trim().max(500).optional().nullable(),
-        depreciable: z.boolean(),
-        defaultUsefulLife: z.number().int().positive().optional().nullable(),
-        status: z.enum(["active", "inactive"]),
-      }).extend({
-        id: z.number().int().positive(),
-        createdAt: z.date().optional(),
-        updatedAt: z.date().optional(),
-        createdBy: z.string().optional().nullable(),
-        updatedBy: z.string().optional().nullable(),
-      })),
-      total: z.number().int().nonnegative(),
-      page: z.number().int().positive(),
-      pageSize: z.number().int().positive(),
-      totalPages: z.number().int().nonnegative(),
-    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+    getAssetTypes: publicProcedure.input(z
+      .object({
+        search: z.string().trim().optional(),
+        status: z.enum(['active', 'inactive']).optional(),
+        page: z.number().int().min(1).optional(),
+        pageSize: z.number().int().min(1).max(100).optional(),
+      })
+      .default({})).output(z.object({
+        items: z.array(z.object({
+          name: z.string().trim().min(1, "This field is required").max(150),
+          code: z
+            .string()
+            .trim()
+            .min(1, "This field is required")
+            .max(50)
+            .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
+          assetCategoryId: z.number().int().positive(),
+          description: z.string().trim().max(500).optional().nullable(),
+          depreciable: z.boolean(),
+          defaultUsefulLife: z.number().int().positive().optional().nullable(),
+          status: z.enum(["active", "inactive"]),
+        }).extend({
+          id: z.number().int().positive(),
+          createdAt: z.date().optional(),
+          updatedAt: z.date().optional(),
+          createdBy: z.string().optional().nullable(),
+          updatedBy: z.string().optional().nullable(),
+        })),
+        total: z.number().int().nonnegative(),
+        page: z.number().int().positive(),
+        pageSize: z.number().int().positive(),
+        totalPages: z.number().int().nonnegative(),
+      })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
   assetCategoryRouter: t.router({
     create: publicProcedure.input(z.object({
@@ -975,28 +977,30 @@ const appRouter = t.router({
       createdBy: z.string().optional().nullable(),
       updatedBy: z.string().optional().nullable(),
     })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
-    getCategories: publicProcedure.input(z.object({
-      search: z.string().trim().optional(),
-      status: z.enum(['active', 'inactive']).optional(),
-      page: z.number().int().min(1).optional(),
-      pageSize: z.number().int().min(1).max(100).optional(),
-    }).default({})).output(z.object({
-      items: z.array(z.object({
-        name: z.string().trim().min(1, "This field is required").max(150),
-        description: z.string().trim().max(500).optional().nullable(),
-        status: z.enum(["active", "inactive"]),
-      }).extend({
-        id: z.number().int().positive(),
-        createdAt: z.date().optional(),
-        updatedAt: z.date().optional(),
-        createdBy: z.string().optional().nullable(),
-        updatedBy: z.string().optional().nullable(),
-      })),
-      total: z.number().int().nonnegative(),
-      page: z.number().int().positive(),
-      pageSize: z.number().int().positive(),
-      totalPages: z.number().int().nonnegative(),
-    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+    getCategories: publicProcedure.input(z
+      .object({
+        search: z.string().trim().optional(),
+        status: z.enum(['active', 'inactive']).optional(),
+        page: z.number().int().min(1).optional(),
+        pageSize: z.number().int().min(1).max(100).optional(),
+      })
+      .default({})).output(z.object({
+        items: z.array(z.object({
+          name: z.string().trim().min(1, "This field is required").max(150),
+          description: z.string().trim().max(500).optional().nullable(),
+          status: z.enum(["active", "inactive"]),
+        }).extend({
+          id: z.number().int().positive(),
+          createdAt: z.date().optional(),
+          updatedAt: z.date().optional(),
+          createdBy: z.string().optional().nullable(),
+          updatedBy: z.string().optional().nullable(),
+        })),
+        total: z.number().int().nonnegative(),
+        page: z.number().int().positive(),
+        pageSize: z.number().int().positive(),
+        totalPages: z.number().int().nonnegative(),
+      })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
   assetStatusRouter: t.router({
     create: publicProcedure.input(z.object({
@@ -1084,34 +1088,36 @@ const appRouter = t.router({
       createdBy: z.string().optional().nullable(),
       updatedBy: z.string().optional().nullable(),
     })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
-    getAssetStatuses: publicProcedure.input(z.object({
-      search: z.string().trim().optional(),
-      status: z.enum(['active', 'inactive']).optional(),
-      page: z.number().int().min(1).optional(),
-      pageSize: z.number().int().min(1).max(100).optional(),
-    }).default({})).output(z.object({
-      items: z.array(z.object({
-        name: z.string().trim().min(1, "This field is required").max(150),
-        code: z
-          .string()
-          .trim()
-          .min(1, "This field is required")
-          .max(50)
-          .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
-        description: z.string().trim().max(500).optional().nullable(),
-        status: z.enum(["active", "inactive"]),
-      }).extend({
-        id: z.number().int().positive(),
-        createdAt: z.date().optional(),
-        updatedAt: z.date().optional(),
-        createdBy: z.string().optional().nullable(),
-        updatedBy: z.string().optional().nullable(),
-      })),
-      total: z.number().int().nonnegative(),
-      page: z.number().int().positive(),
-      pageSize: z.number().int().positive(),
-      totalPages: z.number().int().nonnegative(),
-    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+    getAssetStatuses: publicProcedure.input(z
+      .object({
+        search: z.string().trim().optional(),
+        status: z.enum(['active', 'inactive']).optional(),
+        page: z.number().int().min(1).optional(),
+        pageSize: z.number().int().min(1).max(100).optional(),
+      })
+      .default({})).output(z.object({
+        items: z.array(z.object({
+          name: z.string().trim().min(1, "This field is required").max(150),
+          code: z
+            .string()
+            .trim()
+            .min(1, "This field is required")
+            .max(50)
+            .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
+          description: z.string().trim().max(500).optional().nullable(),
+          status: z.enum(["active", "inactive"]),
+        }).extend({
+          id: z.number().int().positive(),
+          createdAt: z.date().optional(),
+          updatedAt: z.date().optional(),
+          createdBy: z.string().optional().nullable(),
+          updatedBy: z.string().optional().nullable(),
+        })),
+        total: z.number().int().nonnegative(),
+        page: z.number().int().positive(),
+        pageSize: z.number().int().positive(),
+        totalPages: z.number().int().nonnegative(),
+      })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
   assetConditionRouter: t.router({
     create: publicProcedure.input(z.object({
@@ -1199,35 +1205,39 @@ const appRouter = t.router({
       createdBy: z.string().optional().nullable(),
       updatedBy: z.string().optional().nullable(),
     })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
-    getAssetConditions: publicProcedure.input(z.object({
-      search: z.string().trim().optional(),
-      status: z.enum(['active', 'inactive']).optional(),
-      page: z.number().int().min(1).optional(),
-      pageSize: z.number().int().min(1).max(100).optional(),
-    }).default({})).output(z.object({
-      items: z.array(z.object({
-        name: z.string().trim().min(1, "This field is required").max(150),
-        code: z
-          .string()
-          .trim()
-          .min(1, "This field is required")
-          .max(50)
-          .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
-        description: z.string().trim().max(500).optional().nullable(),
-        status: z.enum(["active", "inactive"]),
-      }).extend({
-        id: z.number().int().positive(),
-        createdAt: z.date().optional(),
-        updatedAt: z.date().optional(),
-        createdBy: z.string().optional().nullable(),
-        updatedBy: z.string().optional().nullable(),
-      })),
-      total: z.number().int().nonnegative(),
-      page: z.number().int().positive(),
-      pageSize: z.number().int().positive(),
-      totalPages: z.number().int().nonnegative(),
-    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
-  })
+    getAssetConditions: publicProcedure.input(z
+      .object({
+        search: z.string().trim().optional(),
+        status: z.enum(['active', 'inactive']).optional(),
+        page: z.number().int().min(1).optional(),
+        pageSize: z.number().int().min(1).max(100).optional(),
+      })
+      .default({})).output(z.object({
+        items: z.array(z.object({
+          name: z.string().trim().min(1, "This field is required").max(150),
+          code: z
+            .string()
+            .trim()
+            .min(1, "This field is required")
+            .max(50)
+            .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
+          description: z.string().trim().max(500).optional().nullable(),
+          status: z.enum(["active", "inactive"]),
+        }).extend({
+          id: z.number().int().positive(),
+          createdAt: z.date().optional(),
+          updatedAt: z.date().optional(),
+          createdBy: z.string().optional().nullable(),
+          updatedBy: z.string().optional().nullable(),
+        })),
+        total: z.number().int().nonnegative(),
+        page: z.number().int().positive(),
+        pageSize: z.number().int().positive(),
+        totalPages: z.number().int().nonnegative(),
+      })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+  }),
+  registrationRouter: t.router({}),
+  supplierRouter: t.router({})
 });
 export type AppRouter = typeof appRouter;
 

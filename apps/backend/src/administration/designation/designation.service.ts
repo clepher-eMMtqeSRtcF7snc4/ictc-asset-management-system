@@ -101,7 +101,9 @@ export class DesignationService {
   }
 
   async delete(id: number | string) {
-    await this.database.delete(designation).where(eq(designation.id, Number(id)));
+    await this.database
+      .delete(designation)
+      .where(eq(designation.id, Number(id)));
   }
 
   async create(createDesignationInput: CreateDesignationInput) {
