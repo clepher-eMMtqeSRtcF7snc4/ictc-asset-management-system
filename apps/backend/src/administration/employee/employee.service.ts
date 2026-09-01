@@ -8,7 +8,17 @@ import { DATABASE_CONNECTION } from '../../database/database-connection';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres/driver';
 import { schema } from '../../database/database.module';
 import { CreateEmployeeInput, UpdateEmployeeInput } from '@repo/trpc/schemas';
-import { and, asc, count, eq, ilike, notInArray, or, sql, type SQL } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  count,
+  eq,
+  ilike,
+  notInArray,
+  or,
+  sql,
+  type SQL,
+} from 'drizzle-orm';
 import { employee } from './schemas/schema';
 import { position } from '../position/schemas/schema';
 import { designation } from '../designation/schemas/schema';
