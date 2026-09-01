@@ -1310,7 +1310,7 @@ const appRouter = t.router({
       supplierId: z.number().optional(),
       purchaseOrderNumber: z.string().optional(),
       warranty: z.coerce.number().int().nonnegative().optional(),
-      supportingDocs: z.string().optional()
+      supportingDocs: z.string().optional(),
     })).merge(z.object({
       departmentId: z.number().int().positive().min(1, "This field is required"),
       custodianId: z.number().int().positive().min(1, "This field is required"),
