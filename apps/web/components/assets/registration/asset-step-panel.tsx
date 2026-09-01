@@ -106,88 +106,81 @@ export function RegistrationStepPanel({
   });
 
   const categoriesQuery = trpc.assetCategoryRouter.getCategories.useQuery(
-    { status: "active" },
+    { 
+      status: "active", 
+      page: 1,
+      pageSize: 100,
+    },
     {
       placeholderData: {
         items: [],
         total: 0,
         page: 1,
-        pageSize: 10,
+        pageSize: 100,
         totalPages: 0,
       },
     },
   );
 
-  const assetTypesQuery = trpc.assetTypeRouter.getAssetTypes.useQuery(
-    { status: "active" },
-    {
-      placeholderData: {
-        items: [],
-        total: 0,
-        page: 1,
-        pageSize: 10,
-        totalPages: 0,
-      },
-    },
-  );
+  const assetTypesQuery = trpc.assetTypeRouter.getActiveAssetTypes.useQuery();
 
   const conditionsQuery = trpc.assetConditionRouter.getAssetConditions.useQuery(
-    { status: "active" },
+    { 
+      status: "active", 
+      page: 1,
+      pageSize: 100,
+    },
     {
       placeholderData: {
         items: [],
         total: 0,
         page: 1,
-        pageSize: 10,
+        pageSize: 100,
         totalPages: 0,
       },
     },
   );
 
   const departmentsQuery = trpc.departmentRouter.getDepartments.useQuery(
-    { status: "active" },
+    { 
+      status: "active",
+      page: 1,
+      pageSize: 100,
+     },
     {
       placeholderData: {
         items: [],
         total: 0,
         page: 1,
-        pageSize: 10,
+        pageSize: 100,
         totalPages: 0,
       },
     },
   );
 
-  // const employeesQuery = trpc.employeeRouter.getEmployees.useQuery(
-  //   { status: "active" },
-  //   {
-  //     placeholderData: {
-  //       items: [],
-  //       total: 0,
-  //       page: 1,
-  //       pageSize: 100,
-  //       totalPages: 0,
-  //     },
-  //   },
-  // );
   const employeesQuery = trpc.employeeRouter.getEmployees.useQuery(
     { pageSize: 100 },
   );
 
   const buildingsQuery = trpc.buildingRouter.getBuildings.useQuery(
-    { status: "active" },
+    { 
+      status: "active",
+      page: 1,
+      pageSize: 100,
+     },
     {
       placeholderData: {
         items: [],
         total: 0,
         page: 1,
-        pageSize: 10,
+        pageSize: 100,
         totalPages: 0,
       },
     },
   );
 
   const roomsQuery = trpc.roomRouter.getRooms.useQuery(
-    { status: "active" },
+    { status: "active", page: 1, pageSize: 100 },
     {
       placeholderData: {
         items: [],
@@ -200,7 +193,7 @@ export function RegistrationStepPanel({
   );
 
   const categories = categoriesQuery.data?.items ?? [];
-  const assetTypes = assetTypesQuery.data?.items ?? [];
+  const assetTypes = assetTypesQuery.data ?? [];
   const conditions = conditionsQuery.data?.items ?? [];
   const departments = departmentsQuery.data?.items ?? [];
   // const employees = employeesQuery.data?.items ?? [];

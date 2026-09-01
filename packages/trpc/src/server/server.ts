@@ -935,7 +935,17 @@ const appRouter = t.router({
         page: z.number().int().positive(),
         pageSize: z.number().int().positive(),
         totalPages: z.number().int().nonnegative(),
-      })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+      })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getActiveAssetTypes: publicProcedure.input(z
+      .object({
+        assetCategoryId: z.number().int().positive().optional(),
+      })
+      .default({})).output(z.array(
+        z.object({
+          id: z.number().int().positive(),
+          name: z.string().trim().min(1, "This field is required").max(150),
+        }),
+      )).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
   assetCategoryRouter: t.router({
     create: publicProcedure.input(z.object({

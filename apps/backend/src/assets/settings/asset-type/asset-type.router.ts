@@ -5,6 +5,7 @@ import {
   createSettingsAssetTypeInputSchema,
   updateSettingsAssetTypeInputSchema,
   assetTypeListOutputSchema,
+  activeAssetTypeListOutputSchema,
   settingsAssetTypeSchema,
   CreateSettingsAssetTypeInput,
   UpdateSettingsAssetTypeInput,
@@ -77,5 +78,17 @@ export class AssetTypeRouter {
     },
   ) {
     return this.assetTypeService.findAll(input);
+  }
+
+  @Query({
+    input: z
+      .object({
+        assetCategoryId: z.number().int().positive().optional(),
+      })
+      .default({}),
+    output: activeAssetTypeListOutputSchema,
+  })
+  async getActiveAssetTypes(@Input() input: { assetCategoryId?: number } = {}) {
+    return this.assetTypeService.findActive(input);
   }
 }

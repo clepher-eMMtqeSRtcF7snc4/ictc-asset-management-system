@@ -3,6 +3,8 @@
 import { ImagePlus, Replace, X } from "lucide-react";
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import { getImageUrl } from "@/lib/image";
 
 export function AssetImageUpload({
   value,
@@ -19,8 +21,8 @@ export function AssetImageUpload({
     <div>
       <div className="relative grid min-h-52 place-items-center overflow-hidden rounded-md border bg-muted/40">
         {value ? (
-          <img
-            src={value}
+          <Image
+            src={getImageUrl(value)}
             alt="Asset preview"
             className="h-52 w-full object-cover"
           />

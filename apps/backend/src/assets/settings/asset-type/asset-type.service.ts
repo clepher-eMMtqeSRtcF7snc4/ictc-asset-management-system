@@ -100,6 +100,23 @@ export class AssetTypeService {
     return result ?? null;
   }
 
+  async findActive(input?: { assetCategoryId?: number }) {
+    const conditions: SQL[] = [eq(assetType.status, 'active')];
+
+    if (input?.assetCategoryId !== undefined) {
+      conditions.push(eq(assetType.assetCategoryId, input.assetCategoryId));
+    }
+
+    return this.database
+      .select({
+        id: assetType.id,
+        name: assetType.name,
+      })
+      .from(assetType)
+      .where(and(...conditions))
+      .orderBy(asc(assetType.name));
+  }
+
   async findAll(input?: {
     search?: string;
     status?: 'active' | 'inactive';

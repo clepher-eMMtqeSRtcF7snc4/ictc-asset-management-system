@@ -32,7 +32,6 @@ export function AssetTypeSection() {
     {
       search: search || undefined,
       status: statusFilter === "all" ? undefined : (statusFilter as "active" | "inactive"),
-      categoryId: categoryId === "all" ? undefined : Number(categoryId),
       page,
       pageSize,
     },

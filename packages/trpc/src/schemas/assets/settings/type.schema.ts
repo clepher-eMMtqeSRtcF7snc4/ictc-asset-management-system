@@ -49,6 +49,14 @@ export const updateSettingsAssetTypeInputSchema = settingsAssetTypeSchema
 
 export const assetTypeListOutputSchema = z.array(settingsAssetTypeSchema);
 
+export const activeAssetTypeListOutputSchema = z.array(
+  z.object({
+    id: z.number().int().positive(),
+    name: z.string().trim().min(1, "This field is required").max(150),
+  }),
+);
+
 export type SettingsAssetType = z.infer<typeof settingsAssetTypeSchema>;
+export type ActiveAssetType = z.infer<typeof activeAssetTypeListOutputSchema>[number];
 export type CreateSettingsAssetTypeInput = z.infer<typeof createSettingsAssetTypeInputSchema>;
 export type UpdateSettingsAssetTypeInput = z.infer<typeof updateSettingsAssetTypeInputSchema>;
