@@ -7,7 +7,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export function ConditionFilters({
+export function SupplierFilters({
   search,
   setSearch,
   status,
@@ -22,7 +22,7 @@ export function ConditionFilters({
     <div className="flex flex-wrap items-center gap-2">
       <Input
         className="max-w-sm"
-        placeholder="Search asset statuses..."
+        placeholder="Search supplier name..."
         value={search}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
       />
@@ -31,7 +31,7 @@ export function ConditionFilters({
         onValueChange={(value: string) => setStatus(value as "active" | "inactive" | "all")}
       >
         <SelectTrigger className="w-32">
-          <SelectValue placeholder="Status" />
+          <SelectValue placeholder="Supplier" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All</SelectItem>

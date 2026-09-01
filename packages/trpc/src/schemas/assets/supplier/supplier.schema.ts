@@ -13,7 +13,44 @@ export const supplierFiledSchema = z.object({
     businessRegistrationNo: z.string().trim().optional().nullable(),
     philGEPsNo: z.string().trim().optional().nullable(),
     TIN: z.string().trim().optional().nullable(),
-    VAT: z.boolean().default(false),
+    VAT: z.boolean(),
     description: z.string().trim().max(500).optional().nullable(),
     status: supplierStatusSchema,
-})
+});
+
+export const supplierSchema = supplierFiledSchema.extend({
+  id: z.number().int().positive(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
+  createdBy: z.string().optional().nullable(),
+  updatedBy: z.string().optional().nullable(),
+});
+
+export const supplierFilterInputSchema = z
+  .object({
+    search: z.string().trim().min(1).max(100).optional(),
+    status: supplierStatusSchema.optional(),
+  })
+  .default({});
+
+export const createSupplierInputSchema = supplierFiledSchema;
+export const updateSupplierInputSchema = supplierSchema
+  .partial()
+  .refine(
+    ({ name, code, businessRegistrationNo, philGEPsNo, TIN, VAT, description, status }) =>
+      name !== undefined ||
+      code !== undefined ||
+      businessRegistrationNo !== undefined ||
+      philGEPsNo !== undefined ||
+      TIN !== undefined ||
+      VAT !== undefined ||
+      description !== undefined ||
+      status !== undefined,
+    { message: "Provide at least one field to update" }
+  );
+
+export const supplierStatusOutputSchema = z.array(supplierSchema);
+
+export type Supplier = z.infer<typeof supplierSchema>;
+export type CreateSupplierInput = z.infer<typeof createSupplierInputSchema>;
+export type UpdateSupplierInput = z.infer<typeof updateSupplierInputSchema>;

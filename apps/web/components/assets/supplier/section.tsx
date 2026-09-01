@@ -7,169 +7,191 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc/client";
-import { AssetCondition, CreateAssetConditionInput, UpdateAssetConditionInput } from "@repo/trpc/schemas";
+import {
+  CreateSupplierInput,
+  Supplier,
+  UpdateSupplierInput,
+} from "@repo/trpc/schemas";
+import { SupplierFilters } from "./filters";
+import { SupplierDialog } from "./dialog";
+import { SupplierTable } from "./table";
 import { SupplierDeleteDialog } from "./delete-dialog";
-import { ConditionFilters } from "./filters";
-import { ConditionsTable } from "./table";
-import { ConditionDialog } from "./dialog";
 
-export function ConditionsSection() {
+export function SupplierSection() {
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "active" | "inactive"
+  >("all");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [selectedCondition, setSelectedCondition] = useState<AssetCondition | null>(null);
+  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(
+    null,
+  );
 
   useEffect(() => {
     setPage(1);
   }, [search, statusFilter]);
 
-  const conditionsQuery = trpc.assetConditionRouter.getAssetConditions.useQuery(
+  const suppliersQuery = trpc.supplierRouter.getSuppliers.useQuery(
     {
       search: search || undefined,
-      status: statusFilter === "all" ? undefined : (statusFilter as "active" | "inactive"),
+      status:
+        statusFilter === "all"
+          ? undefined
+          : (statusFilter as "active" | "inactive"),
       page,
       pageSize,
     },
     { placeholderData: keepPreviousData },
   );
 
-  const totalPages = conditionsQuery.data?.totalPages ?? 1;
+  const totalPages = suppliersQuery.data?.totalPages ?? 1;
 
   const utils = trpc.useUtils();
 
-  const createCondition = trpc.assetConditionRouter.create.useMutation({
+  const createSupplier = trpc.supplierRouter.create.useMutation({
     onSuccess: () => {
-      utils.assetConditionRouter.getAssetConditions.invalidate();
+      utils.supplierRouter.getSuppliers.invalidate();
       setCreateOpen(false);
-      toast.success("Asset condition created successfully.");
+      toast.success("Supplier created successfully.");
     },
     onError: (error) => {
-      toast.error(error.message ?? "Failed to create asset condition.");
+      toast.error(error.message ?? "Failed to create supplier.");
     },
   });
 
-  const updateCondition = trpc.assetConditionRouter.update.useMutation({
+  const updateSupplier = trpc.supplierRouter.update.useMutation({
     onSuccess: () => {
-      utils.assetConditionRouter.getAssetConditions.invalidate();
+      utils.supplierRouter.getSuppliers.invalidate();
       setEditOpen(false);
-      setSelectedCondition(null);
-      toast.success("Asset condition updated successfully.");
+      setSelectedSupplier(null);
+      toast.success("Supplier updated successfully.");
     },
     onError: (error) => {
-      toast.error(error.message ?? "Failed to update asset condition.");
+      toast.error(error.message ?? "Failed to update supplier.");
     },
   });
 
-  const deleteCondition = trpc.assetConditionRouter.delete.useMutation({
+  const deleteSupplier = trpc.supplierRouter.delete.useMutation({
     onSuccess: () => {
-      utils.assetConditionRouter.getAssetConditions.invalidate();
+      utils.supplierRouter.getSuppliers.invalidate();
       setDeleteOpen(false);
-      setSelectedCondition(null);
-      toast.success("Asset condition deleted successfully.");
+      setSelectedSupplier(null);
+      toast.success("Supplier deleted successfully.");
     },
     onError: (error) => {
-      toast.error(error.message ?? "Failed to delete asset condition.");
+      toast.error(error.message ?? "Failed to delete supplier.");
     },
   });
 
-  const handleCreate = (values: CreateAssetConditionInput) => {
-    createCondition.mutate(values);
+  const handleCreate = (values: CreateSupplierInput) => {
+    createSupplier.mutate(values);
   };
 
-  const handleEdit = (values: UpdateAssetConditionInput) => {
-    if (!selectedCondition) return;
-    updateCondition.mutate({ id: selectedCondition.id, ...values });
+  const handleEdit = (values: UpdateSupplierInput) => {
+    if (!selectedSupplier) return;
+    updateSupplier.mutate({ id: selectedSupplier.id, ...values });
   };
 
   const handleDelete = () => {
-    if (!selectedCondition) return;
-    deleteCondition.mutate({ id: selectedCondition.id });
+    if (!selectedSupplier) return;
+    deleteSupplier.mutate({ id: selectedSupplier.id });
   };
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between gap-4">
         <div>
-          <CardTitle>Asset Conditions</CardTitle>
+          <CardTitle>Suppliers</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Manage condition statuses used for asset evaluation.
+            Manage supplier profiles and information.
           </p>
         </div>
         <Button onClick={() => setCreateOpen(true)}>
-          <Plus /> Create Condition
+          <Plus /> Create Supplier
         </Button>
       </CardHeader>
       <CardContent className="space-y-4">
-        <ConditionFilters
+        <SupplierFilters
           search={search}
           setSearch={setSearch}
           status={statusFilter}
           setStatus={setStatusFilter}
         />
 
-        {conditionsQuery.isLoading ? (
-           <div className="flex items-center justify-center py-8">
-             <p className="text-muted-foreground">Loading asset conditions...</p>
-           </div>
-         ) : (
-           <ConditionsTable
-             data={(conditionsQuery.data?.items ?? []).map((item) => ({
+        {suppliersQuery.isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <p className="text-muted-foreground">Loading suppliers...</p>
+          </div>
+        ) : (
+          <SupplierTable
+            data={
+              (suppliersQuery.data?.items ?? []).map((item) => ({
                 ...item,
-                createdAt: item.createdAt ? new Date(item.createdAt) : undefined,
-                updatedAt: item.updatedAt ? new Date(item.updatedAt) : undefined,
-              })) as AssetCondition[]}
-              page={page}
-              pageSize={pageSize}
-              totalPages={totalPages}
-              onPaginationChange={(next) => {
-                setPage(next.page);
-                setPageSize(next.pageSize);
-              }}
-              onEdit={(status) => {
-                setSelectedCondition(status);
-                setEditOpen(true);
-              }}
-              onDelete={(status) => {
-                setSelectedCondition(status);
-                setDeleteOpen(true);
-              }}
-           />
-         )}
+                createdAt: item.createdAt
+                  ? new Date(item.createdAt)
+                  : undefined,
+                updatedAt: item.updatedAt
+                  ? new Date(item.updatedAt)
+                  : undefined,
+              })) as Supplier[]
+            }
+            page={page}
+            pageSize={pageSize}
+            totalPages={totalPages}
+            onPaginationChange={(next) => {
+              setPage(next.page);
+              setPageSize(next.pageSize);
+            }}
+            onEdit={(supplier) => {
+              setSelectedSupplier(supplier);
+              setEditOpen(true);
+            }}
+            onDelete={(supplier) => {
+              setSelectedSupplier(supplier);
+              setDeleteOpen(true);
+            }}
+          />
+        )}
       </CardContent>
 
-      <ConditionDialog
+      <SupplierDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
         onSubmit={handleCreate}
-        title="Create Condition"
+        title="Create Supplier"
       />
 
-      <ConditionDialog
+      <SupplierDialog
         open={editOpen}
         onOpenChange={setEditOpen}
         onSubmit={handleEdit}
         defaultValues={
-          selectedCondition
+          selectedSupplier
             ? {
-                code: selectedCondition.code,
-                name: selectedCondition.name,
-                description: selectedCondition.description ?? null,
-                status: selectedCondition.status,
+                code: selectedSupplier.code,
+                name: selectedSupplier.name,
+                description: selectedSupplier.description ?? null,
+                businessRegistrationNo:
+                  selectedSupplier.businessRegistrationNo ?? null,
+                philGEPsNo: selectedSupplier.philGEPsNo ?? null,
+                TIN: selectedSupplier.TIN ?? null,
+                VAT: selectedSupplier.VAT,
+                status: selectedSupplier.status,
               }
             : undefined
         }
-        title="Edit Condition"
+        title="Edit Supplier"
       />
 
-      <ConditionDeleteDialog
+      <SupplierDeleteDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         onConfirm={handleDelete}
-        conditionName={selectedCondition?.name ?? ""}
+        supplierName={selectedSupplier?.name ?? ""}
       />
     </Card>
   );

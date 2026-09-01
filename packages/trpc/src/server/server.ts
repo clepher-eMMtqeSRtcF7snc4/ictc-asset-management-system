@@ -1237,7 +1237,102 @@ const appRouter = t.router({
       })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
   registrationRouter: t.router({}),
-  supplierRouter: t.router({})
+  supplierRouter: t.router({
+    create: publicProcedure.input(z.object({
+      name: z.string().trim().min(1, "This field is required").max(255),
+      code: z
+        .string()
+        .trim()
+        .min(1, "This field is required")
+        .max(50)
+        .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
+      businessRegistrationNo: z.string().trim().optional().nullable(),
+      philGEPsNo: z.string().trim().optional().nullable(),
+      TIN: z.string().trim().optional().nullable(),
+      VAT: z.boolean(),
+      description: z.string().trim().max(500).optional().nullable(),
+      status: z.enum(["active", "inactive"]),
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    update: publicProcedure.input(z.object({
+      name: z.string().trim().min(1, "This field is required").max(255),
+      code: z
+        .string()
+        .trim()
+        .min(1, "This field is required")
+        .max(50)
+        .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
+      businessRegistrationNo: z.string().trim().optional().nullable(),
+      philGEPsNo: z.string().trim().optional().nullable(),
+      TIN: z.string().trim().optional().nullable(),
+      VAT: z.boolean(),
+      description: z.string().trim().max(500).optional().nullable(),
+      status: z.enum(["active", "inactive"]),
+    }).extend({
+      id: z.number().int().positive(),
+      createdAt: z.date().optional(),
+      updatedAt: z.date().optional(),
+      createdBy: z.string().optional().nullable(),
+      updatedBy: z.string().optional().nullable(),
+    }).partial().refine((data) => Object.keys(data).length > 0, {
+      message: 'Provide at least one field to update',
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    delete: publicProcedure.input(z.object({ id: z.number().int().positive() })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getSupplierById: publicProcedure.input(z.object({ id: z.number().int().positive() })).output(z.object({
+      name: z.string().trim().min(1, "This field is required").max(255),
+      code: z
+        .string()
+        .trim()
+        .min(1, "This field is required")
+        .max(50)
+        .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
+      businessRegistrationNo: z.string().trim().optional().nullable(),
+      philGEPsNo: z.string().trim().optional().nullable(),
+      TIN: z.string().trim().optional().nullable(),
+      VAT: z.boolean(),
+      description: z.string().trim().max(500).optional().nullable(),
+      status: z.enum(["active", "inactive"]),
+    }).extend({
+      id: z.number().int().positive(),
+      createdAt: z.date().optional(),
+      updatedAt: z.date().optional(),
+      createdBy: z.string().optional().nullable(),
+      updatedBy: z.string().optional().nullable(),
+    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getSuppliers: publicProcedure.input(z
+      .object({
+        search: z.string().trim().min(1).max(100).optional(),
+        status: z.enum(['active', 'inactive']).optional(),
+        page: z.number().int().min(1).optional(),
+        pageSize: z.number().int().min(1).max(100).optional(),
+      })
+      .default({})).output(z.object({
+        items: z.array(z.object({
+          name: z.string().trim().min(1, "This field is required").max(255),
+          code: z
+            .string()
+            .trim()
+            .min(1, "This field is required")
+            .max(50)
+            .regex(/^[A-Za-z0-9_-]+$/, "Use only letters, numbers, hyphens, or underscores"),
+          businessRegistrationNo: z.string().trim().optional().nullable(),
+          philGEPsNo: z.string().trim().optional().nullable(),
+          TIN: z.string().trim().optional().nullable(),
+          VAT: z.boolean(),
+          description: z.string().trim().max(500).optional().nullable(),
+          status: z.enum(["active", "inactive"]),
+        }).extend({
+          id: z.number().int().positive(),
+          createdAt: z.date().optional(),
+          updatedAt: z.date().optional(),
+          createdBy: z.string().optional().nullable(),
+          updatedBy: z.string().optional().nullable(),
+        })),
+        total: z.number().int().nonnegative(),
+        page: z.number().int().positive(),
+        pageSize: z.number().int().positive(),
+        totalPages: z.number().int().nonnegative(),
+      })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+  })
 });
 export type AppRouter = typeof appRouter;
 

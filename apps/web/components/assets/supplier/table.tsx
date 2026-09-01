@@ -29,20 +29,20 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { MoreHorizontal, Pen, Trash2 } from "lucide-react";
-import { conditionColumns } from "./condition-columns";
-import { AssetCondition } from "@repo/trpc/schemas";
+import { supplierColumns } from "./columns";
+import { Supplier, supplierStatusOutputSchema } from "@repo/trpc/schemas";
 
-interface ConditionsTableProps {
-  data: AssetCondition[];
+interface SupplierTableProps {
+  data: Supplier[];
   page: number;
   pageSize: number;
   totalPages: number;
   onPaginationChange: (next: { page: number; pageSize: number }) => void;
-  onEdit: (condition: AssetCondition) => void;
-  onDelete: (condition: AssetCondition) => void;
+  onEdit: (supplier: Supplier) => void;
+  onDelete: (supplier: Supplier) => void;
 }
 
-export function ConditionsTable({
+export function SupplierTable({
   data,
   page,
   pageSize,
@@ -50,17 +50,17 @@ export function ConditionsTable({
   onPaginationChange,
   onEdit,
   onDelete,
-}: ConditionsTableProps) {
+}: SupplierTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const columns = useMemo(
     () =>
-      conditionColumns.map((column) => {
+      supplierColumns.map((column) => {
         if (column.id === "actions") {
           return {
             ...column,
-            cell: ({ row }: { row: { original: AssetCondition } }) => (
+            cell: ({ row }: { row: { original: Supplier } }) => (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -153,12 +153,12 @@ export function ConditionsTable({
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={conditionColumns.length}
+                  colSpan={supplierColumns.length}
                   className="h-36 text-center"
                 >
-                  <p className="font-medium">No conditions found</p>
+                  <p className="font-medium">No suppliers found</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    No conditions match your current search and filters.
+                    No suppliers match your current search and filters.
                   </p>
                 </TableCell>
               </TableRow>

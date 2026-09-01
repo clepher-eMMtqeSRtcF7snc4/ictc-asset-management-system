@@ -13,26 +13,26 @@ import {
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 
-interface ConditionDeleteDialogProps {
+interface SupplierDeleteDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
-  conditionName: string;
+  supplierName: string;
 }
 
-export function ConditionDeleteDialog({
+export function SupplierDeleteDialog({
   open,
   onOpenChange,
   onConfirm,
-  conditionName,
-}: ConditionDeleteDialogProps) {
+  supplierName,
+}: SupplierDeleteDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete Condition?</AlertDialogTitle>
+          <AlertDialogTitle>Delete Supplier?</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete &quot;{conditionName}&quot;? This
+            Are you sure you want to delete &quot;{supplierName}&quot;? This
             action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>

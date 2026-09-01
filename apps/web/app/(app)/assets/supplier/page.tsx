@@ -1,9 +1,6 @@
 "use client";
 
-import { AssetTypeSection } from "@/components/assets/settings/type/asset-type-section";
-import { CategorySection } from "@/components/assets/settings/categories/category-section";
-import { ConditionsSection } from "@/components/assets/settings/conditions/conditions-section";
-import { StatusesSection } from "@/components/assets/settings/statuses/status-section";
+import { SupplierSection } from "@/components/assets/supplier/section";
 import { PageHeader } from "@/components/layout/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
@@ -11,7 +8,7 @@ import { useState } from "react";
 
 export default function SupplierPage() {
   
-  const [activeTab, setActiveTab] = useState("assetType");
+  const [activeTab, setActiveTab] = useState("supplier");
 
   return (
     <div className="mx-auto max-w-[1440px] space-y-5">
@@ -23,18 +20,17 @@ export default function SupplierPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList variant="line">
           <TabsTrigger value="supplier">Supplier</TabsTrigger>
-          <TabsTrigger value="status">Asset Status</TabsTrigger>
-          <TabsTrigger value="condition">Asset Condition</TabsTrigger>
+          <TabsTrigger value="status">Supplier Status</TabsTrigger>
+          <TabsTrigger value="industry">Industry</TabsTrigger>
         </TabsList>
-        <TabsContent value="assetType" className="mt-4 space-y-6">
-          <AssetTypeSection/>
-          <CategorySection />
+        <TabsContent value="supplier" className="mt-4 space-y-6">
+          <SupplierSection/>
         </TabsContent>
         <TabsContent value="status" className="mt-4 space-y-4">
-          <StatusesSection />
+          
         </TabsContent>
         <TabsContent value="condition" className="mt-4 space-y-4">
-          <ConditionsSection />
+          
         </TabsContent>
       </Tabs>
     </div>

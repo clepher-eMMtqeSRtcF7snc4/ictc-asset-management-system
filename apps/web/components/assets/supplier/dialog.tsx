@@ -14,6 +14,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Field,
+  FieldContent,
+  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -26,31 +28,39 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useEffect } from "react";
-import { CreateAssetConditionInput, CreateAssetConditionInputSchema, } from "@repo/trpc/schemas";
+import {
+  CreateSupplierInput,
+  createSupplierInputSchema,
+} from "@repo/trpc/schemas";
+import { Switch } from "@/components/ui/switch";
 
-interface ConditionDialogProps {
+interface SupplierDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (values: CreateAssetConditionInput) => void;
-  defaultValues?: CreateAssetConditionInput;
+  onSubmit: (values: CreateSupplierInput) => void;
+  defaultValues?: CreateSupplierInput;
   title?: string;
   isLoading?: boolean;
 }
 
-export function ConditionDialog({
+export function SupplierDialog({
   open,
   onOpenChange,
   onSubmit,
   defaultValues,
-  title = "Create Condition",
+  title = "Create Supplier",
   isLoading = false,
-}: ConditionDialogProps) {
-  const form = useForm<CreateAssetConditionInput>({
-    resolver: zodResolver(CreateAssetConditionInputSchema),
+}: SupplierDialogProps) {
+  const form = useForm<CreateSupplierInput>({
+    resolver: zodResolver(createSupplierInputSchema),
     defaultValues: defaultValues ?? {
-      code: "",
       name: "",
-      description: null,
+      code: "",
+      businessRegistrationNo: "",
+      philGEPsNo: "",
+      TIN: "",
+      VAT: false,
+      description: "",
       status: "active",
     },
   });
@@ -58,13 +68,17 @@ export function ConditionDialog({
   useEffect(() => {
     if (open) {
       form.reset({
-        code: defaultValues?.code ?? "",
         name: defaultValues?.name ?? "",
-        description: defaultValues?.description ?? null,
+        code: defaultValues?.code ?? "",
+        businessRegistrationNo: defaultValues?.businessRegistrationNo ?? "",
+        philGEPsNo: defaultValues?.philGEPsNo ?? "",
+        TIN: defaultValues?.TIN ?? "",
+        VAT: defaultValues?.VAT ?? false,
+        description: defaultValues?.description ?? "",
         status: defaultValues?.status ?? "active",
       });
     }
-  }, [open]);
+  }, [open, defaultValues, form]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -72,29 +86,8 @@ export function ConditionDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
-        <form className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
+        <form className="grid gap-4" onSubmit={form.handleSubmit((data) => onSubmit(data))}>
           <FieldGroup>
-            <Controller
-              name="code"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-code">Code</FieldLabel>
-                  <Input
-                    {...field}
-                    value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    id="form-code"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Enter condition code (e.g., NEW, DAMAGED)"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-
             <Controller
               name="name"
               control={form.control}
@@ -107,7 +100,7 @@ export function ConditionDialog({
                     onChange={(e) => field.onChange(e.target.value)}
                     id="form-name"
                     aria-invalid={fieldState.invalid}
-                    placeholder="Enter condition name"
+                    placeholder="Enter supplier name"
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -115,25 +108,111 @@ export function ConditionDialog({
                 </Field>
               )}
             />
-          </FieldGroup>
+
+            <Controller
+              name="code"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="form-code">Code</FieldLabel>
+                  <Input
+                    {...field}
+                    value={field.value ?? ""}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    id="form-code"
+                    aria-invalid={fieldState.invalid}
+                    placeholder="Enter supplier code"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
 
           <Controller
-            name="description"
+            name="businessRegistrationNo"
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="form-description">Description</FieldLabel>
-                <Textarea
+                <FieldLabel htmlFor="form-businessRegistrationNo">
+                  Business Registration No
+                </FieldLabel>
+                <Input
                   {...field}
                   value={field.value ?? ""}
                   onChange={(e) => field.onChange(e.target.value || null)}
-                  id="form-description"
+                  id="form-businessRegistrationNo"
                   aria-invalid={fieldState.invalid}
-                  placeholder="Enter description"
+                  placeholder="Business registration number"
                 />
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
                 )}
+              </Field>
+            )}
+          />
+
+          <Controller
+            name="philGEPsNo"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="form-philGEPsNo">PhilGEPS No</FieldLabel>
+                <Input
+                  {...field}
+                  value={field.value ?? ""}
+                  onChange={(e) => field.onChange(e.target.value || null)}
+                  id="form-philGEPsNo"
+                  aria-invalid={fieldState.invalid}
+                  placeholder="PhilGEPS number"
+                />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+
+          <Controller
+            name="TIN"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="form-TIN">TIN</FieldLabel>
+                <Input
+                  {...field}
+                  value={field.value ?? ""}
+                  onChange={(e) => field.onChange(e.target.value || null)}
+                  id="form-TIN"
+                  aria-invalid={fieldState.invalid}
+                  placeholder="Tax ID number"
+                />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+
+          <Controller
+            name="VAT"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldContent>
+                  <FieldLabel htmlFor="form-VAT">
+                    VAT Registered
+                  </FieldLabel>
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </FieldContent>
+                <Switch
+                  id="form-VAT"
+                  name={field.name}
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  aria-invalid={fieldState.invalid}
+                />
               </Field>
             )}
           />
@@ -166,6 +245,7 @@ export function ConditionDialog({
               </Field>
             )}
           />
+        </FieldGroup>
 
           <DialogFooter>
             <Button
