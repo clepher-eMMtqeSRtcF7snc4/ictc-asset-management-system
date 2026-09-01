@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, type Resolver } from "react-hook-form";
 import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc/client";
 import { Input } from "@/components/ui/input";
@@ -32,7 +32,7 @@ const STEP_FIELDS: Record<number, (keyof AssetRegistrationInput)[]> = {
     "conditionId",
     "quantity",
   ],
-  1: ["serialNumber", "propertyNumber", "qrCode"],
+  1: ["serialNumber"],
   2: ["acquisitionDate", "acquisitionCost", "supportingDocs"],
   3: ["departmentId", "custodianId", "buildingId", "roomId"],
 };
@@ -73,24 +73,27 @@ export function RegistrationStepPanel({
 }) {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedSupportingDocumentFile, setSelectedSupportingDocumentFile] =
+    useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const form = useForm<AssetRegistrationInput>({
-    resolver: zodResolver(assetRegistrationSchema),
+    resolver: zodResolver(assetRegistrationSchema) as Resolver<AssetRegistrationInput>,
     mode: "onChange",
     defaultValues: {
       assetName: "",
       brand: "",
       model: "",
       serialNumber: "",
-      propertyNumber: "",
-      qrCode: "",
+      propertyNumber: undefined,
+      qrCode: undefined,
       description: "",
       quantity: 1,
       assetPhoto: null,
       categoryId: undefined as unknown as number,
       assetTypeId: undefined as unknown as number,
       conditionId: undefined as unknown as number,
-      acquisitionDate: undefined,
+      acquisitionDate: new Date(),
       acquisitionCost: undefined,
       supplierId: undefined,
       purchaseOrderNumber: "",
@@ -210,6 +213,31 @@ export function RegistrationStepPanel({
     form.setValue("assetPhoto", null);
   };
 
+  const uploadFile = async (
+    file: File,
+    endpoint: "/api/upload/image" | "/api/upload/document",
+    fieldName: "image" | "document",
+  ) => {
+    const formData = new FormData();
+    formData.append(fieldName, file);
+
+    const response = await fetch(endpoint, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        endpoint === "/api/upload/image"
+          ? "Failed to upload asset photo."
+          : "Failed to upload supporting document.",
+      );
+    }
+
+    const { filename } = await response.json();
+    return filename as string;
+  };
+
   const validateAndNext = async () => {
     const fields = STEP_FIELDS[step] ?? [];
     const result = await form.trigger(fields);
@@ -226,9 +254,42 @@ export function RegistrationStepPanel({
     onStepChange(Math.max(step - 1, 0));
   };
 
-  const handleFormSubmit = async (data: AssetRegistrationInput) => {
-    console.log(data);
-    await onSubmit(data);
+  const handleSubmitWithUpload = async (data: AssetRegistrationInput) => {
+    let assetPhotoFilename = data.assetPhoto ?? null;
+    let supportingDocsFilename = data.supportingDocs ?? "";
+
+    try {
+      setIsUploading(true);
+
+      if (selectedFile) {
+        assetPhotoFilename = await uploadFile(
+          selectedFile,
+          "/api/upload/image",
+          "image",
+        );
+      }
+
+      if (selectedSupportingDocumentFile) {
+        supportingDocsFilename = await uploadFile(
+          selectedSupportingDocumentFile,
+          "/api/upload/document",
+          "document",
+        );
+      }
+
+      await onSubmit({
+        ...data,
+        assetPhoto: assetPhotoFilename,
+        supportingDocs: supportingDocsFilename,
+      });
+    } catch (error) {
+      console.error("Upload error:", error);
+      return;
+    } finally {
+      setIsUploading(false);
+      setSelectedFile(null);
+      setSelectedSupportingDocumentFile(null);
+    }
   };
 
   return (
@@ -240,7 +301,7 @@ export function RegistrationStepPanel({
 
       <form
         id="asset-registration"
-        onSubmit={form.handleSubmit(handleFormSubmit)}
+        onSubmit={form.handleSubmit(handleSubmitWithUpload)}
         className="grid gap-6"
       >
         {step === 0 && (
@@ -461,6 +522,11 @@ export function RegistrationStepPanel({
                       ) : (
                         <FileUploadArea onFileSelect={handleFileSelect} />
                       )}
+                      {isUploading && (
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          Uploading asset files...
+                        </p>
+                      )}
                     </div>
                   </Field>
                 )}
@@ -494,47 +560,21 @@ export function RegistrationStepPanel({
               )}
             />
 
-            <Controller
-              name="propertyNumber"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="property-number">
-                    Property number *
-                  </FieldLabel>
-                  <Input
-                    {...field}
-                    value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    id="property-number"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Enter property number"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
+            <div className="rounded-md border border-dashed bg-muted/30 p-4 md:col-span-2">
+              <p className="text-sm font-medium text-foreground">
+                Property number
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Automatically generated after the asset is saved.
+              </p>
 
-            <Controller
-              name="qrCode"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="qr-code">QR Code</FieldLabel>
-                  <Input
-                    id="qr-code"
-                    value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value)}
-                    aria-invalid={fieldState.invalid}
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
+              <p className="mt-4 text-sm font-medium text-foreground">
+                QR code
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Automatically generated after save and linked to the asset record.
+              </p>
+            </div>
           </div>
         )}
 
@@ -681,10 +721,23 @@ export function RegistrationStepPanel({
                   </FieldLabel>
                   <Input
                     id="supporting-docs"
-                    value={field.value ?? ""}
-                    onChange={(e) => field.onChange(e.target.value)}
+                    type="file"
+                    accept=".pdf,application/pdf"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      setSelectedSupportingDocumentFile(file ?? null);
+                      field.onChange(
+                        file && file.type === "application/pdf" ? file.name : "",
+                      );
+                    }}
                     aria-invalid={fieldState.invalid}
+                    className="file:mr-3 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-2 file:text-sm file:font-medium"
                   />
+                  {field.value ? (
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Selected file: {field.value}
+                    </p>
+                  ) : null}
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}
@@ -823,7 +876,7 @@ export function RegistrationStepPanel({
             Next <ArrowRight className="ml-2 size-4" />
           </Button>
         ) : (
-          <Button type="submit" form="asset-form" disabled={isSubmitting}>
+          <Button type="submit" form="asset-registration" disabled={isSubmitting}>
             <Save className="mr-2 size-4" />
             {isSubmitting ? "Saving…" : "Save asset"}
           </Button>

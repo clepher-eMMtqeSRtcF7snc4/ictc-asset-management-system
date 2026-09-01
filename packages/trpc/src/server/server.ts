@@ -1290,7 +1290,34 @@ const appRouter = t.router({
       }),
     )).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
-  registrationRouter: t.router({}),
+  registrationRouter: t.router({
+    create: publicProcedure.input(z.object({
+      assetName: z.string().trim().min(1, "This field is required"),
+      brand: z.string().min(1, "This field is required"),
+      model: z.string().min(1, "This field is required"),
+      serialNumber: z.string().min(1, "This field is required"),
+      propertyNumber: z.string().optional(),
+      qrCode: z.string().optional(),
+      description: z.string().optional(),
+      quantity: z.number().int().positive().min(1),
+      assetPhoto: z.string().nullable().optional(),
+      categoryId: z.number().int().positive(),
+      assetTypeId: z.number().int().positive(),
+      conditionId: z.number().int().positive(),
+    }).merge(z.object({
+      acquisitionDate: z.coerce.date("This field is required"),
+      acquisitionCost: z.number("This field is required").min(0, "This field is required"),
+      supplierId: z.number().optional(),
+      purchaseOrderNumber: z.string().optional(),
+      warranty: z.coerce.number().int().nonnegative().optional(),
+      supportingDocs: z.string().optional()
+    })).merge(z.object({
+      departmentId: z.number().int().positive().min(1, "This field is required"),
+      custodianId: z.number().int().positive().min(1, "This field is required"),
+      buildingId: z.number().int().positive().optional(),
+      roomId: z.number().int().positive().optional(),
+    }))).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+  }),
   supplierRouter: t.router({
     create: publicProcedure.input(z.object({
       name: z.string().trim().min(1, "This field is required").max(255),

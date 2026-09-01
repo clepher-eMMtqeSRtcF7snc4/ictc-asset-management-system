@@ -15,12 +15,30 @@ export function AssetRegistrationContentSection({
   onRegister,
 }: {
   onRegister: (
-    data: AssetRegistrationInput
-  ) => Promise<{ ok: boolean; id?: number; message?: string }>;
+    data: AssetRegistrationInput,
+  ) => Promise<{
+    ok: boolean;
+    id?: number;
+    message?: string;
+    propertyNumber?: string;
+    qrCode?: string;
+    assetName?: string;
+  }>;
 }) {
   const [step, setStep] = useState(0);
   const [pending, startTransition] = useTransition();
   const [registered, setRegistered] = useState(false);
+  const [stickerData, setStickerData] = useState<{
+    assetTag: string;
+    propertyNumber: string;
+    name: string;
+    qrValue: string;
+  }>({
+    assetTag: "MSU-ICT-000000",
+    propertyNumber: "MSU-ICT-000000",
+    name: "Asset name",
+    qrValue: "ASSET|MSU-ICT-000000",
+  });
 
   function submit(data: AssetRegistrationInput) {
     startTransition(async () => {
@@ -29,8 +47,21 @@ export function AssetRegistrationContentSection({
         toast.error(result.message ?? "Asset registration failed.");
         return;
       }
+
+      const assetName = result.assetName ?? data.assetName ?? "Asset name";
+      const propertyNumber =
+        result.propertyNumber ?? `MSU-ICT-${String(result.id ?? 0).padStart(6, "0")}`;
+      const assetTag = propertyNumber;
+      const qrValue = result.qrCode ?? `ASSET|${propertyNumber}`;
+
+      setStickerData({
+        assetTag,
+        propertyNumber,
+        name: assetName,
+        qrValue,
+      });
       setRegistered(true);
-      toast.success("Demo asset registration completed.");
+      toast.success("Asset registration completed.");
     });
   }
 
@@ -78,10 +109,10 @@ export function AssetRegistrationContentSection({
                 </Button>
               </div>
               <AssetStickerPreview
-                assetTag="MSU-ICT-2024-000123"
-                propertyNumber="PROP-2024-000123"
-                name="Asset name"
-                qrValue="ASSET|MSU-ICT-2024-000123"
+                assetTag={stickerData.assetTag}
+                propertyNumber={stickerData.propertyNumber}
+                name={stickerData.name}
+                qrValue={stickerData.qrValue}
               />
             </CardContent>
           </Card>
@@ -91,10 +122,10 @@ export function AssetRegistrationContentSection({
       <AssetStickerPrintLayout>
         <div className="hidden print:block">
           <AssetStickerPreview
-            assetTag="MSU-ICT-2024-000123"
-            propertyNumber="PROP-2024-000123"
-            name="Asset name"
-            qrValue="ASSET|MSU-ICT-2024-000123"
+            assetTag={stickerData.assetTag}
+            propertyNumber={stickerData.propertyNumber}
+            name={stickerData.name}
+            qrValue={stickerData.qrValue}
           />
         </div>
       </AssetStickerPrintLayout>
