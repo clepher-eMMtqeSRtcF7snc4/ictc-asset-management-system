@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -21,8 +21,6 @@ import {
   type AssetRegistrationInput,
 } from "@repo/trpc/schemas";
 import Image from "next/image";
-import { getImageUrl } from "@/lib/image";
-import { Badge } from "@/components/ui/badge";
 
 const STEP_FIELDS: Record<number, (keyof AssetRegistrationInput)[]> = {
   0: [
@@ -105,108 +103,47 @@ export function RegistrationStepPanel({
     },
   });
 
-  const categoriesQuery = trpc.assetCategoryRouter.getCategories.useQuery(
-    { 
-      status: "active", 
-      page: 1,
-      pageSize: 100,
-    },
-    {
-      placeholderData: {
-        items: [],
-        total: 0,
-        page: 1,
-        pageSize: 100,
-        totalPages: 0,
-      },
-    },
+  const categoriesQuery = trpc.assetCategoryRouter.getActiveCategories.useQuery();
+  const selectedCategoryId = form.watch("categoryId");
+  const assetTypesQuery = trpc.assetTypeRouter.getActiveAssetTypes.useQuery(
+    { assetCategoryId: selectedCategoryId },
+    { enabled: selectedCategoryId !== undefined },
   );
+  const conditionsQuery = trpc.assetConditionRouter.getActiveAssetConditions.useQuery();
+  const departmentsQuery = trpc.departmentRouter.getActiveDepartments.useQuery();
+  const employeesQuery = trpc.employeeRouter.getActiveEmployees.useQuery();
+  const buildingsQuery = trpc.buildingRouter.getActiveBuildings.useQuery();
+  const roomsQuery = trpc.roomRouter.getActiveRooms.useQuery();
 
-  const assetTypesQuery = trpc.assetTypeRouter.getActiveAssetTypes.useQuery();
-
-  const conditionsQuery = trpc.assetConditionRouter.getAssetConditions.useQuery(
-    { 
-      status: "active", 
-      page: 1,
-      pageSize: 100,
-    },
-    {
-      placeholderData: {
-        items: [],
-        total: 0,
-        page: 1,
-        pageSize: 100,
-        totalPages: 0,
-      },
-    },
-  );
-
-  const departmentsQuery = trpc.departmentRouter.getDepartments.useQuery(
-    { 
-      status: "active",
-      page: 1,
-      pageSize: 100,
-     },
-    {
-      placeholderData: {
-        items: [],
-        total: 0,
-        page: 1,
-        pageSize: 100,
-        totalPages: 0,
-      },
-    },
-  );
-
-  const employeesQuery = trpc.employeeRouter.getEmployees.useQuery(
-    { pageSize: 100 },
-  );
-
-  const buildingsQuery = trpc.buildingRouter.getBuildings.useQuery(
-    { 
-      status: "active",
-      page: 1,
-      pageSize: 100,
-     },
-    {
-      placeholderData: {
-        items: [],
-        total: 0,
-        page: 1,
-        pageSize: 100,
-        totalPages: 0,
-      },
-    },
-  );
-
-  const roomsQuery = trpc.roomRouter.getRooms.useQuery(
-    { status: "active", page: 1, pageSize: 100 },
-    {
-      placeholderData: {
-        items: [],
-        total: 0,
-        page: 1,
-        pageSize: 10,
-        totalPages: 0,
-      },
-    },
-  );
-
-  const categories = categoriesQuery.data?.items ?? [];
+  const categories = categoriesQuery.data ?? [];
   const assetTypes = assetTypesQuery.data ?? [];
-  const conditions = conditionsQuery.data?.items ?? [];
-  const departments = departmentsQuery.data?.items ?? [];
-  // const employees = employeesQuery.data?.items ?? [];
-  const buildings = buildingsQuery.data?.items ?? [];
-  const rooms = roomsQuery.data?.items ?? [];
-   const employees = (employeesQuery.data?.items ?? [])
-    .filter((e) => e.status === "regular" || e.status === "permanent" || e.status === "contractual");
+  const conditions = conditionsQuery.data ?? [];
+  const departments = departmentsQuery.data ?? [];
+  const employees = employeesQuery.data ?? [];
+  const buildings = buildingsQuery.data ?? [];
+  const rooms = roomsQuery.data ?? [];
+
   const custodianOptions = employees.map((e) => ({
-                      id: String(e.id),
-                      name: `${e.lastName}, ${e.firstName}${e.middleName ? ` ${e.middleName[0]}.` : ""}`,
-                      photoUrl: e.photo ? getImageUrl(e.photo) : null,
-                      status: e.status,
-                    }))
+   id: String(e.id),
+   name: e.name,
+  }));
+
+  useEffect(() => {
+   if (
+     selectedCategoryId === undefined ||
+     form.getValues("assetTypeId") === undefined
+   ) {
+     return;
+   }
+
+   const currentAssetTypeIsValid = assetTypes.some(
+     (assetType) => assetType.id === form.getValues("assetTypeId"),
+   );
+
+   if (!currentAssetTypeIsValid) {
+     form.setValue("assetTypeId", undefined as unknown as number);
+   }
+  }, [assetTypes, form, selectedCategoryId]);
 
   const handleFileSelect = (file: File) => {
     if (file && file.type.startsWith("image/")) {
@@ -750,37 +687,6 @@ export function RegistrationStepPanel({
                     }
                     placeholder="Select custodian"
                     fullWidth
-                    renderOption={(option) => {
-                    const status = (option as any).status;
-                    const getVariant = (s: string): "success" | "info" | "warning" | "destructive" => {
-                      if (s === "active" || s === "contractual" || s === "permanent") return "success";
-                      if (s === "job-order" || s === "casual" || s === "temporary" || s === "probationary") return "info";
-                      if (s === "on-leave") return "warning";
-                      return "destructive";
-                    };
-                    return (
-                      <div className="flex items-center gap-2">
-                        {option.photoUrl ? (
-                          <Image
-                            src={option.photoUrl}
-                            alt="Employee photo"
-                            unoptimized
-                            width={24}
-                            height={24}
-                            className="size-6 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex size-6 items-center justify-center rounded-full bg-muted text-[10px] font-medium">
-                            {option.name.slice(0, 1)}
-                          </div>
-                        )}
-                        <span className="flex-1">{option.name}</span>
-                        <Badge variant={getVariant(status ?? "active")}>
-                          {status === "active" ? "Regular" : status?.replace(/-/g, " ")}
-                        </Badge>
-                      </div>
-                    );
-                  }}
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -893,14 +799,14 @@ function ReviewFields({
   assetTypes: { id: number; name: string }[];
   conditions: { id: number; name: string }[];
   departments: { id: number; name: string }[];
-  employees: { id: number; firstName: string; lastName: string }[];
+  employees: { id: number; name: string }[];
   buildings: { id: number; name: string }[];
   rooms: { id: number; name: string }[];
 }) {
   const getCustodianName = (id?: number) => {
     if (!id) return "—";
     const emp = employees.find((e) => e.id === id);
-    return emp ? `${emp.firstName} ${emp.lastName}` : "—";
+    return emp ? emp.name : "—";
   };
 
   return (

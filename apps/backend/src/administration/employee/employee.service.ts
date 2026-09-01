@@ -8,7 +8,7 @@ import { DATABASE_CONNECTION } from '../../database/database-connection';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres/driver';
 import { schema } from '../../database/database.module';
 import { CreateEmployeeInput, UpdateEmployeeInput } from '@repo/trpc/schemas';
-import { and, asc, count, eq, ilike, or, sql, type SQL } from 'drizzle-orm';
+import { and, asc, count, eq, ilike, notInArray, or, sql, type SQL } from 'drizzle-orm';
 import { employee } from './schemas/schema';
 import { position } from '../position/schemas/schema';
 import { designation } from '../designation/schemas/schema';
@@ -138,6 +138,25 @@ export class EmployeeService {
     }));
 
     return { items: mappedItems, total, page, pageSize, totalPages };
+  }
+
+  async findActive() {
+    return this.database
+      .select({
+        id: employee.id,
+        name: sql<string>`concat(${employee.lastName}, ', ', ${employee.firstName})`,
+      })
+      .from(employee)
+      .where(
+        notInArray(employee.status, [
+          'inactive',
+          'terminated',
+          'retired',
+          'deceased',
+          'suspended',
+        ]),
+      )
+      .orderBy(asc(employee.lastName), asc(employee.firstName));
   }
 
   async update(input: UpdateEmployeeInput) {

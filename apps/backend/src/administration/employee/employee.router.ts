@@ -9,6 +9,7 @@ import {
   CreateEmployeeInput,
   UpdateEmployeeInput,
   EmployeeListInput,
+  activeEmployeeListOutputSchema,
 } from '@repo/trpc/schemas';
 import { AuthTrpcMiddleware } from '../../auth/auth-trpc.middleware';
 
@@ -40,5 +41,10 @@ export class EmployeeRouter {
   @Query({ input: employeeListInputSchema, output: employeeListOutputSchema })
   async getEmployees(@Input() input: EmployeeListInput) {
     return this.employeeService.findAll(input);
+  }
+
+  @Query({ output: activeEmployeeListOutputSchema })
+  async getActiveEmployees() {
+    return this.employeeService.findActive();
   }
 }

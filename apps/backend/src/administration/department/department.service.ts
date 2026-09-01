@@ -81,6 +81,17 @@ export class DepartmentService {
     return { items, total, page, pageSize, totalPages };
   }
 
+  async findActive() {
+    return this.database
+      .select({
+        id: department.id,
+        name: department.name,
+      })
+      .from(department)
+      .where(eq(department.status, 'active'))
+      .orderBy(asc(department.name));
+  }
+
   async update(input: UpdateDepartmentInput) {
     await this.database
       .update(department)

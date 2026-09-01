@@ -13,6 +13,7 @@ import {
   updateBuildingInputSchema,
   DeleteBuildingInput,
   createBuildingInputSchema,
+  activeBuildingListOutputSchema,
 } from '@repo/trpc/schemas';
 import { AuthTrpcMiddleware } from '../../auth/auth-trpc.middleware';
 
@@ -44,5 +45,10 @@ export class BuildingRouter {
   @Query({ input: buildingListInputSchema, output: buildingListOutputSchema })
   async getBuildings(@Input() input: BuildingListInput) {
     return this.buildingService.findAll(input);
+  }
+
+  @Query({ output: activeBuildingListOutputSchema })
+  async getActiveBuildings() {
+    return this.buildingService.findActive();
   }
 }

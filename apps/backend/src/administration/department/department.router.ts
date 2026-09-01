@@ -9,6 +9,7 @@ import {
   CreateDepartmentInput,
   UpdateDepartmentInput,
   DepartmentListInput,
+  activeDepartmentListOutputSchema,
 } from '@repo/trpc/schemas';
 import { AuthTrpcMiddleware } from '../../auth/auth-trpc.middleware';
 
@@ -46,5 +47,12 @@ export class DepartmentRouter {
   })
   async getDepartments(@Input() input: DepartmentListInput) {
     return this.departmentService.findAll(input);
+  }
+
+  @Query({
+    output: activeDepartmentListOutputSchema,
+  })
+  async getActiveDepartments() {
+    return this.departmentService.findActive();
   }
 }

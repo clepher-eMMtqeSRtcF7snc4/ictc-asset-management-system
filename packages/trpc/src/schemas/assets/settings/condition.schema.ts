@@ -22,6 +22,13 @@ export const assetConditionSchema = assetConditionFieldsSchema.extend({
   updatedBy: z.string().optional().nullable(),
 });
 
+export const activeAssetConditionListOutputSchema = z.array(
+  z.object({
+    id: z.number().int().positive(),
+    name: z.string().trim().min(1, "This field is required").max(150),
+  }),
+);
+
 export const CreateAssetConditionInputSchema = assetConditionFieldsSchema;
 
 export const UpdateAssetConditionInputSchema = assetConditionSchema

@@ -41,6 +41,13 @@ export const departmentListOutputSchema = z.object({
   totalPages: z.number().int().nonnegative(),
 });
 
+export const activeDepartmentListOutputSchema = z.array(
+  z.object({
+    id: z.number().int().positive(),
+    name: z.string().trim().min(1, "This field is required").max(150),
+  }),
+);
+
 export const createDepartmentInputSchema = departmentFieldsSchema;
 
 export const updateDepartmentInputSchema = departmentFieldsSchema

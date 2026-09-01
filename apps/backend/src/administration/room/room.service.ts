@@ -79,6 +79,17 @@ export class RoomService {
     return { items, total, page, pageSize, totalPages };
   }
 
+  async findActive() {
+    return this.database
+      .select({
+        id: room.id,
+        name: room.name,
+      })
+      .from(room)
+      .where(eq(room.status, 'active'))
+      .orderBy(asc(room.name));
+  }
+
   async update(input: {
     id: number;
     name?: string;

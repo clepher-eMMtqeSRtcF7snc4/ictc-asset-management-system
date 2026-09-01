@@ -8,6 +8,7 @@ import {
   roomSchema,
   getBuildingByIdInputSchema,
   GetBuildingByIdInput,
+  activeRoomListOutputSchema,
 } from '@repo/trpc/schemas';
 import { AuthTrpcMiddleware } from '../../auth/auth-trpc.middleware';
 import { z } from 'zod';
@@ -55,6 +56,11 @@ export class RoomRouter {
   @Query({ input: roomListInputSchema, output: roomListOutputSchema })
   async getRooms(@Input() input: RoomListInput) {
     return this.roomService.findAll(input);
+  }
+
+  @Query({ output: activeRoomListOutputSchema })
+  async getActiveRooms() {
+    return this.roomService.findActive();
   }
 
   @Query({

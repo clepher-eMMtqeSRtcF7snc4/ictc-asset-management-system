@@ -69,6 +69,17 @@ export class BuildingService {
     return { items, total, page, pageSize, totalPages };
   }
 
+  async findActive() {
+    return this.database
+      .select({
+        id: building.id,
+        name: building.name,
+      })
+      .from(building)
+      .where(eq(building.status, 'active'))
+      .orderBy(asc(building.name));
+  }
+
   async update(input: UpdateBuildingInput) {
     await this.database
       .update(building)

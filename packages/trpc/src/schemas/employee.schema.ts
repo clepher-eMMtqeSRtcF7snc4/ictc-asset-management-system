@@ -62,6 +62,13 @@ export const employeeListOutputSchema = z.object({
   totalPages: z.number().int().nonnegative(),
 });
 
+export const activeEmployeeListOutputSchema = z.array(
+  z.object({
+    id: z.number().int().positive(),
+    name: z.string().trim().min(1, "Name is required").max(200),
+  }),
+);
+
 export const createEmployeeInputSchema = employeeFieldsSchema;
 
 export const updateEmployeeInputSchema = employeeFieldsSchema

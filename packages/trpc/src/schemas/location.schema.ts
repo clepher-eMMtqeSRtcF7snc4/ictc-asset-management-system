@@ -41,6 +41,13 @@ export const buildingListOutputSchema = z.object({
   totalPages: z.number().int().nonnegative(),
 });
 
+export const activeBuildingListOutputSchema = z.array(
+  z.object({
+    id: z.number().int().positive(),
+    name: z.string().trim().min(1, "This field is required").max(150),
+  }),
+);
+
 export const updateBuildingInputSchema = buildingFieldsSchema
   .partial()
   .extend({
@@ -158,6 +165,13 @@ export const roomListOutputSchema = z.object({
   pageSize: z.number().int().positive(),
   totalPages: z.number().int().nonnegative(),
 });
+
+export const activeRoomListOutputSchema = z.array(
+  z.object({
+    id: z.number().int().positive(),
+    name: z.string().trim().min(1, "This field is required").max(150),
+  }),
+);
 
 export type RoomListInput = z.infer<typeof roomListInputSchema>;
 export type RoomListOutput = z.infer<typeof roomListOutputSchema>;

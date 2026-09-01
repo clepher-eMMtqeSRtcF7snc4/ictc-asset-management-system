@@ -45,7 +45,15 @@ export const settingsAssetUpdateCategoryInputSchema = settingsAssetCategoryField
     totalPages: z.number().int().nonnegative(),
   });
 
+export const activeAssetCategoryListOutputSchema = z.array(
+  z.object({
+    id: z.number().int().positive(),
+    name: z.string().trim().min(1, "This field is required").max(150),
+  }),
+);
+
 export type SettingsAssetCategory = z.infer<typeof settingsAssetCategorySchema>;
+export type ActiveAssetCategory = z.infer<typeof activeAssetCategoryListOutputSchema>[number];
 export type CategoryListInput = z.infer<typeof settingsAssetCategorySchema>;
 export type CreateCategoryInput = z.infer<typeof settingsAssetCreateCategoryInputSchema>;
 export type UpdateCategoryInput = z.infer<typeof settingsAssetUpdateCategoryInputSchema>;

@@ -68,6 +68,17 @@ export class AssetCategoryService {
     return { items, total, page, pageSize, totalPages };
   }
 
+  async findActive() {
+    return this.database
+      .select({
+        id: assetCategory.id,
+        name: assetCategory.name,
+      })
+      .from(assetCategory)
+      .where(eq(assetCategory.status, 'active'))
+      .orderBy(asc(assetCategory.name));
+  }
+
   async update(input: {
     id: number;
     name?: string;

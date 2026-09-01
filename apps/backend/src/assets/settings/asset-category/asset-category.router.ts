@@ -5,6 +5,7 @@ import {
   settingsAssetCategoryListSchema,
   settingsAssetCreateCategoryInputSchema,
   settingsAssetUpdateCategoryInputSchema,
+  activeAssetCategoryListOutputSchema,
 } from '@repo/trpc/schemas';
 import { AuthTrpcMiddleware } from '../../../auth/auth-trpc.middleware';
 import { z } from 'zod';
@@ -54,5 +55,12 @@ export class AssetCategoryRouter {
   })
   async getCategories(@Input() input: any) {
     return this.assetCategoryService.findAll(input);
+  }
+
+  @Query({
+    output: activeAssetCategoryListOutputSchema,
+  })
+  async getActiveCategories() {
+    return this.assetCategoryService.findActive();
   }
 }

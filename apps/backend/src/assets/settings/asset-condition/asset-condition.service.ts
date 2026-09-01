@@ -189,4 +189,15 @@ export class AssetConditionService {
 
     return { items, total, page, pageSize, totalPages };
   }
+
+  async findActive() {
+    return this.database
+      .select({
+        id: assetCondition.id,
+        name: assetCondition.name,
+      })
+      .from(assetCondition)
+      .where(eq(assetCondition.status, 'active'))
+      .orderBy(asc(assetCondition.name));
+  }
 }

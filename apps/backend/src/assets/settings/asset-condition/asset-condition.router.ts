@@ -7,6 +7,7 @@ import {
   assetConditionSchema,
   CreateAssetConditionInput,
   UpdateAssetConditionInput,
+  activeAssetConditionListOutputSchema,
 } from '@repo/trpc/schemas';
 import { AuthTrpcMiddleware } from '../../../auth/auth-trpc.middleware';
 
@@ -76,5 +77,12 @@ export class AssetConditionRouter {
     },
   ) {
     return this.assetConditionService.findAll(input);
+  }
+
+  @Query({
+    output: activeAssetConditionListOutputSchema,
+  })
+  async getActiveAssetConditions() {
+    return this.assetConditionService.findActive();
   }
 }
