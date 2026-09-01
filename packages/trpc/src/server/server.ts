@@ -227,12 +227,16 @@ const appRouter = t.router({
         pageSize: z.number().int().positive(),
         totalPages: z.number().int().nonnegative(),
       })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
-    getActiveRooms: publicProcedure.output(z.array(
-      z.object({
-        id: z.number().int().positive(),
-        name: z.string().trim().min(1, "This field is required").max(150),
-      }),
-    )).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getActiveRooms: publicProcedure.input(z
+      .object({
+        buildingId: z.number().int().positive().optional(),
+      })
+      .default({})).output(z.array(
+        z.object({
+          id: z.number().int().positive(),
+          name: z.string().trim().min(1, "This field is required").max(150),
+        }),
+      )).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getRoomCountsByBuilding: publicProcedure.input(z.object({})).output(z.record(z.string(), z.number().int().nonnegative())).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
   roomTypeRouter: t.router({
@@ -721,12 +725,16 @@ const appRouter = t.router({
         pageSize: z.number().int().positive(),
         totalPages: z.number().int().nonnegative(),
       })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
-    getActiveEmployees: publicProcedure.output(z.array(
-      z.object({
-        id: z.number().int().positive(),
-        name: z.string().trim().min(1, "Name is required").max(200),
-      }),
-    )).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+    getActiveEmployees: publicProcedure.input(z
+      .object({
+        departmentId: z.number().int().positive().optional(),
+      })
+      .default({})).output(z.array(
+        z.object({
+          id: z.number().int().positive(),
+          name: z.string().trim().min(1, "Name is required").max(200),
+        }),
+      )).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
   positionRouter: t.router({
     create: publicProcedure.input(z.object({

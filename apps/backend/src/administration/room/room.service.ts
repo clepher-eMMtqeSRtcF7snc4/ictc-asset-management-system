@@ -79,14 +79,20 @@ export class RoomService {
     return { items, total, page, pageSize, totalPages };
   }
 
-  async findActive() {
+  async findActive(input?: { buildingId?: number }) {
+    const conditions: SQL[] = [eq(room.status, 'active')];
+
+    if (input?.buildingId !== undefined) {
+      conditions.push(eq(room.buildingId, input.buildingId));
+    }
+
     return this.database
       .select({
         id: room.id,
         name: room.name,
       })
       .from(room)
-      .where(eq(room.status, 'active'))
+      .where(and(...conditions))
       .orderBy(asc(room.name));
   }
 

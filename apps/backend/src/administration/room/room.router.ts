@@ -58,9 +58,16 @@ export class RoomRouter {
     return this.roomService.findAll(input);
   }
 
-  @Query({ output: activeRoomListOutputSchema })
-  async getActiveRooms() {
-    return this.roomService.findActive();
+  @Query({
+    input: z
+      .object({
+        buildingId: z.number().int().positive().optional(),
+      })
+      .default({}),
+    output: activeRoomListOutputSchema,
+  })
+  async getActiveRooms(@Input() input: { buildingId?: number } = {}) {
+    return this.roomService.findActive(input);
   }
 
   @Query({

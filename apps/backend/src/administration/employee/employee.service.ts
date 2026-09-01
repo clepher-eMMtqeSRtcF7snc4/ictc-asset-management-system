@@ -140,22 +140,28 @@ export class EmployeeService {
     return { items: mappedItems, total, page, pageSize, totalPages };
   }
 
-  async findActive() {
+  async findActive(input?: { departmentId?: number }) {
+    const conditions: SQL[] = [
+      notInArray(employee.status, [
+        'inactive',
+        'terminated',
+        'retired',
+        'deceased',
+        'suspended',
+      ]),
+    ];
+
+    if (input?.departmentId !== undefined) {
+      conditions.push(eq(employee.departmentId, input.departmentId));
+    }
+
     return this.database
       .select({
         id: employee.id,
         name: sql<string>`concat(${employee.lastName}, ', ', ${employee.firstName})`,
       })
       .from(employee)
-      .where(
-        notInArray(employee.status, [
-          'inactive',
-          'terminated',
-          'retired',
-          'deceased',
-          'suspended',
-        ]),
-      )
+      .where(and(...conditions))
       .orderBy(asc(employee.lastName), asc(employee.firstName));
   }
 

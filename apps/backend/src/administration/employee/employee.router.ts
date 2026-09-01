@@ -1,5 +1,6 @@
 import { EmployeeService } from './employee.service';
 import { Input, Mutation, Query, Router, UseMiddlewares } from 'nestjs-trpc-v2';
+import { z } from 'zod';
 import {
   createEmployeeInputSchema,
   updateEmployeeInputSchema,
@@ -43,8 +44,15 @@ export class EmployeeRouter {
     return this.employeeService.findAll(input);
   }
 
-  @Query({ output: activeEmployeeListOutputSchema })
-  async getActiveEmployees() {
-    return this.employeeService.findActive();
+  @Query({
+    input: z
+      .object({
+        departmentId: z.number().int().positive().optional(),
+      })
+      .default({}),
+    output: activeEmployeeListOutputSchema,
+  })
+  async getActiveEmployees(@Input() input: { departmentId?: number } = {}) {
+    return this.employeeService.findActive(input);
   }
 }

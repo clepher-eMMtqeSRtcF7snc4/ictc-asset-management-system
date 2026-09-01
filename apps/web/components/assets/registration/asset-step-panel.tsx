@@ -111,17 +111,25 @@ export function RegistrationStepPanel({
   );
   const conditionsQuery = trpc.assetConditionRouter.getActiveAssetConditions.useQuery();
   const departmentsQuery = trpc.departmentRouter.getActiveDepartments.useQuery();
-  const employeesQuery = trpc.employeeRouter.getActiveEmployees.useQuery();
+  const selectedDepartmentId = form.watch("departmentId");
+  const employeesQuery = trpc.employeeRouter.getActiveEmployees.useQuery(
+   { departmentId: selectedDepartmentId },
+   { enabled: selectedDepartmentId !== undefined },
+  );
   const buildingsQuery = trpc.buildingRouter.getActiveBuildings.useQuery();
-  const roomsQuery = trpc.roomRouter.getActiveRooms.useQuery();
+  const selectedBuildingId = form.watch("buildingId");
+  const roomsQuery = trpc.roomRouter.getActiveRooms.useQuery(
+   { buildingId: selectedBuildingId },
+   { enabled: selectedBuildingId !== undefined },
+  );
 
   const categories = categoriesQuery.data ?? [];
   const assetTypes = assetTypesQuery.data ?? [];
   const conditions = conditionsQuery.data ?? [];
   const departments = departmentsQuery.data ?? [];
-  const employees = employeesQuery.data ?? [];
+  const employees = selectedDepartmentId === undefined ? [] : (employeesQuery.data ?? []);
   const buildings = buildingsQuery.data ?? [];
-  const rooms = roomsQuery.data ?? [];
+  const rooms = selectedBuildingId === undefined ? [] : (roomsQuery.data ?? []);
 
   const custodianOptions = employees.map((e) => ({
    id: String(e.id),
@@ -144,6 +152,40 @@ export function RegistrationStepPanel({
      form.setValue("assetTypeId", undefined as unknown as number);
    }
   }, [assetTypes, form, selectedCategoryId]);
+
+  useEffect(() => {
+   if (
+     selectedDepartmentId === undefined ||
+     form.getValues("custodianId") === undefined
+   ) {
+     return;
+   }
+
+   const currentCustodianIsValid = employees.some(
+     (employee) => employee.id === form.getValues("custodianId"),
+   );
+
+   if (!currentCustodianIsValid) {
+     form.setValue("custodianId", undefined as unknown as number);
+   }
+  }, [employees, form, selectedDepartmentId]);
+
+  useEffect(() => {
+   if (
+     selectedBuildingId === undefined ||
+     form.getValues("roomId") === undefined
+   ) {
+     return;
+   }
+
+   const currentRoomIsValid = rooms.some(
+     (room) => room.id === form.getValues("roomId"),
+   );
+
+   if (!currentRoomIsValid) {
+     form.setValue("roomId", undefined as unknown as number);
+   }
+  }, [form, rooms, selectedBuildingId]);
 
   const handleFileSelect = (file: File) => {
     if (file && file.type.startsWith("image/")) {
