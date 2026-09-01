@@ -4,6 +4,7 @@ import { z } from 'zod';
 import {
   supplierFiledSchema,
   supplierSchema,
+  activeSupplierListOutputSchema,
   CreateSupplierInput,
   UpdateSupplierInput,
 } from '@repo/trpc/schemas';
@@ -74,5 +75,10 @@ export class SupplierRouter {
     },
   ) {
     return this.supplierService.findAll(input);
+  }
+
+  @Query({ output: activeSupplierListOutputSchema })
+  async getActiveSuppliers() {
+    return this.supplierService.findActive();
   }
 }

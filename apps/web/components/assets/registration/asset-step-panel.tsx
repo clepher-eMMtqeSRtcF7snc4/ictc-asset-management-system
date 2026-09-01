@@ -103,88 +103,94 @@ export function RegistrationStepPanel({
     },
   });
 
-  const categoriesQuery = trpc.assetCategoryRouter.getActiveCategories.useQuery();
+  const categoriesQuery =
+    trpc.assetCategoryRouter.getActiveCategories.useQuery();
   const selectedCategoryId = form.watch("categoryId");
   const assetTypesQuery = trpc.assetTypeRouter.getActiveAssetTypes.useQuery(
     { assetCategoryId: selectedCategoryId },
     { enabled: selectedCategoryId !== undefined },
   );
-  const conditionsQuery = trpc.assetConditionRouter.getActiveAssetConditions.useQuery();
-  const departmentsQuery = trpc.departmentRouter.getActiveDepartments.useQuery();
+  const conditionsQuery =
+    trpc.assetConditionRouter.getActiveAssetConditions.useQuery();
+  const departmentsQuery =
+    trpc.departmentRouter.getActiveDepartments.useQuery();
+  const suppliersQuery = trpc.supplierRouter.getActiveSuppliers.useQuery();
   const selectedDepartmentId = form.watch("departmentId");
   const employeesQuery = trpc.employeeRouter.getActiveEmployees.useQuery(
-   { departmentId: selectedDepartmentId },
-   { enabled: selectedDepartmentId !== undefined },
+    { departmentId: selectedDepartmentId },
+    { enabled: selectedDepartmentId !== undefined },
   );
   const buildingsQuery = trpc.buildingRouter.getActiveBuildings.useQuery();
   const selectedBuildingId = form.watch("buildingId");
   const roomsQuery = trpc.roomRouter.getActiveRooms.useQuery(
-   { buildingId: selectedBuildingId },
-   { enabled: selectedBuildingId !== undefined },
+    { buildingId: selectedBuildingId },
+    { enabled: selectedBuildingId !== undefined },
   );
 
   const categories = categoriesQuery.data ?? [];
   const assetTypes = assetTypesQuery.data ?? [];
   const conditions = conditionsQuery.data ?? [];
   const departments = departmentsQuery.data ?? [];
-  const employees = selectedDepartmentId === undefined ? [] : (employeesQuery.data ?? []);
+  const suppliers = suppliersQuery.data ?? [];
+  const employees =
+    selectedDepartmentId === undefined ? [] : (employeesQuery.data ?? []);
   const buildings = buildingsQuery.data ?? [];
   const rooms = selectedBuildingId === undefined ? [] : (roomsQuery.data ?? []);
 
   const custodianOptions = employees.map((e) => ({
-   id: String(e.id),
-   name: e.name,
+    id: String(e.id),
+    name: e.name,
   }));
 
   useEffect(() => {
-   if (
-     selectedCategoryId === undefined ||
-     form.getValues("assetTypeId") === undefined
-   ) {
-     return;
-   }
+    if (
+      selectedCategoryId === undefined ||
+      form.getValues("assetTypeId") === undefined
+    ) {
+      return;
+    }
 
-   const currentAssetTypeIsValid = assetTypes.some(
-     (assetType) => assetType.id === form.getValues("assetTypeId"),
-   );
+    const currentAssetTypeIsValid = assetTypes.some(
+      (assetType) => assetType.id === form.getValues("assetTypeId"),
+    );
 
-   if (!currentAssetTypeIsValid) {
-     form.setValue("assetTypeId", undefined as unknown as number);
-   }
+    if (!currentAssetTypeIsValid) {
+      form.setValue("assetTypeId", undefined as unknown as number);
+    }
   }, [assetTypes, form, selectedCategoryId]);
 
   useEffect(() => {
-   if (
-     selectedDepartmentId === undefined ||
-     form.getValues("custodianId") === undefined
-   ) {
-     return;
-   }
+    if (
+      selectedDepartmentId === undefined ||
+      form.getValues("custodianId") === undefined
+    ) {
+      return;
+    }
 
-   const currentCustodianIsValid = employees.some(
-     (employee) => employee.id === form.getValues("custodianId"),
-   );
+    const currentCustodianIsValid = employees.some(
+      (employee) => employee.id === form.getValues("custodianId"),
+    );
 
-   if (!currentCustodianIsValid) {
-     form.setValue("custodianId", undefined as unknown as number);
-   }
+    if (!currentCustodianIsValid) {
+      form.setValue("custodianId", undefined as unknown as number);
+    }
   }, [employees, form, selectedDepartmentId]);
 
   useEffect(() => {
-   if (
-     selectedBuildingId === undefined ||
-     form.getValues("roomId") === undefined
-   ) {
-     return;
-   }
+    if (
+      selectedBuildingId === undefined ||
+      form.getValues("roomId") === undefined
+    ) {
+      return;
+    }
 
-   const currentRoomIsValid = rooms.some(
-     (room) => room.id === form.getValues("roomId"),
-   );
+    const currentRoomIsValid = rooms.some(
+      (room) => room.id === form.getValues("roomId"),
+    );
 
-   if (!currentRoomIsValid) {
-     form.setValue("roomId", undefined as unknown as number);
-   }
+    if (!currentRoomIsValid) {
+      form.setValue("roomId", undefined as unknown as number);
+    }
   }, [form, rooms, selectedBuildingId]);
 
   const handleFileSelect = (file: File) => {
@@ -221,7 +227,7 @@ export function RegistrationStepPanel({
   };
 
   const handleFormSubmit = async (data: AssetRegistrationInput) => {
-    console.log(data)
+    console.log(data);
     await onSubmit(data);
   };
 
@@ -474,12 +480,12 @@ export function RegistrationStepPanel({
                     Serial number *
                   </FieldLabel>
                   <Input
-                   {...field}
-                   value={field.value ?? ""}
-                   onChange={(e) => field.onChange(e.target.value)}
-                   id="serial-number"
-                   aria-invalid={fieldState.invalid}
-                   placeholder="Enter serial number"
+                    {...field}
+                    value={field.value ?? ""}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    id="serial-number"
+                    aria-invalid={fieldState.invalid}
+                    placeholder="Enter serial number"
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -497,12 +503,12 @@ export function RegistrationStepPanel({
                     Property number *
                   </FieldLabel>
                   <Input
-                   {...field}
-                   value={field.value ?? ""}
-                   onChange={(e) => field.onChange(e.target.value)}
-                   id="property-number"
-                   aria-invalid={fieldState.invalid}
-                   placeholder="Enter property number"
+                    {...field}
+                    value={field.value ?? ""}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    id="property-number"
+                    aria-invalid={fieldState.invalid}
+                    placeholder="Enter property number"
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -599,17 +605,17 @@ export function RegistrationStepPanel({
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="supplier">Supplier</FieldLabel>
-                  <Input
-                    id="supplier"
-                    type="number"
-                    value={field.value ?? ""}
-                    onChange={(e) =>
-                      field.onChange(
-                        e.target.value ? Number(e.target.value) : undefined,
-                      )
+                  <Combobox
+                    options={suppliers.map((supplier) => ({
+                      id: String(supplier.id),
+                      name: supplier.name,
+                    }))}
+                    value={field.value ? String(field.value) : ""}
+                    onValueChange={(value) =>
+                      field.onChange(value ? Number(value) : undefined)
                     }
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Enter supplier"
+                    placeholder="Select supplier"
+                    fullWidth
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -798,6 +804,7 @@ export function RegistrationStepPanel({
               assetTypes={assetTypes}
               conditions={conditions}
               departments={departments}
+              suppliers={suppliers}
               employees={employees}
               buildings={buildings}
               rooms={rooms}
@@ -832,6 +839,7 @@ function ReviewFields({
   assetTypes,
   conditions,
   departments,
+  suppliers,
   employees,
   buildings,
   rooms,
@@ -841,6 +849,7 @@ function ReviewFields({
   assetTypes: { id: number; name: string }[];
   conditions: { id: number; name: string }[];
   departments: { id: number; name: string }[];
+  suppliers: { id: number; name: string }[];
   employees: { id: number; name: string }[];
   buildings: { id: number; name: string }[];
   rooms: { id: number; name: string }[];
@@ -849,6 +858,12 @@ function ReviewFields({
     if (!id) return "—";
     const emp = employees.find((e) => e.id === id);
     return emp ? emp.name : "—";
+  };
+
+  const getSupplierName = (id?: number) => {
+    if (!id) return "—";
+    const supplier = suppliers.find((s) => s.id === id);
+    return supplier ? supplier.name : "—";
   };
 
   return (
@@ -894,7 +909,7 @@ function ReviewFields({
           buildings.find((b) => b.id === values.buildingId)?.name ?? "—",
         ],
         ["Room", rooms.find((r) => r.id === values.roomId)?.name ?? "—"],
-        ["Supplier", values.supplierId ? String(values.supplierId) : "—"],
+        ["Supplier", getSupplierName(values.supplierId)],
         ["Purchase order", values.purchaseOrderNumber || "—"],
         ["Warranty", values.warranty || "—"],
         ["Supporting docs", values.supportingDocs || "—"],

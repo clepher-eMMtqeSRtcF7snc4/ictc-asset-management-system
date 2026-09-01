@@ -218,4 +218,15 @@ export class SupplierService {
 
     return { items, total, page, pageSize, totalPages };
   }
+
+  async findActive() {
+    return this.database
+      .select({
+        id: supplier.id,
+        name: supplier.name,
+      })
+      .from(supplier)
+      .where(eq(supplier.status, 'active'))
+      .orderBy(asc(supplier.name));
+  }
 }

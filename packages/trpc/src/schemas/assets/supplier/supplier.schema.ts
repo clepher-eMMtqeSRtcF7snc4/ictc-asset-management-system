@@ -51,6 +51,14 @@ export const updateSupplierInputSchema = supplierSchema
 
 export const supplierStatusOutputSchema = z.array(supplierSchema);
 
+export const activeSupplierListOutputSchema = z.array(
+  z.object({
+    id: z.number().int().positive(),
+    name: z.string().trim().min(1, "This field is required").max(255),
+  }),
+);
+
 export type Supplier = z.infer<typeof supplierSchema>;
 export type CreateSupplierInput = z.infer<typeof createSupplierInputSchema>;
 export type UpdateSupplierInput = z.infer<typeof updateSupplierInputSchema>;
+export type ActiveSupplier = z.infer<typeof activeSupplierListOutputSchema>[number];
