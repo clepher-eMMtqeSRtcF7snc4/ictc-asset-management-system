@@ -66,21 +66,28 @@ export function RegistrationStepPanel({
   onSubmit,
   isSubmitting = false,
   onFormValuesChange,
+  onPhotoPreviewChange,
+  onSupportingDocPreviewChange,
 }: {
   step: number;
   onStepChange: (step: number) => void;
   onSubmit: (data: AssetRegistrationInput) => Promise<void> | void;
   isSubmitting?: boolean;
   onFormValuesChange?: (data: AssetRegistrationInput) => void;
+  onPhotoPreviewChange?: (preview: string | null) => void;
+  onSupportingDocPreviewChange?: (preview: string | null) => void;
 }) {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedSupportingDocumentFile, setSelectedSupportingDocumentFile] =
     useState<File | null>(null);
+  const [supportingDocPreview, setSupportingDocPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   const form = useForm<AssetRegistrationInput>({
-    resolver: zodResolver(assetRegistrationSchema) as Resolver<AssetRegistrationInput>,
+    resolver: zodResolver(
+      assetRegistrationSchema,
+    ) as Resolver<AssetRegistrationInput>,
     mode: "onChange",
     defaultValues: {
       assetName: "",
@@ -119,6 +126,8 @@ export function RegistrationStepPanel({
   const watchedAcquisitionCost = form.watch("acquisitionCost");
   const watchedPurchaseOrderNumber = form.watch("purchaseOrderNumber");
   const watchedCustodianId = form.watch("custodianId");
+  const watchedAssetPhoto = form.watch("assetPhoto");
+  const watchedSupportingDocs = form.watch("supportingDocs");
 
   useEffect(() => {
     onFormValuesChangeRef.current?.(form.getValues());
@@ -130,19 +139,26 @@ export function RegistrationStepPanel({
     watchedAcquisitionCost,
     watchedPurchaseOrderNumber,
     watchedCustodianId,
+    watchedAssetPhoto,
+    watchedSupportingDocs,
   ]);
 
-  const categoriesQuery =
-    trpc.assetCategoryRouter.getActiveCategories.useQuery();
+  useEffect(() => {
+    onPhotoPreviewChange?.(photoPreview);
+  }, [photoPreview, onPhotoPreviewChange]);
+
+  useEffect(() => {
+    onSupportingDocPreviewChange?.(supportingDocPreview);
+  }, [supportingDocPreview, onSupportingDocPreviewChange]);
+
+  const categoriesQuery = trpc.assetCategoryRouter.getActiveCategories.useQuery();
   const selectedCategoryId = form.watch("categoryId");
   const assetTypesQuery = trpc.assetTypeRouter.getActiveAssetTypes.useQuery(
     { assetCategoryId: selectedCategoryId },
     { enabled: selectedCategoryId !== undefined },
   );
-  const conditionsQuery =
-    trpc.assetConditionRouter.getActiveAssetConditions.useQuery();
-  const departmentsQuery =
-    trpc.departmentRouter.getActiveDepartments.useQuery();
+  const conditionsQuery = trpc.assetConditionRouter.getActiveAssetConditions.useQuery();
+  const departmentsQuery = trpc.departmentRouter.getActiveDepartments.useQuery();
   const suppliersQuery = trpc.supplierRouter.getActiveSuppliers.useQuery();
   const selectedDepartmentId = form.watch("departmentId");
   const employeesQuery = trpc.employeeRouter.getActiveEmployees.useQuery(
@@ -161,8 +177,7 @@ export function RegistrationStepPanel({
   const conditions = conditionsQuery.data ?? [];
   const departments = departmentsQuery.data ?? [];
   const suppliers = suppliersQuery.data ?? [];
-  const employees =
-    selectedDepartmentId === undefined ? [] : (employeesQuery.data ?? []);
+  const employees = selectedDepartmentId === undefined ? [] : (employeesQuery.data ?? []);
   const buildings = buildingsQuery.data ?? [];
   const rooms = selectedBuildingId === undefined ? [] : (roomsQuery.data ?? []);
 
@@ -173,7 +188,9 @@ export function RegistrationStepPanel({
 
   // Get asset type code for live property number preview
   const selectedAssetTypeId = form.watch("assetTypeId");
-  const selectedAssetType = assetTypes.find((t) => t.id === selectedAssetTypeId);
+  const selectedAssetType = assetTypes.find(
+    (t) => t.id === selectedAssetTypeId,
+  );
   const assetTypeCode = selectedAssetType?.code ?? "—";
 
   useEffect(() => {
@@ -244,6 +261,12 @@ export function RegistrationStepPanel({
     form.setValue("assetPhoto", null);
   };
 
+  const clearSupportingDoc = () => {
+    setSelectedSupportingDocumentFile(null);
+    setSupportingDocPreview(null);
+    form.setValue("supportingDocs", "");
+  };
+
   const uploadFile = async (
     file: File,
     endpoint: "/api/upload/image" | "/api/upload/document",
@@ -266,7 +289,8 @@ export function RegistrationStepPanel({
     }
 
     const payload = await response.json();
-    const uploadedValue = payload?.path ?? payload?.filename ?? payload?.url ?? "";
+    const uploadedValue =
+      payload?.path ?? payload?.filename ?? payload?.url ?? "";
     const normalizedValue = uploadedValue
       .toString()
       .replace(/\\/g, "/")
@@ -341,10 +365,7 @@ export function RegistrationStepPanel({
         {STEP_DESCRIPTIONS[step]}
       </p>
 
-      <form
-        id="asset-registration"
-        className="grid gap-6"
-      >
+      <form id="asset-registration" className="grid gap-6">
         {step === 0 && (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <FieldGroup className="space-y-2">
@@ -606,10 +627,12 @@ export function RegistrationStepPanel({
                 Property number
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Format: YYYY-MM-DD-<span className="font-mono">{assetTypeCode}</span>-NNN
+                Format: YYYY-MM-DD-
+                <span className="font-mono">{assetTypeCode}</span>-NNN
               </p>
               <p className="mt-2 text-sm font-mono text-foreground">
-                Preview: {form.getValues("assetTypeId")
+                Preview:{" "}
+                {form.getValues("assetTypeId")
                   ? `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(new Date().getDate()).padStart(2, "0")}-${assetTypeCode}-001`
                   : "—"}
               </p>
@@ -621,7 +644,8 @@ export function RegistrationStepPanel({
                 QR code
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Automatically generated after save and linked to the asset record.
+                Automatically generated after save and linked to the asset
+                record.
               </p>
             </div>
           </div>
@@ -768,20 +792,30 @@ export function RegistrationStepPanel({
                   <FieldLabel htmlFor="supporting-docs">
                     Supporting documents *
                   </FieldLabel>
-                  <Input
-                    id="supporting-docs"
-                    type="file"
-                    accept=".pdf,application/pdf"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      setSelectedSupportingDocumentFile(file ?? null);
-                      field.onChange(
-                        file && file.type === "application/pdf" ? file.name : "",
-                      );
-                    }}
-                    aria-invalid={fieldState.invalid}
-                    className="file:mr-3 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-2 file:text-sm file:font-medium"
-                  />
+                  
+                    <Input
+                      id="supporting-docs"
+                      type="file"
+                      accept=".pdf,application/pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        setSelectedSupportingDocumentFile(file ?? null);
+                        if (file && file.type === "application/pdf") {
+                          const reader = new FileReader();
+                          reader.onload = (ev) => {
+                            setSupportingDocPreview(ev.target?.result as string);
+                          };
+                          reader.readAsDataURL(file);
+                          field.onChange(file.name);
+                        } else {
+                          setSupportingDocPreview(null);
+                          field.onChange("");
+                        }
+                      }}
+                      aria-invalid={fieldState.invalid}
+                      className="file:mr-3 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-2 file:text-sm file:font-medium"
+                    />
+    
                   {field.value ? (
                     <p className="mt-2 text-xs text-muted-foreground">
                       Selected file: {field.value}

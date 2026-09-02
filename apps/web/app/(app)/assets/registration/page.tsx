@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, CircleHelp, Printer } from "lucide-react";
+import { CheckCircle2, CircleHelp, Printer, X } from "lucide-react";
 import { useEffect, useState, useTransition, useCallback } from "react";
 import { flushSync } from "react-dom";
 import { toast } from "sonner";
@@ -13,6 +13,8 @@ import { AssetRegistrationStepper } from "@/components/assets/registration/asset
 import { RegistrationStepPanel } from "@/components/assets/registration/asset-step-panel";
 import { trpc } from "@/lib/trpc/client";
 import type { AssetRegistrationInput } from "@repo/trpc/schemas";
+import { getImageUrl } from "@/lib/image";
+import Image from "next/image";
 
 type StickerData = {
   assetTag: string;
@@ -24,6 +26,8 @@ type StickerData = {
   acquisitionDateCost: string;
   referencePo: string;
   personAccountable: string;
+  assetPhotoUrl?: string;
+  supportingDocsUrl?: string;
 };
 
 const EMPTY_STICKER: StickerData = {
@@ -36,6 +40,8 @@ const EMPTY_STICKER: StickerData = {
   acquisitionDateCost: "—",
   referencePo: "—",
   personAccountable: "—",
+  assetPhotoUrl: "",
+  supportingDocsUrl: "",
 };
 
 export default function AssetRegistrationPage() {
@@ -46,6 +52,8 @@ export default function AssetRegistrationPage() {
   const [employeeNameById, setEmployeeNameById] = useState<Record<number, string>>({});
   const activeEmployeesQuery = trpc.employeeRouter.getActiveEmployees.useQuery();
   const [stickerData, setStickerData] = useState<StickerData>(EMPTY_STICKER);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [supportingDocPreview, setSupportingDocPreview] = useState<string | null>(null);  
 
   useEffect(() => {
     const mapping = Object.fromEntries(
@@ -80,6 +88,8 @@ export default function AssetRegistrationPage() {
         acquisitionDateCost,
         referencePo: data.purchaseOrderNumber || "—",
         personAccountable,
+        assetPhotoUrl: data.assetPhoto || "",
+        supportingDocsUrl: data.supportingDocs || "",
         ...overrides,
       };
     },
@@ -98,7 +108,6 @@ export default function AssetRegistrationPage() {
   function submit(data: AssetRegistrationInput) {
     startTransition(async () => {
       const result = await registerAsset(data);
-      console.log("Registration result:", result);
 
       if (!result.ok) {
         flushSync(() => {
@@ -129,7 +138,6 @@ export default function AssetRegistrationPage() {
         message: "Asset registered successfully.",
       };
     } catch (error: unknown) {
-      console.log("Registration error:", error);
       const message =
         error instanceof Error
           ? error.message
@@ -169,6 +177,8 @@ export default function AssetRegistrationPage() {
                   onSubmit={submit}
                   isSubmitting={pending}
                   onFormValuesChange={updateStickerFromForm}
+                  onPhotoPreviewChange={setPhotoPreview}
+                  onSupportingDocPreviewChange={setSupportingDocPreview}
                 />
               </div>
             </section>
@@ -176,7 +186,7 @@ export default function AssetRegistrationPage() {
 
           <aside className="space-y-4 print:hidden">
             <Card className="shadow-sm">
-              <CardContent className="p-4">
+              <CardContent>
                 <div className="mb-3 flex items-center justify-between gap-2">
                   <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide">
                     <span>Sticker preview</span>
@@ -206,6 +216,27 @@ export default function AssetRegistrationPage() {
                   personAccountable={stickerData.personAccountable}
                 />
               </CardContent>
+            </Card>
+
+            <Card className="shadow-sm">
+                <CardContent>
+                  <div className="">
+                    <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide mb-2">
+                      <span>Supporting Documents</span>
+                    </p>
+                     {supportingDocPreview ? (
+                      <iframe
+                        src={supportingDocPreview}
+                        className="h-[300px] w-full rounded-md border"
+                        title="Supporting Document"
+                      />
+                    ) : (
+                      <div className="mt-2 flex h-[200px] w-full items-center justify-center rounded-md border border-dashed bg-muted/30">
+                        <p className="text-xs text-muted-foreground">No document uploaded</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
             </Card>
           </aside>
         </div>
