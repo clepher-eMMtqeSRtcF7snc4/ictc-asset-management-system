@@ -74,7 +74,7 @@ export class AssetTypeService {
       throw new Error(`Asset type with id ${input.id} not found`);
     }
 
-    return result[0];
+    return (result as unknown as { id: number }[])[0];
   }
 
   async delete(id: number) {
@@ -111,6 +111,7 @@ export class AssetTypeService {
       .select({
         id: assetType.id,
         name: assetType.name,
+        code: assetType.code,
       })
       .from(assetType)
       .where(and(...conditions))

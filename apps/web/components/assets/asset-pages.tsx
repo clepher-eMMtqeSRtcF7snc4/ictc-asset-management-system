@@ -403,7 +403,7 @@ export function AssetDetailPage({ assetId }: { assetId: string }) {
               <InfoRow label="Brand" value="Dell" />
               <InfoRow label="Property Number" value="MSU-ICT-2026-000123" />
               <InfoRow label="Model" value="Latitude 5440" />
-              <InfoRow label="QR Code / Asset Link" value="https://ict.msua.edu.ph/assets/123" />
+               <InfoRow label="QR Code / Asset Link" value="https://ict.msua.edu.ph/assets/DL5440-8F72K91" />
               <div className="md:col-span-2">
                 <InfoRow
                   label="Description"

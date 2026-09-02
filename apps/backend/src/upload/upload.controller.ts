@@ -18,7 +18,10 @@ const buildStoredFilename = (originalName: string, prefix: string) => {
   const safeName = originalName.replace(/\s+/g, '-');
   const extension = extname(safeName);
 
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}${extension}`.replace(/\\/g, '/');
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}${extension}`.replace(
+    /\\/g,
+    '/',
+  );
 };
 
 @Controller('upload')
@@ -36,7 +39,10 @@ export class UploadController {
       }),
       fileFilter: (_, file, callback) => {
         if (!file.originalname.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-          return callback(new BadRequestException('Only image files are allowed.'), false);
+          return callback(
+            new BadRequestException('Only image files are allowed.'),
+            false,
+          );
         }
         callback(null, true);
       },
@@ -82,9 +88,7 @@ export class UploadController {
       },
     }),
   )
-  async uploadDocument(
-    @UploadedFile() file: Express.Multer.File,
-  ) {
+  async uploadDocument(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException('No document provided');
     }

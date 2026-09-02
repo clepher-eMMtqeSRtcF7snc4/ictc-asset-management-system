@@ -976,6 +976,7 @@ const appRouter = t.router({
         z.object({
           id: z.number().int().positive(),
           name: z.string().trim().min(1, "This field is required").max(150),
+          code: z.string().trim().min(1, "This field is required").max(50),
         }),
       )).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),

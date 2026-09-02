@@ -3,6 +3,7 @@ import { DATABASE_CONNECTION } from '../../database/database-connection';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres/driver';
 import { schema } from '../../database/database.module';
 import { asset } from './schemas/schema';
+import { assetType } from '../settings/asset-type/schemas/schema';
 import { eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { assetRegistrationSchema } from '@repo/trpc/schemas';
@@ -21,17 +22,13 @@ export class RegistrationService {
     private readonly database: NodePgDatabase<typeof schema>,
   ) {}
 
-  private formatPropertyNumber(assetId: number) {
-    const year = new Date().getFullYear();
-    return `MSU-ICT-${year}-${String(assetId).padStart(6, '0')}`;
-  }
-
   private async getNextAssetId() {
     const result = await this.database.execute(
       sql`SELECT nextval(pg_get_serial_sequence('asset', 'id')) AS next_id`,
     );
 
-    const row = result.rows[0] as { next_id?: number | string | null } | undefined;
+    const row = result.rows[0] as
+      { next_id?: number | string | null } | undefined;
     const value = Number(row?.next_id ?? 0);
 
     if (!Number.isFinite(value) || value <= 0) {
@@ -39,6 +36,35 @@ export class RegistrationService {
     }
 
     return value;
+  }
+
+  private async countAssetsByCategoryAndDate(
+    categoryCode: string,
+    date: Date,
+  ): Promise<number> {
+    const formattedDate = date.toISOString().split('T')[0];
+    const result = await this.database.execute(sql`
+      SELECT COUNT(*) as count
+      FROM asset a
+      JOIN asset_types at ON a.asset_type_id = at.id
+      WHERE at.code = ${categoryCode}
+      AND a.created_at::date = ${formattedDate}
+    `);
+
+    const count = result.rows[0]?.count;
+    return typeof count === 'number' ? count : Number(count ?? 0);
+  }
+
+  private formatPropertyNumber(
+    assetTypeCode: string,
+    date: Date,
+    existingCount: number,
+  ): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const count = existingCount + 1;
+    return `${year}-${month}-${day}-${assetTypeCode}-${String(count).padStart(3, '0')}`;
   }
 
   async create(
@@ -49,10 +75,45 @@ export class RegistrationService {
       throw new Error('Authenticated user is required to register an asset.');
     }
 
+    const existingAsset = await this.database
+      .select()
+      .from(asset)
+      .where(eq(asset.serialNumber, input.serialNumber))
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    if (existingAsset) {
+      throw new Error(
+        `An asset with serial number "${input.serialNumber}" already exists.`,
+      );
+    }
+
     const assetId = await this.getNextAssetId();
-    const propertyNumber = this.formatPropertyNumber(assetId);
     const uiBaseUrl = process.env.UI_URL ?? 'http://localhost:3000';
-    const qrCode = `${uiBaseUrl.replace(/\/$/, '')}/assets/${assetId}`;
+    const qrCode = `${uiBaseUrl.replace(/\/$/, '')}/assets/${input.serialNumber}`;
+
+    const selectedAssetType = await this.database
+      .select()
+      .from(assetType)
+      .where(eq(assetType.id, input.assetTypeId))
+      .limit(1)
+      .then((rows) => rows[0]);
+
+    if (!selectedAssetType) {
+      throw new Error('Asset type not found for the selected category.');
+    }
+
+    const assetTypeCode = selectedAssetType.code;
+    const registrationDate = new Date();
+    const existingCount = await this.countAssetsByCategoryAndDate(
+      assetTypeCode,
+      registrationDate,
+    );
+    const propertyNumber = this.formatPropertyNumber(
+      assetTypeCode,
+      registrationDate,
+      existingCount,
+    );
 
     const created = await this.database
       .insert(asset)

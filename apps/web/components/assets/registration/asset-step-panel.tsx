@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm, type Resolver } from "react-hook-form";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { trpc } from "@/lib/trpc/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -65,11 +65,13 @@ export function RegistrationStepPanel({
   onStepChange,
   onSubmit,
   isSubmitting = false,
+  onFormValuesChange,
 }: {
   step: number;
   onStepChange: (step: number) => void;
   onSubmit: (data: AssetRegistrationInput) => Promise<void> | void;
   isSubmitting?: boolean;
+  onFormValuesChange?: (data: AssetRegistrationInput) => void;
 }) {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -105,6 +107,30 @@ export function RegistrationStepPanel({
       roomId: undefined,
     },
   });
+
+  // Watch form values and notify parent for live sticker preview
+  const onFormValuesChangeRef = useRef(onFormValuesChange);
+  onFormValuesChangeRef.current = onFormValuesChange;
+
+  const watchedAssetName = form.watch("assetName");
+  const watchedModel = form.watch("model");
+  const watchedSerialNumber = form.watch("serialNumber");
+  const watchedAcquisitionDate = form.watch("acquisitionDate");
+  const watchedAcquisitionCost = form.watch("acquisitionCost");
+  const watchedPurchaseOrderNumber = form.watch("purchaseOrderNumber");
+  const watchedCustodianId = form.watch("custodianId");
+
+  useEffect(() => {
+    onFormValuesChangeRef.current?.(form.getValues());
+  }, [
+    watchedAssetName,
+    watchedModel,
+    watchedSerialNumber,
+    watchedAcquisitionDate,
+    watchedAcquisitionCost,
+    watchedPurchaseOrderNumber,
+    watchedCustodianId,
+  ]);
 
   const categoriesQuery =
     trpc.assetCategoryRouter.getActiveCategories.useQuery();
@@ -144,6 +170,11 @@ export function RegistrationStepPanel({
     id: String(e.id),
     name: e.name,
   }));
+
+  // Get asset type code for live property number preview
+  const selectedAssetTypeId = form.watch("assetTypeId");
+  const selectedAssetType = assetTypes.find((t) => t.id === selectedAssetTypeId);
+  const assetTypeCode = selectedAssetType?.code ?? "—";
 
   useEffect(() => {
     if (
@@ -312,7 +343,6 @@ export function RegistrationStepPanel({
 
       <form
         id="asset-registration"
-        onSubmit={form.handleSubmit(handleSubmitWithUpload)}
         className="grid gap-6"
       >
         {step === 0 && (
@@ -576,7 +606,15 @@ export function RegistrationStepPanel({
                 Property number
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Automatically generated after the asset is saved.
+                Format: YYYY-MM-DD-<span className="font-mono">{assetTypeCode}</span>-NNN
+              </p>
+              <p className="mt-2 text-sm font-mono text-foreground">
+                Preview: {form.getValues("assetTypeId")
+                  ? `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(new Date().getDate()).padStart(2, "0")}-${assetTypeCode}-001`
+                  : "—"}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Final number assigned after save.
               </p>
 
               <p className="mt-4 text-sm font-medium text-foreground">
@@ -861,7 +899,6 @@ export function RegistrationStepPanel({
 
         {step === 4 && (
           <div className="md:col-span-2">
-            {/* <p className="mb-3 text-sm font-semibold">Review & Confirm</p> */}
             <ReviewFields
               values={form.getValues()}
               categories={categories}
@@ -882,12 +919,16 @@ export function RegistrationStepPanel({
           <ArrowLeft className="mr-2 size-4" />
           {step === 0 ? "Cancel" : "Back"}
         </Button>
-        {step <= 4 ? (
+        {step < 4 ? (
           <Button type="button" onClick={validateAndNext}>
             Next <ArrowRight className="ml-2 size-4" />
           </Button>
         ) : (
-          <Button type="submit" form="asset-registration" disabled={isSubmitting}>
+          <Button
+            type="button"
+            disabled={isSubmitting}
+            onClick={() => form.handleSubmit(handleSubmitWithUpload)()}
+          >
             <Save className="mr-2 size-4" />
             {isSubmitting ? "Saving…" : "Save asset"}
           </Button>
