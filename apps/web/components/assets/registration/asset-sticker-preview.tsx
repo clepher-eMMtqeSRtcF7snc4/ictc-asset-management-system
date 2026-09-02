@@ -51,7 +51,7 @@ export function AssetStickerPreview({
               <p className="text-[7px] font-bold uppercase">
                 9023, Naawan, Misamis Oriental
               </p>
-              <p className="mt-2 border-y border-black py-1 text-center text-[11px] font-bold">
+              <p className="mt-2 py-1 text-center text-[11px] font-bold">
                 PROPERTY INVENTORY STICKER
               </p>
             </div>
@@ -95,7 +95,6 @@ export function AssetStickerPreview({
           <div className="mt-3 text-[9px] font-medium">
             <div className="flex items-center gap-2">
               <span>Signature of Inventory Committee:</span>
-              <span className="inline-block h-0.5 flex-1 border-b border-black" />
             </div>
           </div>
         </div>

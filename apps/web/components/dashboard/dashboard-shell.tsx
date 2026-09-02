@@ -14,9 +14,9 @@ type DashboardShellProps = {
 export function DashboardShell({ children, header }: DashboardShellProps) {
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar className="print:hidden" />
       <SidebarInset>
-        {header}
+        <div className="print:hidden">{header}</div>
         <main className="flex-1 overflow-auto">{children}</main>
       </SidebarInset>
     </SidebarProvider>
