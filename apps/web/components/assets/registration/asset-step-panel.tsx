@@ -234,8 +234,19 @@ export function RegistrationStepPanel({
       );
     }
 
-    const { filename } = await response.json();
-    return filename as string;
+    const payload = await response.json();
+    const uploadedValue = payload?.path ?? payload?.filename ?? payload?.url ?? "";
+    const normalizedValue = uploadedValue
+      .toString()
+      .replace(/\\/g, "/")
+      .replace(/^\/+/, "")
+      .replace(/^uploads\//i, "");
+
+    if (!normalizedValue || !/^(images|documents)\//i.test(normalizedValue)) {
+      throw new Error("Uploaded file path was not returned by the server.");
+    }
+
+    return normalizedValue as string;
   };
 
   const validateAndNext = async () => {
@@ -871,7 +882,7 @@ export function RegistrationStepPanel({
           <ArrowLeft className="mr-2 size-4" />
           {step === 0 ? "Cancel" : "Back"}
         </Button>
-        {step < 4 ? (
+        {step <= 4 ? (
           <Button type="button" onClick={validateAndNext}>
             Next <ArrowRight className="ml-2 size-4" />
           </Button>

@@ -14,16 +14,45 @@ import {
   FileTypeValidationPipe,
 } from './file-validation.pipe';
 
+const buildStoredFilename = (originalName: string, prefix: string) => {
+  const safeName = originalName.replace(/\s+/g, '-');
+  const extension = extname(safeName);
+
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}${extension}`.replace(/\\/g, '/');
+};
+
 @Controller('upload')
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
 
   @Post('image')
-  @UseInterceptors(FileInterceptor('image'))
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './uploads/images',
+        filename: (_, file, callback) => {
+          callback(null, buildStoredFilename(file.originalname, 'image'));
+        },
+      }),
+      fileFilter: (_, file, callback) => {
+        if (!file.originalname.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+          return callback(new BadRequestException('Only image files are allowed.'), false);
+        }
+        callback(null, true);
+      },
+      limits: {
+        fileSize: 5 * 1024 * 1024,
+      },
+    }),
+  )
   async uploadFile(
     @UploadedFile(new FileSizeValidationPipe(), new FileTypeValidationPipe())
     file: Express.Multer.File,
   ) {
+    if (!file) {
+      throw new BadRequestException('No image provided');
+    }
+
     return this.uploadService.uploadImage(file);
   }
 
@@ -33,14 +62,18 @@ export class UploadController {
       storage: diskStorage({
         destination: './uploads/documents',
         filename: (_, file, callback) => {
-          const safeName = file.originalname.replace(/\s+/g, '-');
-          const extension = extname(safeName);
-          callback(null, `${Date.now()}-${Math.random().toString(36).slice(2)}${extension}`);
+          callback(null, buildStoredFilename(file.originalname, 'document'));
         },
       }),
       fileFilter: (_, file, callback) => {
-        if (file.mimetype !== 'application/pdf' && !file.originalname.toLowerCase().endsWith('.pdf')) {
-          return callback(new BadRequestException('Only PDF files are allowed.'), false);
+        if (
+          file.mimetype !== 'application/pdf' &&
+          !file.originalname.toLowerCase().endsWith('.pdf')
+        ) {
+          return callback(
+            new BadRequestException('Only PDF files are allowed.'),
+            false,
+          );
         }
         callback(null, true);
       },
@@ -56,7 +89,10 @@ export class UploadController {
       throw new BadRequestException('No document provided');
     }
 
-    if (file.mimetype !== 'application/pdf' && !file.originalname.toLowerCase().endsWith('.pdf')) {
+    if (
+      file.mimetype !== 'application/pdf' &&
+      !file.originalname.toLowerCase().endsWith('.pdf')
+    ) {
       throw new BadRequestException('Only PDF files are allowed.');
     }
 
