@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, CircleHelp, Printer, X } from "lucide-react";
+import { CheckCircle2, CircleHelp, Printer } from "lucide-react";
 import { useEffect, useState, useTransition, useCallback } from "react";
 import { flushSync } from "react-dom";
 import { toast } from "sonner";
@@ -14,7 +14,6 @@ import { RegistrationStepPanel } from "@/components/assets/registration/asset-st
 import { trpc } from "@/lib/trpc/client";
 import type { AssetRegistrationInput } from "@repo/trpc/schemas";
 import { getImageUrl } from "@/lib/image";
-import Image from "next/image";
 
 type StickerData = {
   assetTag: string;
@@ -52,8 +51,7 @@ export default function AssetRegistrationPage() {
   const [employeeNameById, setEmployeeNameById] = useState<Record<number, string>>({});
   const activeEmployeesQuery = trpc.employeeRouter.getActiveEmployees.useQuery();
   const [stickerData, setStickerData] = useState<StickerData>(EMPTY_STICKER);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [supportingDocPreview, setSupportingDocPreview] = useState<string | null>(null);  
+  const [supportingDocPreview, setSupportingDocPreview] = useState<string | null>(null);
 
   useEffect(() => {
     const mapping = Object.fromEntries(
@@ -177,7 +175,6 @@ export default function AssetRegistrationPage() {
                   onSubmit={submit}
                   isSubmitting={pending}
                   onFormValuesChange={updateStickerFromForm}
-                  onPhotoPreviewChange={setPhotoPreview}
                   onSupportingDocPreviewChange={setSupportingDocPreview}
                 />
               </div>
@@ -186,7 +183,7 @@ export default function AssetRegistrationPage() {
 
           <aside className="space-y-4 print:hidden">
             <Card className="shadow-sm">
-              <CardContent>
+              <CardContent className="p-4">
                 <div className="mb-3 flex items-center justify-between gap-2">
                   <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide">
                     <span>Sticker preview</span>
@@ -219,24 +216,51 @@ export default function AssetRegistrationPage() {
             </Card>
 
             <Card className="shadow-sm">
-                <CardContent>
-                  <div className="">
-                    <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide mb-2">
-                      <span>Supporting Documents</span>
-                    </p>
-                     {supportingDocPreview ? (
+              <CardContent className="p-4">
+                <div>
+                  <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide">
+                    <span>Supporting Documents</span>
+                  </p>
+                  {supportingDocPreview ? (
+                    <div className="mt-2">
                       <iframe
                         src={supportingDocPreview}
-                        className="h-[300px] w-full rounded-md border"
+                        className="h-[200px] w-full rounded-md border"
                         title="Supporting Document"
                       />
-                    ) : (
-                      <div className="mt-2 flex h-[200px] w-full items-center justify-center rounded-md border border-dashed bg-muted/30">
-                        <p className="text-xs text-muted-foreground">No document uploaded</p>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="mt-1 text-xs"
+                        onClick={() => setSupportingDocPreview(null)}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ) : stickerData.supportingDocsUrl ? (
+                    <div className="mt-2">
+                      <iframe
+                        src={getImageUrl(stickerData.supportingDocsUrl)}
+                        className="h-[200px] w-full rounded-md border"
+                        title="Supporting Document"
+                      />
+                      <a
+                        href={getImageUrl(stickerData.supportingDocsUrl)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-2 inline-block text-xs text-primary hover:underline"
+                      >
+                        Open document in new tab
+                      </a>
+                    </div>
+                  ) : (
+                    <div className="mt-2 flex h-[200px] w-full items-center justify-center rounded-md border border-dashed bg-muted/30">
+                      <p className="text-xs text-muted-foreground">No document uploaded</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
             </Card>
           </aside>
         </div>

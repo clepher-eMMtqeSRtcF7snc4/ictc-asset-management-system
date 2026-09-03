@@ -4,6 +4,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres/driver';
 import { schema } from '../../database/database.module';
 import { asset } from './schemas/schema';
 import { assetType } from '../settings/asset-type/schemas/schema';
+import { department } from '../../administration/department/schemas/schema';
 import { eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { assetRegistrationSchema } from '@repo/trpc/schemas';
@@ -38,16 +39,16 @@ export class RegistrationService {
     return value;
   }
 
-  private async countAssetsByCategoryAndDate(
-    categoryCode: string,
+  private async countAssetsByDepartmentAndDate(
+    departmentCode: string,
     date: Date,
   ): Promise<number> {
     const formattedDate = date.toISOString().split('T')[0];
     const result = await this.database.execute(sql`
       SELECT COUNT(*) as count
       FROM asset a
-      JOIN asset_types at ON a.asset_type_id = at.id
-      WHERE at.code = ${categoryCode}
+      JOIN department d ON a.department_id = d.id
+      WHERE d.code = ${departmentCode}
       AND a.created_at::date = ${formattedDate}
     `);
 
@@ -90,30 +91,30 @@ export class RegistrationService {
 
     const assetId = await this.getNextAssetId();
     const uiBaseUrl = process.env.UI_URL ?? 'http://localhost:3000';
-    const qrCode = `${uiBaseUrl.replace(/\/$/, '')}/assets/${input.serialNumber}`;
 
-    const selectedAssetType = await this.database
+    const selectedDepartment = await this.database
       .select()
-      .from(assetType)
-      .where(eq(assetType.id, input.assetTypeId))
+      .from(department)
+      .where(eq(department.id, input.departmentId))
       .limit(1)
       .then((rows) => rows[0]);
 
-    if (!selectedAssetType) {
-      throw new Error('Asset type not found for the selected category.');
+    if (!selectedDepartment) {
+      throw new Error('Department not found for the selected asset.');
     }
 
-    const assetTypeCode = selectedAssetType.code;
+    const departmentCode = selectedDepartment.code;
     const registrationDate = new Date();
-    const existingCount = await this.countAssetsByCategoryAndDate(
-      assetTypeCode,
+    const existingCount = await this.countAssetsByDepartmentAndDate(
+      departmentCode,
       registrationDate,
     );
     const propertyNumber = this.formatPropertyNumber(
-      assetTypeCode,
+      departmentCode,
       registrationDate,
       existingCount,
     );
+    const qrCode = `${uiBaseUrl.replace(/\/$/, '')}/assets/${propertyNumber}`;
 
     const created = await this.database
       .insert(asset)

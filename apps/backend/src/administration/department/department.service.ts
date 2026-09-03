@@ -86,6 +86,7 @@ export class DepartmentService {
       .select({
         id: department.id,
         name: department.name,
+        code: department.code,
       })
       .from(department)
       .where(eq(department.status, 'active'))

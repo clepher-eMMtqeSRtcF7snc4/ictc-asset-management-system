@@ -37,6 +37,8 @@ const STEP_FIELDS: Record<number, (keyof AssetRegistrationInput)[]> = {
   3: ["departmentId", "custodianId", "buildingId", "roomId"],
 };
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
 const STEP_TITLES = [
   "Basic Information",
   "Identification",
@@ -66,7 +68,6 @@ export function RegistrationStepPanel({
   onSubmit,
   isSubmitting = false,
   onFormValuesChange,
-  onPhotoPreviewChange,
   onSupportingDocPreviewChange,
 }: {
   step: number;
@@ -74,7 +75,6 @@ export function RegistrationStepPanel({
   onSubmit: (data: AssetRegistrationInput) => Promise<void> | void;
   isSubmitting?: boolean;
   onFormValuesChange?: (data: AssetRegistrationInput) => void;
-  onPhotoPreviewChange?: (preview: string | null) => void;
   onSupportingDocPreviewChange?: (preview: string | null) => void;
 }) {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -144,10 +144,6 @@ export function RegistrationStepPanel({
   ]);
 
   useEffect(() => {
-    onPhotoPreviewChange?.(photoPreview);
-  }, [photoPreview, onPhotoPreviewChange]);
-
-  useEffect(() => {
     onSupportingDocPreviewChange?.(supportingDocPreview);
   }, [supportingDocPreview, onSupportingDocPreviewChange]);
 
@@ -186,12 +182,10 @@ export function RegistrationStepPanel({
     name: e.name,
   }));
 
-  // Get asset type code for live property number preview
-  const selectedAssetTypeId = form.watch("assetTypeId");
-  const selectedAssetType = assetTypes.find(
-    (t) => t.id === selectedAssetTypeId,
+  const selectedDepartment = departments.find(
+    (d) => d.id === selectedDepartmentId,
   );
-  const assetTypeCode = selectedAssetType?.code ?? "—";
+  const departmentCode = selectedDepartment?.code ?? "—";
 
   useEffect(() => {
     if (
@@ -244,28 +238,69 @@ export function RegistrationStepPanel({
     }
   }, [form, rooms, selectedBuildingId]);
 
-  const handleFileSelect = (file: File) => {
-    if (file && file.type.startsWith("image/")) {
-      setSelectedFile(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setPhotoPreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+const validateSupportingDocument = (file: File | null) => {
+    if (!file) {
+      form.setError("supportingDocs", {
+        type: "manual",
+        message: "Supporting document is required.",
+      });
+      return false;
     }
+
+    if (file.type !== "application/pdf") {
+      form.setError("supportingDocs", {
+        type: "manual",
+        message: "Only PDF files are allowed.",
+      });
+      return false;
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      form.setError("supportingDocs", {
+        type: "manual",
+        message: `File size exceeds 5MB. Selected file is ${(file.size / (1024 * 1024)).toFixed(2)}MB.`,
+      });
+      return false;
+    }
+
+    form.clearErrors("supportingDocs");
+    return true;
   };
 
-  const clearSelection = () => {
-    setSelectedFile(null);
-    setPhotoPreview(null);
-    form.setValue("assetPhoto", null);
-  };
+  const handleFileSelect = (file: File) => {
+     if (file && file.type.startsWith("image/")) {
+       if (file.size > MAX_FILE_SIZE) {
+         form.setError("assetPhoto", {
+           type: "manual",
+           message: `File size exceeds 5MB. Selected file is ${(file.size / (1024 * 1024)).toFixed(2)}MB.`,
+         });
+         setPhotoPreview(null);
+         setSelectedFile(null);
+         form.setValue("assetPhoto", null);
+         return;
+       }
+       form.clearErrors("assetPhoto");
+       setSelectedFile(file);
+       const reader = new FileReader();
+       reader.onload = (e) => {
+         setPhotoPreview(e.target?.result as string);
+       };
+       reader.readAsDataURL(file);
+     }
+   };
 
-  const clearSupportingDoc = () => {
-    setSelectedSupportingDocumentFile(null);
-    setSupportingDocPreview(null);
-    form.setValue("supportingDocs", "");
-  };
+const clearSelection = () => {
+     setSelectedFile(null);
+     setPhotoPreview(null);
+     form.setValue("assetPhoto", null);
+     clearSupportingDoc();
+   };
+
+   const clearSupportingDoc = () => {
+     setSelectedSupportingDocumentFile(null);
+     setSupportingDocPreview(null);
+     form.setValue("supportingDocs", "");
+   };
 
   const uploadFile = async (
     file: File,
@@ -304,13 +339,31 @@ export function RegistrationStepPanel({
     return normalizedValue as string;
   };
 
-  const validateAndNext = async () => {
-    const fields = STEP_FIELDS[step] ?? [];
-    const result = await form.trigger(fields);
-    if (result) {
-      onStepChange(Math.min(step + 1, 4));
-    }
-  };
+const validateAndNext = async () => {
+     if (step === 2) {
+       const isSupportingDocumentValid =
+         validateSupportingDocument(selectedSupportingDocumentFile);
+       if (!isSupportingDocumentValid) {
+         return;
+       }
+     }
+
+     if (step === 0 && selectedFile && selectedFile.size > MAX_FILE_SIZE) {
+       form.setError("assetPhoto", {
+         type: "manual",
+         message: `File size exceeds 5MB. Selected file is ${(selectedFile.size / (1024 * 1024)).toFixed(2)}MB.`,
+       });
+       return;
+     }
+
+     const fields = STEP_FIELDS[step] ?? [];
+     const result = await form.trigger(fields);
+     if (!result) {
+       return;
+     }
+
+     onStepChange(Math.min(step + 1, 4));
+   };
 
   const handleBack = () => {
     if (step === 0) {
@@ -557,8 +610,8 @@ export function RegistrationStepPanel({
               <Controller
                 name="assetPhoto"
                 control={form.control}
-                render={() => (
-                  <Field>
+                render={({ fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
                     <FieldLabel>Asset Photo</FieldLabel>
                     <div className="mt-2 flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 text-center">
                       {photoPreview ? (
@@ -590,6 +643,9 @@ export function RegistrationStepPanel({
                         </p>
                       )}
                     </div>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
                   </Field>
                 )}
               />
@@ -628,12 +684,12 @@ export function RegistrationStepPanel({
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
                 Format: YYYY-MM-DD-
-                <span className="font-mono">{assetTypeCode}</span>-NNN
+                <span className="font-mono">{departmentCode}</span>-NNN
               </p>
               <p className="mt-2 text-sm font-mono text-foreground">
                 Preview:{" "}
-                {form.getValues("assetTypeId")
-                  ? `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(new Date().getDate()).padStart(2, "0")}-${assetTypeCode}-001`
+                {form.getValues("departmentId")
+                  ? `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(new Date().getDate()).padStart(2, "0")}-${departmentCode}-001`
                   : "—"}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
@@ -793,30 +849,44 @@ export function RegistrationStepPanel({
                     Supporting documents *
                   </FieldLabel>
                   
-                    <Input
+<Input
                       id="supporting-docs"
                       type="file"
                       accept=".pdf,application/pdf"
                       onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        setSelectedSupportingDocumentFile(file ?? null);
-                        if (file && file.type === "application/pdf") {
-                          const reader = new FileReader();
-                          reader.onload = (ev) => {
-                            setSupportingDocPreview(ev.target?.result as string);
-                          };
-                          reader.readAsDataURL(file);
-                          field.onChange(file.name);
-                        } else {
-                          setSupportingDocPreview(null);
-                          field.onChange("");
+                        const file = e.target.files?.[0] ?? null;
+
+                        setSelectedSupportingDocumentFile(null);
+                        setSupportingDocPreview(null);
+                        field.onChange("");
+
+                        if (!file) {
+                          form.clearErrors("supportingDocs");
+                          return;
                         }
+
+                        if (!validateSupportingDocument(file)) {
+                          e.target.value = "";
+                          return;
+                        }
+
+                        setSelectedSupportingDocumentFile(file);
+                        field.onChange(file.name);
+
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                          setSupportingDocPreview(ev.target?.result as string);
+                        };
+                        reader.readAsDataURL(file);
                       }}
                       aria-invalid={fieldState.invalid}
                       className="file:mr-3 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-2 file:text-sm file:font-medium"
                     />
-    
-                  {field.value ? (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      PDF files must not exceed 5MB.
+                    </p>
+
+                   {field.value ? (
                     <p className="mt-2 text-xs text-muted-foreground">
                       Selected file: {field.value}
                     </p>
