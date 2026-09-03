@@ -1,12 +1,20 @@
 import { relations, sql } from 'drizzle-orm';
 import {
+  boolean,
+  integer,
+  index,
   jsonb,
+  pgEnum,
   pgTable,
+  primaryKey,
   text,
   timestamp,
-  boolean,
-  index,
+  uniqueIndex,
 } from 'drizzle-orm/pg-core';
+import { employee } from '../administration/employee/schemas/schema';
+
+export const roleStatus = pgEnum('role_status', ['active', 'inactive']);
+export const userStatus = pgEnum('user_status', ['active', 'inactive']);
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
@@ -14,12 +22,14 @@ export const user = pgTable('user', {
   email: text('email').notNull().unique(),
   emailVerified: boolean('email_verified').default(false).notNull(),
   image: text('image'),
-  bio: text('bio'),
-  website: text('website'),
+  employeeId: integer('employee_id').references(() => employee.id, {
+    onDelete: 'set null',
+  }),
+  status: userStatus('status').notNull().default('active'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()
-    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .$onUpdate(() => new Date())
     .notNull(),
 });
 
@@ -31,7 +41,8 @@ export const session = pgTable(
     token: text('token').notNull().unique(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at')
-      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .defaultNow()
+      .$onUpdate(() => new Date())
       .notNull(),
     ipAddress: text('ip_address'),
     userAgent: text('user_agent'),
@@ -60,7 +71,8 @@ export const account = pgTable(
     password: text('password'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at')
-      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .defaultNow()
+      .$onUpdate(() => new Date())
       .notNull(),
   },
   (table) => [index('account_userId_idx').on(table.userId)],
@@ -86,47 +98,75 @@ export const roles = pgTable(
   'roles',
   {
     id: text('id').primaryKey(),
-    name: text('name').notNull().unique(),
+    name: text('name').notNull(),
     description: text('description'),
-    permissions: jsonb('permissions').$type<string[]>().notNull(),
+    status: roleStatus('status').notNull().default('active'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at')
       .defaultNow()
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
   },
-  (table) => [index('roles_name_idx').on(table.name)],
+  (table) => [uniqueIndex('roles_name_unique_idx').on(table.name)],
 );
 
-export const userProfiles = pgTable(
-  'user_profiles',
+export const permissions = pgTable(
+  'permissions',
   {
-    userId: text('user_id')
-      .primaryKey()
-      .references(() => user.id, { onDelete: 'cascade' }),
-    firstName: text('first_name').notNull(),
-    middleName: text('middle_name'),
-    lastName: text('last_name').notNull(),
-    position: text('position').notNull(),
-    designation: text('designation').notNull(),
-    office: text('office').notNull(),
-    roleId: text('role_id').references(() => roles.id, {
-      onDelete: 'set null',
-    }),
-    status: text('status')
-      .$type<'active' | 'inactive' | 'suspended'>()
-      .notNull()
-      .default('active'),
-    profilePicture: text('profile_picture'),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-    updatedAt: timestamp('updated_at')
-      .defaultNow()
-      .$onUpdate(() => /* @__PURE__ */ new Date())
-      .notNull(),
+    id: text('id').primaryKey(),
+    name: text('name').notNull(),
+    description: text('description'),
+    module: text('module').notNull(),
+    action: text('action').notNull(),
   },
   (table) => [
-    index('user_profiles_role_idx').on(table.roleId),
-    index('user_profiles_status_idx').on(table.status),
+    index('permissions_module_idx').on(table.module),
+    index('permissions_action_idx').on(table.action),
+    uniqueIndex('permissions_module_action_idx').on(table.module, table.action),
+  ],
+);
+
+export const userRoles = pgTable(
+  'user_roles',
+  {
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, {
+        onDelete: 'cascade',
+      }),
+
+    roleId: text('role_id')
+      .notNull()
+      .references(() => roles.id, {
+        onDelete: 'cascade',
+      }),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.userId, table.roleId],
+    }),
+  ],
+);
+
+export const rolePermissions = pgTable(
+  'role_permissions',
+  {
+    roleId: text('role_id')
+      .notNull()
+      .references(() => roles.id, {
+        onDelete: 'cascade',
+      }),
+
+    permissionId: text('permission_id')
+      .notNull()
+      .references(() => permissions.id, {
+        onDelete: 'cascade',
+      }),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.roleId, table.permissionId],
+    }),
   ],
 );
 
@@ -156,17 +196,56 @@ export const userAuditLogs = pgTable(
   ],
 );
 
+export const permissionRelations = relations(permissions, ({ many }) => ({
+  rolePermissions: many(rolePermissions),
+}));
+
 export const userRelations = relations(user, ({ many, one }) => ({
   sessions: many(session),
   accounts: many(account),
-  posts: many(user),
-  profile: one(userProfiles),
+  employee: one(employee, {
+    fields: [user.employeeId],
+    references: [employee.id],
+  }),
+  userRoles: many(userRoles),
   auditLogsAsActor: many(userAuditLogs, {
     relationName: 'audit_actor',
   }),
   auditLogsAsSubject: many(userAuditLogs, {
     relationName: 'audit_subject',
   }),
+}));
+
+export const userRoleRelations = relations(userRoles, ({ one }) => ({
+  user: one(user, {
+    fields: [userRoles.userId],
+    references: [user.id],
+  }),
+
+  role: one(roles, {
+    fields: [userRoles.roleId],
+    references: [roles.id],
+  }),
+}));
+
+export const rolePermissionRelations = relations(
+  rolePermissions,
+  ({ one }) => ({
+    role: one(roles, {
+      fields: [rolePermissions.roleId],
+      references: [roles.id],
+    }),
+
+    permission: one(permissions, {
+      fields: [rolePermissions.permissionId],
+      references: [permissions.id],
+    }),
+  }),
+);
+
+export const roleRelations = relations(roles, ({ many }) => ({
+  userRoles: many(userRoles),
+  rolePermissions: many(rolePermissions),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -183,21 +262,6 @@ export const accountRelations = relations(account, ({ one }) => ({
   }),
 }));
 
-export const roleRelations = relations(roles, ({ many }) => ({
-  userProfiles: many(userProfiles),
-}));
-
-export const userProfileRelations = relations(userProfiles, ({ one }) => ({
-  user: one(user, {
-    fields: [userProfiles.userId],
-    references: [user.id],
-  }),
-  role: one(roles, {
-    fields: [userProfiles.roleId],
-    references: [roles.id],
-  }),
-}));
-
 export const userAuditLogRelations = relations(userAuditLogs, ({ one }) => ({
   actor: one(user, {
     fields: [userAuditLogs.actorUserId],
@@ -210,7 +274,3 @@ export const userAuditLogRelations = relations(userAuditLogs, ({ one }) => ({
     relationName: 'audit_subject',
   }),
 }));
-
-// export const userRelations = relations(user, ({ many }) => ({
-//   posts: many(user),
-// }));
