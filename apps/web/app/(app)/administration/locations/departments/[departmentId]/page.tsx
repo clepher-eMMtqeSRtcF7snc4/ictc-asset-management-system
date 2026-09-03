@@ -259,7 +259,6 @@ export default function Page() {
           position: editEmployee.position,
           designation: editEmployee.designation,
           departmentId: editEmployee.departmentId,
-          role: editEmployee.role,
           status: editEmployee.status,
           photo: editEmployee.photo,
         } : undefined}

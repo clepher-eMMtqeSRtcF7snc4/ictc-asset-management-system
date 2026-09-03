@@ -42,7 +42,6 @@ export class EmployeeService {
         positionId: employee.positionId,
         designationId: employee.designationId,
         departmentId: employee.departmentId,
-        role: employee.role,
         status: employee.status,
         photo: employee.photo,
         createdAt: employee.createdAt,
@@ -119,7 +118,6 @@ export class EmployeeService {
           positionId: employee.positionId,
           designationId: employee.designationId,
           departmentId: employee.departmentId,
-          role: employee.role,
           status: employee.status,
           photo: employee.photo,
           createdAt: employee.createdAt,
@@ -196,7 +194,6 @@ export class EmployeeService {
         ...(input.departmentId !== undefined
           ? { departmentId: input.departmentId }
           : {}),
-        ...(input.role !== undefined ? { role: input.role } : {}),
         ...(input.status !== undefined
           ? {
               status: ((input.status as string) === 'retire'
@@ -243,7 +240,6 @@ export class EmployeeService {
         ? Number(createEmployeeInput.designation)
         : null,
       departmentId: createEmployeeInput.departmentId,
-      role: createEmployeeInput.role ?? null,
       status: ((createEmployeeInput.status as string) === 'retire'
         ? 'retired'
         : createEmployeeInput.status) as any,

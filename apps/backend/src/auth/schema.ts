@@ -22,9 +22,12 @@ export const user = pgTable('user', {
   email: text('email').notNull().unique(),
   emailVerified: boolean('email_verified').default(false).notNull(),
   image: text('image'),
-  employeeId: integer('employee_id').references(() => employee.id, {
-    onDelete: 'set null',
-  }),
+  employeeId: integer('employee_id')
+    .notNull()
+    .unique()
+    .references(() => employee.id, {
+      onDelete: 'set null',
+    }),
   status: userStatus('status').notNull().default('active'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')

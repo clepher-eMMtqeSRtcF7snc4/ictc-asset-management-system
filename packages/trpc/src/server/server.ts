@@ -23,7 +23,6 @@ const appRouter = t.router({
         position: z.string().min(1, "Position is required"),
         designation: z.string().min(1, "Designation is required"),
         departmentId: z.number().int().positive("Department is required"),
-        role: z.enum(["supervisor", "custodian", "staff"]).optional().nullable(),
         status: z.enum([
           'active',
           'casual',
@@ -437,7 +436,6 @@ const appRouter = t.router({
       position: z.string().min(1, "Position is required"),
       designation: z.string().min(1, "Designation is required"),
       departmentId: z.number().int().positive("Department is required"),
-      role: z.enum(["supervisor", "custodian", "staff"]).optional().nullable(),
       status: z.enum([
         'active',
         'casual',
@@ -465,7 +463,6 @@ const appRouter = t.router({
       position: z.string().min(1, "Position is required"),
       designation: z.string().min(1, "Designation is required"),
       departmentId: z.number().int().positive("Department is required"),
-      role: z.enum(["supervisor", "custodian", "staff"]).optional().nullable(),
       status: z.enum([
         'active',
         'casual',
@@ -487,7 +484,7 @@ const appRouter = t.router({
     }).partial().extend({
       id: z.number().int().positive(),
     }).refine(
-      ({ firstName, lastName, email, position, designation, departmentId, status, role, photo }) =>
+      ({ firstName, lastName, email, position, designation, departmentId, status, photo }) =>
         firstName !== undefined ||
         lastName !== undefined ||
         email !== undefined ||
@@ -495,7 +492,6 @@ const appRouter = t.router({
         designation !== undefined ||
         departmentId !== undefined ||
         status !== undefined ||
-        role !== undefined ||
         photo !== undefined,
       { message: "Provide at least one field to update" },
     )).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
@@ -507,7 +503,6 @@ const appRouter = t.router({
       position: z.string().min(1, "Position is required"),
       designation: z.string().min(1, "Designation is required"),
       departmentId: z.number().int().positive("Department is required"),
-      role: z.enum(["supervisor", "custodian", "staff"]).optional().nullable(),
       status: z.enum([
         'active',
         'casual',
@@ -556,7 +551,6 @@ const appRouter = t.router({
       position: z.string().min(1, "Position is required"),
       designation: z.string().min(1, "Designation is required"),
       departmentId: z.number().int().positive("Department is required"),
-      role: z.enum(["supervisor", "custodian", "staff"]).optional().nullable(),
       status: z.enum([
         'active',
         'casual',
@@ -604,7 +598,6 @@ const appRouter = t.router({
       position: z.string().min(1, "Position is required"),
       designation: z.string().min(1, "Designation is required"),
       departmentId: z.number().int().positive("Department is required"),
-      role: z.enum(["supervisor", "custodian", "staff"]).optional().nullable(),
       status: z.enum([
         'active',
         'casual',
@@ -680,7 +673,6 @@ const appRouter = t.router({
           position: z.string().min(1, "Position is required"),
           designation: z.string().min(1, "Designation is required"),
           departmentId: z.number().int().positive("Department is required"),
-          role: z.enum(["supervisor", "custodian", "staff"]).optional().nullable(),
           status: z.enum([
             'active',
             'casual',

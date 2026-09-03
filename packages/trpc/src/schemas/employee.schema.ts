@@ -30,7 +30,6 @@ export const employeeFieldsSchema = z.object({
   position: z.string().min(1, "Position is required"),
   designation: z.string().min(1, "Designation is required"),
   departmentId: z.number().int().positive("Department is required"),
-  role: z.enum(["supervisor", "custodian", "staff"]).optional().nullable(),
   status: employeeStatusSchema,
   photo: z.string().nullable(),
 });
@@ -77,7 +76,7 @@ export const updateEmployeeInputSchema = employeeFieldsSchema
     id: z.number().int().positive(),
   })
   .refine(
-    ({ firstName, lastName, email, position, designation, departmentId, status, role, photo }) =>
+    ({ firstName, lastName, email, position, designation, departmentId, status, photo }) =>
       firstName !== undefined ||
       lastName !== undefined ||
       email !== undefined ||
@@ -85,7 +84,6 @@ export const updateEmployeeInputSchema = employeeFieldsSchema
       designation !== undefined ||
       departmentId !== undefined ||
       status !== undefined ||
-      role !== undefined ||
       photo !== undefined,
     { message: "Provide at least one field to update" },
   );

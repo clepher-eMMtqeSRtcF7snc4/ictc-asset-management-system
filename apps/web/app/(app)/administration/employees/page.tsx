@@ -104,7 +104,6 @@ export default function Page() {
           position: emp.position,
           designation: emp.designation,
           departmentId: emp.departmentId ?? 0,
-          role: emp.role ?? null,
           status: emp.status,
           photo: emp.photo ?? null,
         }

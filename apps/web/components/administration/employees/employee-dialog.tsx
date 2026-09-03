@@ -71,7 +71,6 @@ export function EmployeeDialog({
       position: "",
       designation: "",
       departmentId: 0,
-      role: null,
       status: "active",
       photo: null,
     },
@@ -95,7 +94,6 @@ export function EmployeeDialog({
           position: "",
           designation: "",
           departmentId: 0,
-          role: null,
           status: "active",
           photo: null,
         });
