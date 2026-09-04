@@ -77,4 +77,17 @@ export class RoleRouter {
   async getRolePermissions(@Input() input: { id: string }) {
     return this.roleService.getRolePermissions(input.id);
   }
+
+  @Mutation({
+    input: z.object({
+      id: z.string(),
+      permissionIds: z.array(z.string().uuid()),
+    }),
+    output: z.array(rbacPermissionSchema),
+  })
+  async syncRolePermissions(
+    @Input() input: { id: string; permissionIds: string[] },
+  ) {
+    return this.roleService.syncRolePermissions(input.id, input.permissionIds);
+  }
 }

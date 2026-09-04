@@ -7,7 +7,7 @@ import {
 import { DATABASE_CONNECTION } from '../../../database/database-connection';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres/driver';
 import { schema } from '../../../database/database.module';
-import { and, asc, count, eq, ilike, or, sql, type SQL } from 'drizzle-orm';
+import { and, asc, count, eq, ilike, inArray, or, sql, type SQL } from 'drizzle-orm';
 import { roles, roleStatus } from './schemas/schema';
 import { permissions, rolePermissions } from '../permission/schemas/schema';
 
@@ -219,5 +219,73 @@ export class RoleService {
       .orderBy(asc(permissions.module));
 
     return result.map((r) => r.module);
+  }
+
+  async syncRolePermissions(roleId: string, permissionIds: string[]) {
+    const role = await this.findRoleById(roleId);
+    const roleIdValue = role.id;
+
+    const [existingRole] = await this.database
+      .select({ id: roles.id })
+      .from(roles)
+      .where(eq(roles.id, roleId));
+
+    if (!existingRole) {
+      throw new NotFoundException(`Role with id ${roleId} not found`);
+    }
+
+    if (permissionIds.length > 0) {
+      const permissionRows = await this.database
+        .select({ id: permissions.id })
+        .from(permissions)
+        .where(inArray(permissions.id, permissionIds));
+
+      const foundIds = new Set(permissionRows.map((p) => p.id));
+      const invalid = permissionIds.filter((id) => !foundIds.has(id));
+
+      if (invalid.length > 0) {
+        throw new NotFoundException(
+          `Permissions not found: ${invalid.join(', ')}`,
+        );
+      }
+    }
+
+    const uniqueIds = Array.from(new Set(permissionIds));
+
+    return await this.database.transaction(async (tx) => {
+      await tx
+        .delete(rolePermissions)
+        .where(eq(rolePermissions.roleId, roleId));
+
+      if (uniqueIds.length > 0) {
+        await tx
+          .insert(rolePermissions)
+          .values(
+            uniqueIds.map((permissionId) => ({
+              roleId: roleIdValue,
+              permissionId,
+            })),
+          )
+          .onConflictDoNothing();
+      }
+
+      const updatedPermissions = await tx
+        .select({
+          id: permissions.id,
+          code: permissions.code,
+          name: permissions.name,
+          description: permissions.description,
+          module: permissions.module,
+          action: permissions.action,
+        })
+        .from(rolePermissions)
+        .leftJoin(
+          permissions,
+          eq(rolePermissions.permissionId, permissions.id),
+        )
+        .where(eq(rolePermissions.roleId, roleId));
+
+      return updatedPermissions;
+    });
   }
 }

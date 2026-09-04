@@ -1435,7 +1435,18 @@ const appRouter = t.router({
       description: z.string().nullable(),
       module: z.string(),
       action: z.string(),
-    }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+    }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    syncRolePermissions: publicProcedure.input(z.object({
+      id: z.string(),
+      permissionIds: z.array(z.string().uuid()),
+    })).output(z.array(z.object({
+      id: z.string().uuid(),
+      code: z.string(),
+      name: z.string(),
+      description: z.string().nullable(),
+      module: z.string(),
+      action: z.string(),
+    }))).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
   permissionRouter: t.router({
     getModules: publicProcedure.input(z.object({})).output(z.array(z.string())).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),

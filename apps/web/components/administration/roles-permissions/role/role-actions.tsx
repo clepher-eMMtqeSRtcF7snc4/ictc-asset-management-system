@@ -8,7 +8,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Pen, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pen, ShieldCogCorner, Trash2 } from "lucide-react";
+import Link from "next/link";
 
 interface RoleActionsProps {
   role: any;
@@ -20,16 +21,28 @@ export function RoleActions({ role, onEdit, onDelete }: RoleActionsProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button size="icon-xs" variant="ghost" aria-label={`Actions for ${role.name}`}>
+        <Button
+          size="icon-xs"
+          variant="ghost"
+          aria-label={`Actions for ${role.name}`}
+        >
           <MoreHorizontal />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <DropdownMenuItem asChild>
+          <Link href={`/administration/roles-permissions/roles/${role.id}/permissions`}>
+            <ShieldCogCorner /> Permissions
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => onEdit(role)}>
           <Pen /> Edit
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-destructive" onClick={() => onDelete(role)}>
+        <DropdownMenuItem
+          className="text-destructive"
+          onClick={() => onDelete(role)}
+        >
           <Trash2 /> Delete
         </DropdownMenuItem>
       </DropdownMenuContent>
