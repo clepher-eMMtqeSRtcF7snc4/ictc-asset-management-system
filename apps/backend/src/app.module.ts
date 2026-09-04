@@ -22,12 +22,12 @@ import { PositionModule } from './administration/position/position.module';
 import { DesignationModule } from './administration/designation/designation.module';
 import { AssetTypeModule } from './assets/settings/asset-type/asset-type.module';
 import { AssetCategoryModule } from './assets/settings/asset-category/asset-category.module';
-import { AssetStatusService } from './assets/settings/asset-status/asset-status.service';
 import { AssetStatusModule } from './assets/settings/asset-status/asset-status.module';
 import { AssetConditionModule } from './assets/settings/asset-condition/asset-condition.module';
-import { RegistrationService } from './assets/registration/registration.service';
 import { RegistrationModule } from './assets/registration/registration.module';
 import { SupplierModule } from './assets/supplier/supplier.module';
+import { RoleModule } from './administration/rbac/role/role.module';
+import { PermissionModule } from './administration/rbac/permission/permission.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -67,6 +67,8 @@ import { SupplierModule } from './assets/supplier/supplier.module';
     AssetConditionModule,
     RegistrationModule,
     SupplierModule,
+    RoleModule,
+    PermissionModule,
   ],
   controllers: [AppController],
   providers: [
@@ -76,8 +78,6 @@ import { SupplierModule } from './assets/supplier/supplier.module';
       provide: APP_GUARD,
       useClass: AuthGuard,
     },
-    AssetStatusService,
-    RegistrationService,
   ],
 })
 export class AppModule {}

@@ -113,7 +113,7 @@ const data = {
     },
   ],
   administration: [
-    { name: "Users", url: "/users", icon: <UsersRound /> },
+    { name: "Users", url: "/administration/roles-permissions", icon: <UsersRound /> },
     { name: "Locations", url: "/administration/locations", icon: <Building2 /> },
     { name: "Employees", url: "/administration/employees", icon: <UsersRound /> },
   ],

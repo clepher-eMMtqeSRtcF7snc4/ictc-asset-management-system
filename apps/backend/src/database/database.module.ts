@@ -14,6 +14,8 @@ import * as assetCategorySchema from '../assets/settings/asset-category/schemas/
 import * as assetTypeSchema from '../assets/settings/asset-type/schemas/schema';
 import * as assetRegistrationSchema from '../assets/registration/schemas/schema';
 import * as supplierSchema from '../assets/supplier/schemas/schema';
+import * as roleSchema from '../administration/rbac/role/schemas/schema';
+import * as permissionSchema from '../administration/rbac/permission/schemas/schema';
 
 export const schema = {
   ...authSchema,
@@ -27,6 +29,8 @@ export const schema = {
   ...assetCategorySchema,
   ...assetTypeSchema,
   ...assetRegistrationSchema,
+  ...roleSchema,
+  ...permissionSchema,
 };
 
 @Module({
