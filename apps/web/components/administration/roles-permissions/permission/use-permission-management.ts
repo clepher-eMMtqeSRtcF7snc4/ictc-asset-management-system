@@ -11,11 +11,12 @@ export function usePermissionManagement() {
   const [module, setModule] = useState<string>("all");
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedPermission, setSelectedPermission] = useState<any>(null);
 
   const utils = trpc.useUtils();
 
-  const permissionsQuery = trpc.rbacRouter.getPermissions.useQuery(
+  const permissionsQuery = trpc.permissionRouter.getPermissions.useQuery(
     {
       search: search || undefined,
       module: module === "all" ? undefined : module,
@@ -25,18 +26,13 @@ export function usePermissionManagement() {
     { placeholderData: keepPreviousData }
   );
 
-  const editPermissionQuery = trpc.rbacRouter.getPermissionById.useQuery(
-    { id: selectedPermission?.id || "" },
-    { enabled: !!selectedPermission?.id && editOpen }
-  );
-
-  const modulesQuery = trpc.rbacRouter.getModules.useQuery({});
+  const modulesQuery = trpc.permissionRouter.getModules.useQuery({});
 
   const modules = useMemo(() => modulesQuery.data ?? [], [modulesQuery.data]);
 
-  const createPermission = trpc.rbacRouter.createPermission.useMutation({
+  const createPermission = trpc.permissionRouter.createPermission.useMutation({
     onSuccess: () => {
-      utils.rbacRouter.getPermissions.invalidate();
+      utils.permissionRouter.getPermissions.invalidate();
       setCreateOpen(false);
       toast.success("Permission created successfully.");
     },
@@ -45,10 +41,9 @@ export function usePermissionManagement() {
     },
   });
 
-  const updatePermission = trpc.rbacRouter.updatePermission.useMutation({
+  const updatePermission = trpc.permissionRouter.updatePermission.useMutation({
     onSuccess: () => {
-      utils.rbacRouter.getPermissions.invalidate();
-      utils.rbacRouter.getPermissionById.invalidate();
+      utils.permissionRouter.getPermissions.invalidate();
       setEditOpen(false);
       setSelectedPermission(null);
       toast.success("Permission updated successfully.");
@@ -58,9 +53,11 @@ export function usePermissionManagement() {
     },
   });
 
-  const deletePermission = trpc.rbacRouter.deletePermission.useMutation({
+  const deletePermission = trpc.permissionRouter.deletePermission.useMutation({
     onSuccess: () => {
-      utils.rbacRouter.getPermissions.invalidate();
+      utils.permissionRouter.getPermissions.invalidate();
+      setDeleteOpen(false);
+      setSelectedPermission(null);
       toast.success("Permission deleted successfully.");
     },
     onError: (error) => {
@@ -79,8 +76,13 @@ export function usePermissionManagement() {
   };
 
   const handleDeletePermission = (permission: any) => {
-    if (confirm(`Are you sure you want to delete permission "${permission.name}"?`)) {
-      deletePermission.mutate({ id: permission.id });
+    setSelectedPermission(permission);
+    setDeleteOpen(true);
+  };
+
+  const handleConfirmDeletePermission = () => {
+    if (selectedPermission?.id) {
+      deletePermission.mutate({ id: selectedPermission.id });
     }
   };
 
@@ -100,10 +102,11 @@ export function usePermissionManagement() {
     setCreateOpen,
     editOpen,
     setEditOpen,
+    deleteOpen,
+    setDeleteOpen,
     selectedPermission,
     setSelectedPermission,
     permissionsQuery,
-    editPermissionQuery,
     modules,
     createPermission,
     updatePermission,
@@ -111,6 +114,7 @@ export function usePermissionManagement() {
     handleCreatePermission,
     handleUpdatePermission,
     handleDeletePermission,
+    handleConfirmDeletePermission,
     handleEditPermission,
   };
 }

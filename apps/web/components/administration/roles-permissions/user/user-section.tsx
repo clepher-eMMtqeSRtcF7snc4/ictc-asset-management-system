@@ -2,15 +2,20 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserTable } from "./user-table";
+import { UserDeleteDialog } from "./user-delete-dialog";
 import { useUserManagement } from "./use-user-management";
 
 export function UserSection() {
   const {
     page,
     setPage,
+    deleteOpen,
+    setDeleteOpen,
+    selectedUser,
     usersQuery,
     handleManageRoles,
     handleRemoveAccess,
+    handleConfirmRemoveAccess,
   } = useUserManagement();
 
   return (
@@ -40,6 +45,13 @@ export function UserSection() {
           />
         )}
       </CardContent>
+
+      <UserDeleteDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        onConfirm={handleConfirmRemoveAccess}
+        userName={selectedUser?.name ?? ""}
+      />
     </Card>
   );
 }

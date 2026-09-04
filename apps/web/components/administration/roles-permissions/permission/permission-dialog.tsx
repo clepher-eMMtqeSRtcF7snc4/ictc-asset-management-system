@@ -19,7 +19,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { useEffect } from "react";
-import { createPermissionInputSchema, updatePermissionInputSchema } from "@repo/trpc/schemas";
+import { createPermissionInputSchema } from "@repo/trpc/schemas";
 
 interface PermissionDialogProps {
   open: boolean;
@@ -41,7 +41,7 @@ export function PermissionDialog({
   modules,
 }: PermissionDialogProps) {
   const form = useForm({
-    resolver: zodResolver(defaultValues ? updatePermissionInputSchema : createPermissionInputSchema),
+    resolver: zodResolver(createPermissionInputSchema),
     defaultValues: defaultValues ?? {
       code: "",
       name: "",

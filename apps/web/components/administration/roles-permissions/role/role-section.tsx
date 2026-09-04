@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { RoleTable } from "./role-table";
 import { RoleDialog } from "./role-dialog";
+import { RoleDeleteDialog } from "./role-delete-dialog";
 import { useRoleManagement } from "./use-role-management";
 
 export function RoleSection() {
@@ -15,16 +16,18 @@ export function RoleSection() {
     setCreateOpen,
     editOpen,
     setEditOpen,
+    deleteOpen,
+    setDeleteOpen,
     selectedRole,
     setSelectedRole,
     rolesQuery,
-    editRoleQuery,
     modules,
     createRole,
     updateRole,
     handleCreateRole,
     handleUpdateRole,
     handleDeleteRole,
+    handleConfirmDeleteRole,
     handleEditRole,
   } = useRoleManagement();
 
@@ -75,10 +78,17 @@ export function RoleSection() {
           if (!open) setSelectedRole(null);
         }}
         onSubmit={handleUpdateRole}
-        defaultValues={editRoleQuery.data}
+        defaultValues={selectedRole}
         isPending={updateRole.isPending}
         title="Edit Role"
         modules={modules}
+      />
+
+      <RoleDeleteDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        onConfirm={handleConfirmDeleteRole}
+        roleName={selectedRole?.name ?? ""}
       />
     </Card>
   );

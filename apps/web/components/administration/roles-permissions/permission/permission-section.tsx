@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { PermissionTable } from "./permission-table";
 import { PermissionDialog } from "./permission-dialog";
+import { PermissionDeleteDialog } from "./permission-delete-dialog";
 import { usePermissionManagement } from "./use-permission-management";
 
 export function PermissionSection() {
@@ -15,16 +16,18 @@ export function PermissionSection() {
     setCreateOpen,
     editOpen,
     setEditOpen,
+    deleteOpen,
+    setDeleteOpen,
     selectedPermission,
     setSelectedPermission,
     permissionsQuery,
-    editPermissionQuery,
     modules,
     createPermission,
     updatePermission,
     handleCreatePermission,
     handleUpdatePermission,
     handleDeletePermission,
+    handleConfirmDeletePermission,
     handleEditPermission,
   } = usePermissionManagement();
 
@@ -75,10 +78,17 @@ export function PermissionSection() {
           if (!open) setSelectedPermission(null);
         }}
         onSubmit={handleUpdatePermission}
-        defaultValues={editPermissionQuery.data}
+        defaultValues={selectedPermission}
         isPending={updatePermission.isPending}
         title="Edit Permission"
         modules={modules}
+      />
+
+      <PermissionDeleteDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        onConfirm={handleConfirmDeletePermission}
+        permissionName={selectedPermission?.name ?? ""}
       />
     </Card>
   );

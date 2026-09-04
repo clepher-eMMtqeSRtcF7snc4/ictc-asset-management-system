@@ -28,6 +28,7 @@ import { RegistrationModule } from './assets/registration/registration.module';
 import { SupplierModule } from './assets/supplier/supplier.module';
 import { RoleModule } from './administration/rbac/role/role.module';
 import { PermissionModule } from './administration/rbac/permission/permission.module';
+import { UserRbacModule } from './administration/rbac/user/user.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -69,6 +70,7 @@ import { PermissionModule } from './administration/rbac/permission/permission.mo
     SupplierModule,
     RoleModule,
     PermissionModule,
+    UserRbacModule,
   ],
   controllers: [AppController],
   providers: [

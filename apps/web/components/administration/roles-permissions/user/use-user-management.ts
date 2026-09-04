@@ -11,11 +11,12 @@ export function useUserManagement() {
   const [status, setStatus] = useState<"all" | string>("all");
   const [roleId, setRoleId] = useState<string | undefined>(undefined);
   const [manageRolesOpen, setManageRolesOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
 
   const utils = trpc.useUtils();
 
-  const usersQuery = trpc.rbacRouter.getUsers.useQuery(
+  const usersQuery = trpc.userRbacRouter.getUsers.useQuery(
     {
       search: search || undefined,
       status: status === "all" ? undefined : (status as any),
@@ -26,9 +27,9 @@ export function useUserManagement() {
     { placeholderData: keepPreviousData }
   );
 
-  const assignRole = trpc.rbacRouter.assignRoleToUser.useMutation({
+  const assignRole = trpc.userRbacRouter.assignRoleToUser.useMutation({
     onSuccess: () => {
-      utils.rbacRouter.getUsers.invalidate();
+      utils.userRbacRouter.getUsers.invalidate();
       toast.success("Role assigned successfully.");
     },
     onError: (error) => {
@@ -36,9 +37,9 @@ export function useUserManagement() {
     },
   });
 
-  const removeRole = trpc.rbacRouter.removeRoleFromUser.useMutation({
+  const removeRole = trpc.userRbacRouter.removeRoleFromUser.useMutation({
     onSuccess: () => {
-      utils.rbacRouter.getUsers.invalidate();
+      utils.userRbacRouter.getUsers.invalidate();
       toast.success("Role removed successfully.");
     },
     onError: (error) => {
@@ -52,7 +53,14 @@ export function useUserManagement() {
   };
 
   const handleRemoveAccess = (user: any) => {
-    if (confirm(`Are you sure you want to remove access for "${user.name}"?`)) {
+    setSelectedUser(user);
+    setDeleteOpen(true);
+  };
+
+  const handleConfirmRemoveAccess = () => {
+    if (selectedUser?.id) {
+      setDeleteOpen(false);
+      setSelectedUser(null);
       toast.info("User access removal not yet implemented.");
     }
   };
@@ -80,6 +88,8 @@ export function useUserManagement() {
     setRoleId,
     manageRolesOpen,
     setManageRolesOpen,
+    deleteOpen,
+    setDeleteOpen,
     selectedUser,
     setSelectedUser,
     usersQuery,
@@ -87,6 +97,7 @@ export function useUserManagement() {
     removeRole,
     handleManageRoles,
     handleRemoveAccess,
+    handleConfirmRemoveAccess,
     handleAssignRole,
     handleRemoveRole,
   };

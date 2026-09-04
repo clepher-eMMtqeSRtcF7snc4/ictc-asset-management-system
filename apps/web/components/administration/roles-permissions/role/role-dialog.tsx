@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
 import { useEffect } from "react";
-import { createRoleInputSchema, updateRoleInputSchema } from "@repo/trpc/schemas";
+import { createRoleInputSchema } from "@repo/trpc/schemas";
 
 interface RoleDialogProps {
   open: boolean;
@@ -43,7 +43,7 @@ export function RoleDialog({
   modules,
 }: RoleDialogProps) {
   const form = useForm({
-    resolver: zodResolver(defaultValues ? updateRoleInputSchema : createRoleInputSchema),
+    resolver: zodResolver(createRoleInputSchema),
     defaultValues: defaultValues ?? {
       code: "",
       name: "",

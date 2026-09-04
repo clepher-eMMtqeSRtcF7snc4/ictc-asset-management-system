@@ -1496,6 +1496,52 @@ const appRouter = t.router({
       action: z.string(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     deletePermission: publicProcedure.input(z.object({ id: z.string() })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+  }),
+  userRbacRouter: t.router({
+    getUsers: publicProcedure.input(z.object({
+      search: z.string().optional(),
+      status: z.enum(['active', 'inactive']).optional(),
+      roleId: z.string().uuid().optional(),
+      page: z.number().int().positive().default(1),
+      pageSize: z.number().int().positive().default(10),
+    })).output(z.object({
+      data: z.array(z.object({
+        id: z.string().uuid(),
+        name: z.string(),
+        email: z.string().email(),
+        employeeId: z.number().int().nullable(),
+        status: z.enum(['active', 'inactive'] as const),
+        roles: z.array(z.object({
+          id: z.string().uuid(),
+          code: z.string(),
+          name: z.string(),
+          description: z.string().nullable(),
+          status: z.enum(['active', 'inactive'] as const),
+          createdAt: z.date().optional(),
+          updatedAt: z.date().optional(),
+        })),
+      })),
+      total: z.number(),
+      page: z.number(),
+      pageSize: z.number(),
+    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getUserRoles: publicProcedure.input(z.object({ id: z.string().uuid() })).output(z.array(z.object({
+      id: z.string().uuid(),
+      code: z.string(),
+      name: z.string(),
+      description: z.string().nullable(),
+      status: z.enum(['active', 'inactive'] as const),
+      createdAt: z.date().optional(),
+      updatedAt: z.date().optional(),
+    }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    assignRoleToUser: publicProcedure.input(z.object({
+      userId: z.string().uuid(),
+      roleId: z.string().uuid(),
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    removeRoleFromUser: publicProcedure.input(z.object({
+      userId: z.string().uuid(),
+      roleId: z.string().uuid(),
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   })
 });
 export type AppRouter = typeof appRouter;

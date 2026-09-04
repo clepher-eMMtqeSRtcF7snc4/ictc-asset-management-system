@@ -11,11 +11,12 @@ export function useRoleManagement() {
   const [status, setStatus] = useState<"all" | string>("all");
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<any>(null);
 
   const utils = trpc.useUtils();
 
-  const rolesQuery = trpc.rbacRouter.getRoles.useQuery(
+  const rolesQuery = trpc.roleRouter.getRoles.useQuery(
     {
       search: search || undefined,
       status: status === "all" ? undefined : (status as any),
@@ -25,18 +26,13 @@ export function useRoleManagement() {
     { placeholderData: keepPreviousData }
   );
 
-  const editRoleQuery = trpc.rbacRouter.getRoleById.useQuery(
-    { id: selectedRole?.id || "" },
-    { enabled: !!selectedRole?.id && editOpen }
-  );
-
-  const modulesQuery = trpc.rbacRouter.getModules.useQuery({});
+  const modulesQuery = trpc.roleRouter.getModules.useQuery({});
 
   const modules = useMemo(() => modulesQuery.data ?? [], [modulesQuery.data]);
 
-  const createRole = trpc.rbacRouter.createRole.useMutation({
+  const createRole = trpc.roleRouter.createRole.useMutation({
     onSuccess: () => {
-      utils.rbacRouter.getRoles.invalidate();
+      utils.roleRouter.getRoles.invalidate();
       setCreateOpen(false);
       toast.success("Role created successfully.");
     },
@@ -45,10 +41,9 @@ export function useRoleManagement() {
     },
   });
 
-  const updateRole = trpc.rbacRouter.updateRole.useMutation({
+  const updateRole = trpc.roleRouter.updateRole.useMutation({
     onSuccess: () => {
-      utils.rbacRouter.getRoles.invalidate();
-      utils.rbacRouter.getRoleById.invalidate();
+      utils.roleRouter.getRoles.invalidate();
       setEditOpen(false);
       setSelectedRole(null);
       toast.success("Role updated successfully.");
@@ -58,9 +53,11 @@ export function useRoleManagement() {
     },
   });
 
-  const deleteRole = trpc.rbacRouter.deleteRole.useMutation({
+  const deleteRole = trpc.roleRouter.deleteRole.useMutation({
     onSuccess: () => {
-      utils.rbacRouter.getRoles.invalidate();
+      utils.roleRouter.getRoles.invalidate();
+      setDeleteOpen(false);
+      setSelectedRole(null);
       toast.success("Role deleted successfully.");
     },
     onError: (error) => {
@@ -79,8 +76,13 @@ export function useRoleManagement() {
   };
 
   const handleDeleteRole = (role: any) => {
-    if (confirm(`Are you sure you want to delete role "${role.name}"?`)) {
-      deleteRole.mutate({ id: role.id });
+    setSelectedRole(role);
+    setDeleteOpen(true);
+  };
+
+  const handleConfirmDeleteRole = () => {
+    if (selectedRole?.id) {
+      deleteRole.mutate({ id: selectedRole.id });
     }
   };
 
@@ -100,10 +102,11 @@ export function useRoleManagement() {
     setCreateOpen,
     editOpen,
     setEditOpen,
+    deleteOpen,
+    setDeleteOpen,
     selectedRole,
     setSelectedRole,
     rolesQuery,
-    editRoleQuery,
     modules,
     createRole,
     updateRole,
@@ -111,6 +114,7 @@ export function useRoleManagement() {
     handleCreateRole,
     handleUpdateRole,
     handleDeleteRole,
+    handleConfirmDeleteRole,
     handleEditRole,
   };
 }
