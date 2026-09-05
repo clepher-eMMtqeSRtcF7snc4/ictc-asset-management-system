@@ -33,7 +33,7 @@ export class UserRbacRouter {
   }
 
   @Query({
-    input: z.object({ id: z.string().uuid() }),
+    input: z.object({ id: z.string() }),
     output: z.array(rbacRoleSchema),
   })
   async getUserRoles(@Input() input: { id: string }) {
@@ -49,7 +49,7 @@ export class UserRbacRouter {
 
   @Mutation({
     input: z.object({
-      userId: z.string().uuid(),
+      userId: z.string(),
       roleId: z.string().uuid(),
     }),
   })

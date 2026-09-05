@@ -40,7 +40,7 @@ export const updateRoleInputSchema = z.object({
 });
 
 export const assignRoleInputSchema = z.object({
-  userId: z.string().uuid(),
+  userId: z.string(),
   roleId: z.string().uuid(),
 });
 

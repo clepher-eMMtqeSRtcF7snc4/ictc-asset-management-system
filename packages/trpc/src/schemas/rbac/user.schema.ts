@@ -30,7 +30,7 @@ export const updateUserSchema = userProfileSchema
   );
 
 export const userWithRolesSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string(),
   name: z.string(),
   email: z.string().email(),
   employeeId: z.number().int().nullable(),

@@ -1517,7 +1517,7 @@ const appRouter = t.router({
       pageSize: z.number().int().positive().default(10),
     })).output(z.object({
       data: z.array(z.object({
-        id: z.string().uuid(),
+        id: z.string(),
         name: z.string(),
         email: z.string().email(),
         employeeId: z.number().int().nullable(),
@@ -1536,7 +1536,7 @@ const appRouter = t.router({
       page: z.number(),
       pageSize: z.number(),
     })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
-    getUserRoles: publicProcedure.input(z.object({ id: z.string().uuid() })).output(z.array(z.object({
+    getUserRoles: publicProcedure.input(z.object({ id: z.string() })).output(z.array(z.object({
       id: z.string().uuid(),
       code: z.string(),
       name: z.string(),
@@ -1546,11 +1546,11 @@ const appRouter = t.router({
       updatedAt: z.date().optional(),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     assignRoleToUser: publicProcedure.input(z.object({
-      userId: z.string().uuid(),
+      userId: z.string(),
       roleId: z.string().uuid(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     removeRoleFromUser: publicProcedure.input(z.object({
-      userId: z.string().uuid(),
+      userId: z.string(),
       roleId: z.string().uuid(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   })
