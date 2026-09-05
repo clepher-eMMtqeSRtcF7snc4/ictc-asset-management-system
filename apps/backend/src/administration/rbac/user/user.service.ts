@@ -70,9 +70,9 @@ export class UserRbacService {
     };
   }
 
-async createUser(
+  async createUser(
     currentUserId: string,
-    data: { name: string; email: string; password: string },
+    data: { name: string; email: string; password: string; employeeId?: string },
   ) {
     const admin = await this.isAdmin(currentUserId);
     if (!admin) {
@@ -98,6 +98,17 @@ async createUser(
         password: data.password,
       },
     });
+
+    const employeeId = data.employeeId
+      ? Number(data.employeeId)
+      : undefined;
+
+    if (employeeId) {
+      await this.database
+        .update(user)
+        .set({ employeeId })
+        .where(eq(user.id, result.user.id));
+    }
 
     return {
       id: result.user.id,

@@ -16,12 +16,8 @@ export const signupSchema = z.object({
   path: ["confirmPassword"]
 });
 
-export const userFormSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.email("Please enter a valid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-});
-
 export type SignupFormData = z.infer<typeof signupSchema>;
 export type LoginFormData = z.infer<typeof loginSchema>;
-export type UserFormData = z.infer<typeof userFormSchema>;
+
+export { userFormSchema } from "@repo/trpc/schemas";
+export type { UserFormData } from "@repo/trpc/schemas";
