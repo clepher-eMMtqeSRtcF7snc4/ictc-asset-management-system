@@ -4,6 +4,7 @@ import { useState } from "react";
 import { keepPreviousData } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc/client";
+import { UserFormData } from "@/lib/auth/schema";
 
 export function useUserManagement() {
   const [page, setPage] = useState(1);
@@ -12,6 +13,7 @@ export function useUserManagement() {
   const [roleId, setRoleId] = useState<string | undefined>(undefined);
   const [manageRolesOpen, setManageRolesOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
 
   const utils = trpc.useUtils();
@@ -26,6 +28,8 @@ export function useUserManagement() {
     },
     { placeholderData: keepPreviousData }
   );
+
+  const currentUserQuery = trpc.userRbacRouter.getCurrentUser.useQuery({});
 
   const assignRole = trpc.userRbacRouter.assignRoleToUser.useMutation({
     onSuccess: () => {
@@ -44,6 +48,18 @@ export function useUserManagement() {
     },
     onError: (error) => {
       toast.error(error.message ?? "Failed to remove role.");
+    },
+  });
+
+  const createUser = trpc.userRbacRouter.createUser.useMutation({
+    onSuccess: () => {
+      utils.userRbacRouter.getUsers.invalidate();
+      setCreateOpen(false);
+      setSelectedUser(null);
+      toast.success("User created successfully.");
+    },
+    onError: (error) => {
+      toast.error(error.message ?? "Failed to create user.");
     },
   });
 
@@ -77,6 +93,10 @@ export function useUserManagement() {
     }
   };
 
+  const handleCreateUser = (data: UserFormData) => {
+    createUser.mutate(data);
+  };
+
   return {
     page,
     setPage,
@@ -90,15 +110,19 @@ export function useUserManagement() {
     setManageRolesOpen,
     deleteOpen,
     setDeleteOpen,
+    createOpen,
+    setCreateOpen,
     selectedUser,
     setSelectedUser,
     usersQuery,
-    assignRole,
-    removeRole,
+    currentUserQuery,
+    isAdmin: currentUserQuery.data?.isAdmin ?? false,
+    createUser,
     handleManageRoles,
     handleRemoveAccess,
     handleConfirmRemoveAccess,
     handleAssignRole,
     handleRemoveRole,
+    handleCreateUser,
   };
 }

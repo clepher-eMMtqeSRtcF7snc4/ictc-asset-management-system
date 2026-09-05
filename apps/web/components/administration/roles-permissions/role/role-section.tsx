@@ -10,7 +10,6 @@ import { useRoleManagement } from "./use-role-management";
 
 export function RoleSection() {
   const {
-    page,
     setPage,
     createOpen,
     setCreateOpen,

@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  ForbiddenException,
   Inject,
 } from '@nestjs/common';
 import { DATABASE_CONNECTION } from '../../../database/database-connection';
@@ -10,6 +11,7 @@ import { schema } from '../../../database/database.module';
 import { and, asc, count, eq, ilike, or, type SQL } from 'drizzle-orm';
 import { user, userRoles } from '../../../auth/schema';
 import { roles } from '../role/schemas/schema';
+import { AuthService } from '@thallesp/nestjs-better-auth';
 
 export interface User {
   id: string;
@@ -25,7 +27,87 @@ export class UserRbacService {
   constructor(
     @Inject(DATABASE_CONNECTION)
     private readonly database: NodePgDatabase<typeof schema>,
+    private readonly authService: AuthService,
   ) {}
+
+  async isAdmin(userId: string): Promise<boolean> {
+    const userRoleRows = await this.database
+      .select({ code: roles.code })
+      .from(userRoles)
+      .innerJoin(roles, eq(userRoles.roleId, roles.id))
+      .where(eq(userRoles.userId, userId));
+
+    return userRoleRows.some((row) => row.code === 'admin');
+  }
+
+  async getCurrentUser(userId: string) {
+    const [foundUser] = await this.database
+      .select()
+      .from(user)
+      .where(eq(user.id, userId))
+      .limit(1);
+
+    if (!foundUser) {
+      throw new NotFoundException('User not found');
+    }
+
+    const userRoleRows = await this.database
+      .select({ code: roles.code })
+      .from(userRoles)
+      .innerJoin(roles, eq(userRoles.roleId, roles.id))
+      .where(eq(userRoles.userId, userId));
+
+    return {
+      id: foundUser.id,
+      name: foundUser.name,
+      email: foundUser.email,
+      employeeId: foundUser.employeeId,
+      status: foundUser.status,
+      createdAt: foundUser.createdAt,
+      updatedAt: foundUser.updatedAt,
+      roles: userRoleRows.map((row) => row.code),
+      isAdmin: userRoleRows.some((row) => row.code === 'admin'),
+    };
+  }
+
+async createUser(
+    currentUserId: string,
+    data: { name: string; email: string; password: string },
+  ) {
+    const admin = await this.isAdmin(currentUserId);
+    if (!admin) {
+      throw new ForbiddenException(
+        'Only administrators can create user accounts.',
+      );
+    }
+
+    const existing = await this.database
+      .select({ id: user.id })
+      .from(user)
+      .where(eq(user.email, data.email))
+      .limit(1);
+
+    if (existing.length > 0) {
+      throw new ConflictException('A user with this email already exists.');
+    }
+
+    const result = await this.authService.api.signUpEmail({
+      body: {
+        name: data.name,
+        email: data.email,
+        password: data.password,
+      },
+    });
+
+    return {
+      id: result.user.id,
+      name: result.user.name,
+      email: result.user.email,
+      emailVerified: result.user.emailVerified,
+      createdAt: result.user.createdAt,
+      updatedAt: result.user.updatedAt,
+    };
+  }
 
   async findUsers(input?: {
     search?: string;

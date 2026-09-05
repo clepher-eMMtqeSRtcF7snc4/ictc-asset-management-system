@@ -1,8 +1,10 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { UserTable } from "./user-table";
 import { UserDeleteDialog } from "./user-delete-dialog";
+import { UserDialog } from "./user-dialog";
 import { useUserManagement } from "./use-user-management";
 
 export function UserSection() {
@@ -11,21 +13,32 @@ export function UserSection() {
     setPage,
     deleteOpen,
     setDeleteOpen,
+    createOpen,
+    setCreateOpen,
     selectedUser,
     usersQuery,
+    currentUserQuery,
+    isAdmin,
+    createUser,
     handleManageRoles,
     handleRemoveAccess,
     handleConfirmRemoveAccess,
+    handleCreateUser,
   } = useUserManagement();
 
   return (
     <Card>
       <CardHeader>
-        <div>
-          <CardTitle>Users</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Manage user roles and permissions.
-          </p>
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <CardTitle>Users</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Manage user roles and permissions.
+            </p>
+          </div>
+          {isAdmin && (
+            <Button onClick={() => setCreateOpen(true)}>Create User</Button>
+          )}
         </div>
       </CardHeader>
       <CardContent className="space-y-4 overflow-y-auto">
@@ -52,6 +65,15 @@ export function UserSection() {
         onConfirm={handleConfirmRemoveAccess}
         userName={selectedUser?.name ?? ""}
       />
+
+      {isAdmin && (
+        <UserDialog
+          open={createOpen}
+          onOpenChange={setCreateOpen}
+          onSubmit={handleCreateUser}
+          isPending={createUser.isPending}
+        />
+      )}
     </Card>
   );
 }
