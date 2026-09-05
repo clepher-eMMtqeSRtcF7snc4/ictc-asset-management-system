@@ -9,6 +9,7 @@ export interface User {
   name: string;
   email: string;
   employeeId: number | null;
+  department: { id: number; name: string } | null;
   status: "active" | "inactive";
   roles: Array<{
     id: string;
@@ -31,6 +32,15 @@ export function userColumns(
       accessorKey: "email",
       header: "Email",
       cell: ({ row }) => <span className="text-sm">{row.original.email}</span>,
+    },
+    {
+      accessorKey: "department",
+      header: "Department",
+      cell: ({ row }) => {
+        const dept = row.original.department;
+        if (!dept) return <span className="text-muted-foreground">—</span>;
+        return <span className="text-sm">{dept.name}</span>;
+      },
     },
     {
       accessorKey: "roles",

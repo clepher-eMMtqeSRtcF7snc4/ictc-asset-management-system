@@ -1513,6 +1513,7 @@ const appRouter = t.router({
       search: z.string().optional(),
       status: z.enum(['active', 'inactive']).optional(),
       roleId: z.string().uuid().optional(),
+      departmentId: z.number().int().positive().optional(),
       page: z.number().int().positive().default(1),
       pageSize: z.number().int().positive().default(10),
     })).output(z.object({
@@ -1521,6 +1522,12 @@ const appRouter = t.router({
         name: z.string(),
         email: z.string().email(),
         employeeId: z.number().int().nullable(),
+        department: z
+          .object({
+            id: z.number().int().positive(),
+            name: z.string(),
+          })
+          .nullable(),
         status: z.enum(['active', 'inactive'] as const),
         roles: z.array(z.object({
           id: z.string().uuid(),

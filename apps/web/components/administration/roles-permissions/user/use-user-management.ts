@@ -11,6 +11,7 @@ export function useUserManagement() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<"all" | string>("all");
   const [roleId, setRoleId] = useState<string | undefined>(undefined);
+  const [departmentId, setDepartmentId] = useState<number | undefined>(undefined);
   const [manageRolesOpen, setManageRolesOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
@@ -23,11 +24,14 @@ export function useUserManagement() {
       search: search || undefined,
       status: status === "all" ? undefined : (status as any),
       roleId,
+      departmentId,
       page,
       pageSize: 10,
     },
     { placeholderData: keepPreviousData }
   );
+
+  const departmentsQuery = trpc.departmentRouter.getActiveDepartments.useQuery();
 
   const currentUserQuery = trpc.userRbacRouter.getCurrentUser.useQuery({});
 
@@ -97,7 +101,7 @@ export function useUserManagement() {
     createUser.mutate(data);
   };
 
-  return {
+   return {
     page,
     setPage,
     search,
@@ -106,6 +110,10 @@ export function useUserManagement() {
     setStatus,
     roleId,
     setRoleId,
+    departmentId,
+    setDepartmentId,
+    departments: departmentsQuery.data ?? [],
+    departmentsQuery,
     manageRolesOpen,
     setManageRolesOpen,
     deleteOpen,

@@ -29,6 +29,7 @@ export class UserRbacRouter {
       search: z.string().optional(),
       status: z.enum(['active', 'inactive']).optional(),
       roleId: z.string().uuid().optional(),
+      departmentId: z.number().int().positive().optional(),
       page: z.number().int().positive().default(1),
       pageSize: z.number().int().positive().default(10),
     }),

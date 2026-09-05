@@ -34,6 +34,12 @@ export const userWithRolesSchema = z.object({
   name: z.string(),
   email: z.string().email(),
   employeeId: z.number().int().nullable(),
+  department: z
+    .object({
+      id: z.number().int().positive(),
+      name: z.string(),
+    })
+    .nullable(),
   status: roleStatusSchema,
   roles: z.array(rbacRoleSchema),
 });

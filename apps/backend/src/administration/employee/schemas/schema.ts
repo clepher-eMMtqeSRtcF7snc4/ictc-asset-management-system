@@ -7,6 +7,8 @@ import {
   timestamp,
   varchar,
 } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
+import { user } from '../../../auth/schema';
 
 import { department } from '../../department/schemas/schema';
 import { position } from '../../position/schemas/schema';
@@ -53,3 +55,22 @@ export const employee = pgTable('employee', {
     .$onUpdate(() => new Date())
     .notNull(),
 });
+
+export const employeeRelations = relations(employee, ({ one }) => ({
+  user: one(user, {
+    fields: [employee.id],
+    references: [user.employeeId],
+  }),
+  department: one(department, {
+    fields: [employee.departmentId],
+    references: [department.id],
+  }),
+  position: one(position, {
+    fields: [employee.positionId],
+    references: [position.id],
+  }),
+  designation: one(designation, {
+    fields: [employee.designationId],
+    references: [designation.id],
+  }),
+}));

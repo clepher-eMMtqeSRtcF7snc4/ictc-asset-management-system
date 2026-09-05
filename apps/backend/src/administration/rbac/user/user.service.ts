@@ -11,6 +11,8 @@ import { schema } from '../../../database/database.module';
 import { and, asc, count, eq, ilike, or, type SQL } from 'drizzle-orm';
 import { user, userRoles } from '../../../auth/schema';
 import { roles } from '../role/schemas/schema';
+import { employee } from '../../employee/schemas/schema';
+import { department } from '../../department/schemas/schema';
 import { AuthService } from '@thallesp/nestjs-better-auth';
 
 export interface User {
@@ -124,6 +126,7 @@ export class UserRbacService {
     search?: string;
     status?: string;
     roleId?: string;
+    departmentId?: number;
     page?: number;
     pageSize?: number;
   }) {
@@ -144,6 +147,10 @@ export class UserRbacService {
       conditions.push(eq(user.status, input.status as 'active' | 'inactive'));
     }
 
+    if (input?.departmentId) {
+      conditions.push(eq(employee.departmentId, input.departmentId));
+    }
+
     const where = conditions.length > 0 ? and(...conditions) : undefined;
 
     const [result, totalResult] = await Promise.all([
@@ -153,16 +160,24 @@ export class UserRbacService {
           name: user.name,
           email: user.email,
           employeeId: user.employeeId,
+          departmentId: department.id,
+          departmentName: department.name,
           status: user.status,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
         })
         .from(user)
+        .leftJoin(employee, eq(user.employeeId, employee.id))
+        .leftJoin(department, eq(employee.departmentId, department.id))
         .where(where)
         .orderBy(asc(user.name))
         .limit(pageSize)
         .offset((page - 1) * pageSize),
-      this.database.select({ count: count() }).from(user).where(where),
+      this.database
+        .select({ count: count() })
+        .from(user)
+        .leftJoin(employee, eq(user.employeeId, employee.id))
+        .where(where),
     ]);
 
     // Get roles for each user
@@ -197,6 +212,9 @@ export class UserRbacService {
 
     const enrichedResult = result.map((u) => ({
       ...u,
+      department: u.departmentId
+        ? { id: u.departmentId, name: u.departmentName }
+        : null,
       roles: rolesByUser[u.id] || [],
     }));
 
