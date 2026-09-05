@@ -33,7 +33,7 @@ export const userWithRolesSchema = z.object({
   id: z.string(),
   name: z.string(),
   email: z.string().email(),
-  employeeId: z.number().int().nullable(),
+  employeeId: z.number().int().nullish(),
   department: z
     .object({
       id: z.number().int().positive(),
@@ -84,3 +84,38 @@ export const currentUserOutputSchema = z.object({
 export type UserIdInput = z.infer<typeof userIdSchema>
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>
 export type UserProfile = z.infer<typeof userProfileSchema>
+
+export const roleAssignmentSchema = z.object({
+  id: z.string().uuid(),
+  code: z.string(),
+  name: z.string(),
+  description: z.string().nullable(),
+  status: roleStatusSchema,
+  assigned: z.boolean(),
+});
+
+export const userRolesOutputSchema = z.object({
+  userId: z.string(),
+  roles: z.array(rbacRoleSchema),
+});
+
+export const assignManyInputSchema = z.object({
+  userId: z.string(),
+  roleIds: z.array(z.string().uuid()).min(1, "At least one role is required"),
+});
+
+export const replaceInputSchema = z.object({
+  userId: z.string(),
+  roleIds: z.array(z.string().uuid()),
+});
+
+export const userRoleActionSchema = z.object({
+  userId: z.string(),
+  roleId: z.string().uuid(),
+});
+
+export type RoleAssignment = z.infer<typeof roleAssignmentSchema>;
+export type UserRolesOutput = z.infer<typeof userRolesOutputSchema>;
+export type AssignManyInput = z.infer<typeof assignManyInputSchema>;
+export type ReplaceInput = z.infer<typeof replaceInputSchema>;
+export type UserRoleActionInput = z.infer<typeof userRoleActionSchema>;

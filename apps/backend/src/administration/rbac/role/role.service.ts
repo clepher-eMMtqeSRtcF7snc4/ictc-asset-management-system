@@ -7,7 +7,17 @@ import {
 import { DATABASE_CONNECTION } from '../../../database/database-connection';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres/driver';
 import { schema } from '../../../database/database.module';
-import { and, asc, count, eq, ilike, inArray, or, sql, type SQL } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  count,
+  eq,
+  ilike,
+  inArray,
+  or,
+  sql,
+  type SQL,
+} from 'drizzle-orm';
 import { roles, roleStatus } from './schemas/schema';
 import { permissions, rolePermissions } from '../permission/schemas/schema';
 
@@ -279,10 +289,7 @@ export class RoleService {
           action: permissions.action,
         })
         .from(rolePermissions)
-        .leftJoin(
-          permissions,
-          eq(rolePermissions.permissionId, permissions.id),
-        )
+        .leftJoin(permissions, eq(rolePermissions.permissionId, permissions.id))
         .where(eq(rolePermissions.roleId, roleId));
 
       return updatedPermissions;

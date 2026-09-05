@@ -8,7 +8,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  employeeId: number | null;
+  employeeId?: number | null;
   department: { id: number; name: string } | null;
   status: "active" | "inactive";
   roles: Array<{
@@ -47,7 +47,8 @@ export function userColumns(
       header: "Roles",
       cell: ({ row }) => {
         const roles = row.original.roles;
-        if (!roles || roles.length === 0) return "—";
+        if (!roles || roles.length === 0)
+          return <span className="text-muted-foreground">No roles assigned</span>;
         if (roles.length === 1 && roles[0]) {
           return <Badge variant="secondary">{roles[0].name}</Badge>;
         }

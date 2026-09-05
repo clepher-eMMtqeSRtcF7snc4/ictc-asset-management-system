@@ -1521,7 +1521,7 @@ const appRouter = t.router({
         id: z.string(),
         name: z.string(),
         email: z.string().email(),
-        employeeId: z.number().int().nullable(),
+        employeeId: z.number().int().nullish(),
         department: z
           .object({
             id: z.number().int().positive(),
@@ -1584,6 +1584,78 @@ const appRouter = t.router({
       userId: z.string(),
       roleId: z.string().uuid(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+  }),
+  userRoleRouter: t.router({
+    list: publicProcedure.input(z.object({
+      search: z.string().optional(),
+      status: z.enum(['active', 'inactive']).optional(),
+      roleId: z.string().uuid().optional(),
+      departmentId: z.number().int().positive().optional(),
+      page: z.number().int().positive().default(1),
+      pageSize: z.number().int().positive().default(10),
+    })).output(z.object({
+      data: z.array(z.object({
+        id: z.string(),
+        name: z.string(),
+        email: z.string().email(),
+        employeeId: z.number().int().nullish(),
+        department: z
+          .object({
+            id: z.number().int().positive(),
+            name: z.string(),
+          })
+          .nullable(),
+        status: z.enum(['active', 'inactive'] as const),
+        roles: z.array(z.object({
+          id: z.string().uuid(),
+          code: z.string(),
+          name: z.string(),
+          description: z.string().nullable(),
+          status: z.enum(['active', 'inactive'] as const),
+          createdAt: z.date().optional(),
+          updatedAt: z.date().optional(),
+        })),
+      })),
+      total: z.number(),
+      page: z.number(),
+      pageSize: z.number(),
+    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getByUserId: publicProcedure.input(z.object({ userId: z.string() })).output(z.object({
+      userId: z.string(),
+      roles: z.array(z.object({
+        id: z.string().uuid(),
+        code: z.string(),
+        name: z.string(),
+        description: z.string().nullable(),
+        status: z.enum(['active', 'inactive'] as const),
+        createdAt: z.date().optional(),
+        updatedAt: z.date().optional(),
+      })),
+    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getAssignmentOptions: publicProcedure.input(z.object({ userId: z.string() })).output(z.array(z.object({
+      id: z.string().uuid(),
+      code: z.string(),
+      name: z.string(),
+      description: z.string().nullable(),
+      status: z.enum(['active', 'inactive'] as const),
+      assigned: z.boolean(),
+    }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    assignMany: publicProcedure.input(z.object({
+      userId: z.string(),
+      roleIds: z.array(z.string().uuid()).min(1, "At least one role is required"),
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    assign: publicProcedure.input(z.object({
+      userId: z.string(),
+      roleId: z.string().uuid(),
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    remove: publicProcedure.input(z.object({
+      userId: z.string(),
+      roleId: z.string().uuid(),
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    replace: publicProcedure.input(z.object({
+      userId: z.string(),
+      roleIds: z.array(z.string().uuid()),
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
   })
 });
 export type AppRouter = typeof appRouter;

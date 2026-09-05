@@ -74,7 +74,12 @@ export class UserRbacService {
 
   async createUser(
     currentUserId: string,
-    data: { name: string; email: string; password: string; employeeId?: string },
+    data: {
+      name: string;
+      email: string;
+      password: string;
+      employeeId?: string;
+    },
   ) {
     const admin = await this.isAdmin(currentUserId);
     if (!admin) {
@@ -101,9 +106,7 @@ export class UserRbacService {
       },
     });
 
-    const employeeId = data.employeeId
-      ? Number(data.employeeId)
-      : undefined;
+    const employeeId = data.employeeId ? Number(data.employeeId) : undefined;
 
     if (employeeId) {
       await this.database
@@ -182,7 +185,7 @@ export class UserRbacService {
 
     // Get roles for each user
     const userIds = result.map((r) => r.id);
-    let rolesByUser: Record<string, any[]> = {};
+    const rolesByUser: Record<string, any[]> = {};
 
     if (userIds.length > 0) {
       const userRolesResult = await this.database

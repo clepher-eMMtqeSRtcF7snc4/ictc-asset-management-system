@@ -14,6 +14,7 @@ import {
 import { UserTable } from "./user-table";
 import { UserDeleteDialog } from "./user-delete-dialog";
 import { UserDialog } from "./user-dialog";
+import { ManageRolesDialog } from "./manage-roles-dialog";
 import { useUserManagement } from "./use-user-management";
 
 export function UserSection() {
@@ -27,6 +28,8 @@ export function UserSection() {
     departmentId,
     setDepartmentId,
     departments,
+    manageRolesOpen,
+    setManageRolesOpen,
     deleteOpen,
     setDeleteOpen,
     createOpen,
@@ -36,9 +39,12 @@ export function UserSection() {
     currentUserQuery,
     isAdmin,
     createUser,
+    replaceRoles,
+    roleAssignmentOptionsQuery,
     handleManageRoles,
     handleRemoveAccess,
     handleConfirmRemoveAccess,
+    handleSaveRoles,
     handleCreateUser,
   } = useUserManagement();
 
@@ -168,6 +174,18 @@ export function UserSection() {
           isPending={createUser.isPending}
         />
       )}
+
+      <ManageRolesDialog
+        open={manageRolesOpen}
+        onOpenChange={setManageRolesOpen}
+        userId={selectedUser?.id ?? ""}
+        userName={selectedUser?.name ?? ""}
+        userEmail={selectedUser?.email ?? ""}
+        assignments={roleAssignmentOptionsQuery.data}
+        isLoading={roleAssignmentOptionsQuery.isLoading}
+        onSave={handleSaveRoles}
+        isPending={replaceRoles.isPending}
+      />
     </Card>
   );
 }

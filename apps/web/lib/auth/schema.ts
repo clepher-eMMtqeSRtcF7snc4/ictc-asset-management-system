@@ -21,3 +21,5 @@ export type LoginFormData = z.infer<typeof loginSchema>;
 
 export { userFormSchema } from "@repo/trpc/schemas";
 export type { UserFormData } from "@repo/trpc/schemas";
+
+export type { RoleAssignment } from '@repo/trpc/schemas';

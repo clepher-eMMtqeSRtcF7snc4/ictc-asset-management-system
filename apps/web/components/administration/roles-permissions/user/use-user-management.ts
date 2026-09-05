@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { keepPreviousData } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc/client";
@@ -19,7 +19,7 @@ export function useUserManagement() {
 
   const utils = trpc.useUtils();
 
-  const usersQuery = trpc.userRbacRouter.getUsers.useQuery(
+  const usersQuery = trpc.userRoleRouter.list.useQuery(
     {
       search: search || undefined,
       status: status === "all" ? undefined : (status as any),
@@ -35,28 +35,39 @@ export function useUserManagement() {
 
   const currentUserQuery = trpc.userRbacRouter.getCurrentUser.useQuery({});
 
-  const assignRole = trpc.userRbacRouter.assignRoleToUser.useMutation({
-    onSuccess: () => {
-      utils.userRbacRouter.getUsers.invalidate();
-      toast.success("Role assigned successfully.");
-    },
-    onError: (error) => {
-      toast.error(error.message ?? "Failed to assign role.");
-    },
-  });
+  const userRoleAssignmentsQuery = trpc.userRoleRouter.getByUserId.useQuery(
+    { userId: selectedUser?.id ?? "" },
+    { enabled: !!selectedUser?.id && manageRolesOpen },
+  );
 
-  const removeRole = trpc.userRbacRouter.removeRoleFromUser.useMutation({
+  const roleAssignmentOptionsQuery = trpc.userRoleRouter.getAssignmentOptions.useQuery(
+    { userId: selectedUser?.id ?? "" },
+    { enabled: !!selectedUser?.id && manageRolesOpen },
+  );
+
+  const replaceRoles = trpc.userRoleRouter.replace.useMutation({
     onSuccess: () => {
+      utils.userRoleRouter.list.invalidate();
+      if (selectedUser?.id) {
+        utils.userRoleRouter.getByUserId.invalidate({
+          userId: selectedUser.id,
+        });
+        utils.userRoleRouter.getAssignmentOptions.invalidate({
+          userId: selectedUser.id,
+        });
+      }
       utils.userRbacRouter.getUsers.invalidate();
-      toast.success("Role removed successfully.");
+      setManageRolesOpen(false);
+      toast.success("Roles updated successfully.");
     },
     onError: (error) => {
-      toast.error(error.message ?? "Failed to remove role.");
+      toast.error(error.message ?? "Failed to update roles.");
     },
   });
 
   const createUser = trpc.userRbacRouter.createUser.useMutation({
     onSuccess: () => {
+      utils.userRoleRouter.list.invalidate();
       utils.userRbacRouter.getUsers.invalidate();
       setCreateOpen(false);
       setSelectedUser(null);
@@ -87,21 +98,33 @@ export function useUserManagement() {
 
   const handleAssignRole = (roleId: string) => {
     if (selectedUser?.id) {
-      assignRole.mutate({ userId: selectedUser.id, roleId });
+      replaceRoles.mutate({
+        userId: selectedUser.id,
+        roleIds: [...(userRoleAssignmentsQuery.data?.roles.map((r: any) => r.id) ?? []), roleId],
+      });
     }
   };
 
   const handleRemoveRole = (roleId: string) => {
     if (selectedUser?.id) {
-      removeRole.mutate({ userId: selectedUser.id, roleId });
+      replaceRoles.mutate({
+        userId: selectedUser.id,
+        roleIds: (userRoleAssignmentsQuery.data?.roles.map((r: any) => r.id) ?? []).filter(
+          (id: string) => id !== roleId
+        ),
+      });
     }
+  };
+
+  const handleSaveRoles = (userId: string, roleIds: string[]) => {
+    replaceRoles.mutate({ userId, roleIds });
   };
 
   const handleCreateUser = (data: UserFormData) => {
     createUser.mutate(data);
   };
 
-   return {
+  return {
     page,
     setPage,
     search,
@@ -126,11 +149,14 @@ export function useUserManagement() {
     currentUserQuery,
     isAdmin: currentUserQuery.data?.isAdmin ?? false,
     createUser,
+    replaceRoles,
+    roleAssignmentOptionsQuery,
     handleManageRoles,
     handleRemoveAccess,
     handleConfirmRemoveAccess,
     handleAssignRole,
     handleRemoveRole,
+    handleSaveRoles,
     handleCreateUser,
   };
 }
