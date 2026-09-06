@@ -1,5 +1,5 @@
 import { PermissionService } from './permission.service';
-import { Input, Mutation, Query, Router, UseMiddlewares } from 'nestjs-trpc-v2';
+import { Ctx, Input, Mutation, Query, Router, UseMiddlewares } from 'nestjs-trpc-v2';
 import { z } from 'zod';
 import {
   rbacPermissionSchema,
@@ -23,7 +23,7 @@ export class PermissionRouter {
 
   @Query({ input: z.object({}), output: z.array(z.string()) })
   async getModules(@Ctx() ctx: AppContext) {
-    await this.checkPermission(ctx, 'permissions.read');
+    await this.checkPermission(ctx, 'permission.read');
     return this.permissionService.getModules();
   }
 
@@ -46,7 +46,7 @@ export class PermissionRouter {
     @Input() input: any,
     @Ctx() ctx: AppContext,
   ) {
-    await this.checkPermission(ctx, 'permissions.read');
+    await this.checkPermission(ctx, 'permission.read');
     return this.permissionService.findPermissions(input);
   }
 
@@ -58,7 +58,7 @@ export class PermissionRouter {
     @Input() input: { id: string },
     @Ctx() ctx: AppContext,
   ) {
-    await this.checkPermission(ctx, 'permissions.read');
+    await this.checkPermission(ctx, 'permission.read');
     return this.permissionService.findPermissionById(input.id);
   }
 
@@ -67,7 +67,7 @@ export class PermissionRouter {
     output: rbacPermissionSchema,
   })
   async createPermission(@Input() input: any, @Ctx() ctx: AppContext) {
-    await this.checkPermission(ctx, 'permissions.create');
+    await this.checkPermission(ctx, 'permission.create');
     return this.permissionService.createPermission(input);
   }
 
@@ -77,7 +77,7 @@ export class PermissionRouter {
   })
   async updatePermission(@Input() input: any, @Ctx() ctx: AppContext) {
     const { id, ...data } = input;
-    await this.checkPermission(ctx, 'permissions.update');
+    await this.checkPermission(ctx, 'permission.update');
     return this.permissionService.updatePermission(id, data);
   }
 
@@ -86,7 +86,7 @@ export class PermissionRouter {
     @Input() input: { id: string },
     @Ctx() ctx: AppContext,
   ) {
-    await this.checkPermission(ctx, 'permissions.delete');
+    await this.checkPermission(ctx, 'permission.delete');
     return this.permissionService.deletePermission(input.id);
   }
 

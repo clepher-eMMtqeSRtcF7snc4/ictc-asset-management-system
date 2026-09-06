@@ -1,5 +1,5 @@
 import { RoleService } from './role.service';
-import { Input, Mutation, Query, Router, UseMiddlewares } from 'nestjs-trpc-v2';
+import { Ctx, Input, Mutation, Query, Router, UseMiddlewares } from 'nestjs-trpc-v2';
 import { z } from 'zod';
 import {
   rbacRoleSchema,
@@ -25,7 +25,7 @@ export class RoleRouter {
 
   @Query({ input: z.object({}), output: z.array(z.string()) })
   async getModules(@Ctx() ctx: AppContext) {
-    await this.checkPermission(ctx, 'roles.read');
+    await this.checkPermission(ctx, 'role.read');
     return this.roleService.getModules();
   }
 
@@ -44,7 +44,7 @@ export class RoleRouter {
     }),
   })
   async getRoles(@Input() input: any, @Ctx() ctx: AppContext) {
-    await this.checkPermission(ctx, 'roles.read');
+    await this.checkPermission(ctx, 'role.read');
     return this.roleService.findRoles(input);
   }
 
@@ -53,7 +53,7 @@ export class RoleRouter {
     output: rbacRoleSchema,
   })
   async getRoleById(@Input() input: { id: string }, @Ctx() ctx: AppContext) {
-    await this.checkPermission(ctx, 'roles.read');
+    await this.checkPermission(ctx, 'role.read');
     return this.roleService.findRoleById(input.id);
   }
 
@@ -62,7 +62,7 @@ export class RoleRouter {
     output: rbacRoleSchema,
   })
   async createRole(@Input() input: any, @Ctx() ctx: AppContext) {
-    await this.checkPermission(ctx, 'roles.create');
+    await this.checkPermission(ctx, 'role.create');
     return this.roleService.createRole(input);
   }
 
@@ -72,13 +72,13 @@ export class RoleRouter {
   })
   async updateRole(@Input() input: any, @Ctx() ctx: AppContext) {
     const { id, ...data } = input;
-    await this.checkPermission(ctx, 'roles.update');
+    await this.checkPermission(ctx, 'role.update');
     return this.roleService.updateRole(id, data);
   }
 
   @Mutation({ input: z.object({ id: z.string() }) })
   async deleteRole(@Input() input: { id: string }, @Ctx() ctx: AppContext) {
-    await this.checkPermission(ctx, 'roles.delete');
+    await this.checkPermission(ctx, 'role.delete');
     return this.roleService.deleteRole(input.id);
   }
 
@@ -90,7 +90,7 @@ export class RoleRouter {
     @Input() input: { id: string },
     @Ctx() ctx: AppContext,
   ) {
-    await this.checkPermission(ctx, 'roles.read');
+    await this.checkPermission(ctx, 'role.read');
     return this.roleService.getRolePermissions(input.id);
   }
 
@@ -105,7 +105,7 @@ export class RoleRouter {
     @Input() input: { id: string; permissionIds: string[] },
     @Ctx() ctx: AppContext,
   ) {
-    await this.checkPermission(ctx, 'roles.manage_permissions');
+    await this.checkPermission(ctx, 'role.manage');
     return this.roleService.syncRolePermissions(input.id, input.permissionIds);
   }
 

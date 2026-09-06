@@ -17,6 +17,23 @@ const appRouter = t.router({
       image: z.string().nullable(),
     })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
+  authAuthorizationRouter: t.router({
+    getAuthorization: publicProcedure.output(z.object({
+      data: z.object({
+        userId: z.string(),
+        roles: z.array(
+          z.object({
+            id: z.string(),
+            code: z.string(),
+            name: z.string(),
+          }),
+        ),
+        permissions: z.array(z.string()),
+        isSuperAdmin: z.boolean(),
+        isAdmin: z.boolean(),
+      }),
+    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+  }),
   buildingRouter: t.router({
     create: publicProcedure.input(z.object({
       name: z.string().trim().min(1, "This field is required").max(150),
@@ -1446,7 +1463,7 @@ const appRouter = t.router({
       description: z.string().nullable(),
       module: z.string(),
       action: z.string(),
-    }))).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+    }))).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
   }),
   permissionRouter: t.router({
     getModules: publicProcedure.input(z.object({})).output(z.array(z.string())).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
@@ -1506,7 +1523,7 @@ const appRouter = t.router({
       module: z.string(),
       action: z.string(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
-    deletePermission: publicProcedure.input(z.object({ id: z.string() })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+    deletePermission: publicProcedure.input(z.object({ id: z.string() })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
   }),
   userRbacRouter: t.router({
     getUsers: publicProcedure.input(z.object({
@@ -1656,22 +1673,7 @@ const appRouter = t.router({
       userId: z.string(),
       roleIds: z.array(z.string().uuid()),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
-  }),
-  auth: t.router({
-    getAuthorization: publicProcedure.output(z.object({
-      data: z.object({
-        userId: z.string(),
-        roles: z.array(z.object({
-          id: z.string(),
-          code: z.string(),
-          name: z.string(),
-        })),
-        permissions: z.array(z.string()),
-        isSuperAdmin: z.boolean(),
-        isAdmin: z.boolean(),
-      }),
-    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
-  }),
+  })
 });
 export type AppRouter = typeof appRouter;
 

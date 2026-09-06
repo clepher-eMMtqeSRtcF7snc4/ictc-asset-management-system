@@ -29,7 +29,7 @@ interface AuthorizationContextType {
 const AuthorizationContext = createContext<AuthorizationContextType | undefined>(undefined);
 
 export function AuthorizationProvider({ children }: { children: React.ReactNode }) {
-  const { data, isLoading, refetch } = trpc.auth.getAuthorization.useQuery(undefined, {
+  const { data, isLoading, refetch } = trpc.authAuthorizationRouter.getAuthorization.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
     retry: false,
   });

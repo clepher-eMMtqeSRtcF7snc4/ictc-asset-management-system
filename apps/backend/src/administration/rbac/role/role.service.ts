@@ -157,7 +157,7 @@ export class RoleService {
   ) {
     const role = await this.findRoleById(id);
 
-    if (role.code === 'super_admin' && input.code && input.code !== 'super_admin') {
+    if (role.code === 'SUPER_ADMIN' && input.code && input.code !== 'SUPER_ADMIN') {
       throw new ForbiddenException(
         'Cannot change the code of the Super Admin role',
       );
@@ -206,7 +206,7 @@ export class RoleService {
   async deleteRole(id: string) {
     const role = await this.findRoleById(id);
     
-    if (role.code === 'super_admin' || role.code === 'admin') {
+    if (role.code === 'SUPER_ADMIN' || role.code === 'ADMIN') {
       throw new ForbiddenException(
         'System roles (Super Admin, Admin) cannot be deleted',
       );

@@ -36,12 +36,7 @@ export class RbacService {
       })
       .from(userRoles)
       .innerJoin(roles, eq(userRoles.roleId, roles.id))
-      .where(
-        and(
-          eq(userRoles.userId, userId),
-          eq(roles.status, 'active'),
-        ),
-      );
+      .where(and(eq(userRoles.userId, userId), eq(roles.status, 'active')));
 
     const roleIds = userRoleRows.map((r) => r.roleId);
     let permissionSet = new Set<string>();
@@ -61,15 +56,11 @@ export class RbacService {
           ),
         );
 
-      permissionSet = new Set(
-        permissionRows.map((r) => r.permissionCode),
-      );
+      permissionSet = new Set(permissionRows.map((r) => r.permissionCode));
     }
 
-    const isSuperAdmin = userRoleRows.some(
-      (r) => r.roleCode === 'super_admin',
-    );
-    const isAdmin = userRoleRows.some((r) => r.roleCode === 'admin');
+    const isSuperAdmin = userRoleRows.some((r) => r.roleCode === 'SUPER_ADMIN');
+    const isAdmin = userRoleRows.some((r) => r.roleCode === 'ADMIN');
 
     return {
       userId,

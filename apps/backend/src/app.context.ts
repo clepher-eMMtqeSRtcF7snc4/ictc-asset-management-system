@@ -1,6 +1,6 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ContextOptions, TRPCContext } from 'nestjs-trpc-v2';
-import { AuthService } from './auth/auth.service';
+import { AuthService } from '@thallesp/nestjs-better-auth';
 
 @Injectable()
 export class AppContext implements TRPCContext {
@@ -9,7 +9,9 @@ export class AppContext implements TRPCContext {
   async create(
     opts: ContextOptions,
   ): Promise<Record<string, unknown>> {
-    const session = await this.authService.getSession(opts.req);
+    const session = await this.authService.api.getSession({
+      headers: opts.req.headers,
+    });
     
     return {
       req: opts.req,

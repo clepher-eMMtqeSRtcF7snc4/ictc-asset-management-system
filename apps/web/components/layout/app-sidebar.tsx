@@ -113,28 +113,6 @@ const data = {
         { title: "Report Center", url: "/reports" },
       ],
     },
-    {
-      title: "Role & Permission",
-      url: "/administration/roles-permissions",
-      icon: <ShieldCheck />,
-      items: [
-        {
-          title: "Users",
-          url: "/administration/roles-permissions",
-          requiredPermission: "users.read",
-        },
-        {
-          title: "Roles",
-          url: "/administration/roles-permissions",
-          requiredPermission: "roles.read",
-        },
-        {
-          title: "Permissions",
-          url: "/administration/roles-permissions",
-          requiredPermission: "permissions.read",
-        },
-      ],
-    },
   ],
   administration: [
     { name: "Users", url: "/administration/roles-permissions", icon: <UsersRound /> },
@@ -172,7 +150,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const authorizedAdministration = React.useMemo(() => {
     return data.administration.filter((item) => {
       if (item.url === "/administration/roles-permissions") {
-        return can("users.read") || can("roles.read") || can("permissions.read")
+        return can("user.read") || can("role.read") || can("permission.read")
       }
       return true
     })

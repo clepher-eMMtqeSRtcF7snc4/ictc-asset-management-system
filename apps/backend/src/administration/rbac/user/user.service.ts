@@ -39,7 +39,7 @@ export class UserRbacService {
       .innerJoin(roles, eq(userRoles.roleId, roles.id))
       .where(eq(userRoles.userId, userId));
 
-    return userRoleRows.some((row) => row.code === 'admin');
+    return userRoleRows.some((row) => row.code === 'ADMIN');
   }
 
   async getCurrentUser(userId: string) {
@@ -68,7 +68,7 @@ export class UserRbacService {
       createdAt: foundUser.createdAt,
       updatedAt: foundUser.updatedAt,
       roles: userRoleRows.map((row) => row.code),
-      isAdmin: userRoleRows.some((row) => row.code === 'admin'),
+      isAdmin: userRoleRows.some((row) => row.code === 'ADMIN'),
     };
   }
 

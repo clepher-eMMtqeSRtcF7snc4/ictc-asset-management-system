@@ -1,13 +1,8 @@
-import {
-  Ctx,
-  Query,
-  Router,
-  UseMiddlewares,
-} from 'nestjs-trpc-v2';
+import { Ctx, Query, Router, UseMiddlewares } from 'nestjs-trpc-v2';
 import { z } from 'zod';
-import { AuthTrpcMiddleware } from '../auth-trpc.middleware';
-import { RbacService } from '../../administration/rbac/authorization/rbac.service';
-import { AppContext } from '../../app.context.interface';
+import { AuthTrpcMiddleware } from './auth-trpc.middleware';
+import { RbacService } from '../administration/rbac/authorization/rbac.service';
+import { AppContext } from '../app.context.interface';
 
 const authorizationOutputSchema = z.object({
   userId: z.string(),

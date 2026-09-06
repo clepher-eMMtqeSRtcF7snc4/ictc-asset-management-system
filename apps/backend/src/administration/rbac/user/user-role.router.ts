@@ -50,7 +50,7 @@ export class UserRoleRouter {
     @Input() input: any,
     @Ctx() ctx: AppContext,
   ) {
-    await this.checkPermission(ctx, 'users.read');
+    await this.checkPermission(ctx, 'user.read');
     return this.userRoleService.findUsersWithRoles(input);
   }
 
@@ -62,7 +62,7 @@ export class UserRoleRouter {
     @Input() input: { userId: string },
     @Ctx() ctx: AppContext,
   ) {
-    await this.checkPermission(ctx, 'users.read');
+    await this.checkPermission(ctx, 'user.read');
     return this.userRoleService.getRolesByUserId(input.userId);
   }
 
@@ -74,7 +74,7 @@ export class UserRoleRouter {
     @Input() input: { userId: string },
     @Ctx() ctx: AppContext,
   ) {
-    await this.checkPermission(ctx, 'users.read');
+    await this.checkPermission(ctx, 'user.read');
     return this.userRoleService.getRoleAssignmentOptions(input.userId);
   }
 
@@ -85,7 +85,7 @@ export class UserRoleRouter {
     @Input() input: { userId: string; roleIds: string[] },
     @Ctx() ctx: AppContext,
   ) {
-    await this.checkPermission(ctx, 'users.manage_roles');
+    await this.checkPermission(ctx, 'user.manage');
     return this.userRoleService.assignMany(input.userId, input.roleIds);
   }
 
@@ -96,7 +96,7 @@ export class UserRoleRouter {
     @Input() input: { userId: string; roleId: string },
     @Ctx() ctx: AppContext,
   ) {
-    await this.checkPermission(ctx, 'users.manage_roles');
+    await this.checkPermission(ctx, 'user.manage');
     return this.userRoleService.assign(input.userId, input.roleId);
   }
 
@@ -107,7 +107,7 @@ export class UserRoleRouter {
     @Input() input: { userId: string; roleId: string },
     @Ctx() ctx: AppContext,
   ) {
-    await this.checkPermission(ctx, 'users.manage_roles');
+    await this.checkPermission(ctx, 'user.manage');
     return this.userRoleService.remove(input.userId, input.roleId);
   }
 
@@ -118,7 +118,7 @@ export class UserRoleRouter {
     @Input() input: { userId: string; roleIds: string[] },
     @Ctx() ctx: AppContext,
   ) {
-    await this.checkPermission(ctx, 'users.manage_roles');
+    await this.checkPermission(ctx, 'user.manage');
     return this.userRoleService.replace(input.userId, input.roleIds);
   }
 

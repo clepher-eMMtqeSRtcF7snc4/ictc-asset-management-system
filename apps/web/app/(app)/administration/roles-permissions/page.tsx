@@ -10,9 +10,9 @@ import { useMemo } from "react";
 export default function Page() {
   const { can, isLoading } = useAuthorization();
 
-  const canViewUsers = can("users.read");
-  const canViewRoles = can("roles.read");
-  const canViewPermissions = can("permissions.read");
+  const canViewUsers = can("user.read");
+  const canViewRoles = can("role.read");
+  const canViewPermissions = can("permission.read");
 
   const defaultTab = useMemo(() => {
     if (canViewUsers) return "users";
