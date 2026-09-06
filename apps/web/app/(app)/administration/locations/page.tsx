@@ -19,9 +19,17 @@ import { DepartmentTable } from "@/components/administration/locations/departmen
 import { DepartmentDialog } from "@/components/administration/locations/department/department-dialog";
 import { DepartmentDeleteDialog } from "@/components/administration/locations/department/department-delete-dialog";
 import { DepartmentAssignDialog } from "@/components/administration/locations/department/department-assign-dialog";
+import { useAuthorization } from "@/hooks/use-authorization";
 
 export default function Page() {
   const router = useRouter();
+  const { can, isLoading: authLoading } = useAuthorization();
+
+  const canViewOffice = can("office.read");
+  const canManageOffice = can("office.manage");
+  const canViewDepartment = can("department.read");
+  const canManageDepartment = can("department.manage");
+
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [page, setPage] = useState(1);
@@ -30,7 +38,9 @@ export default function Page() {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
-  const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(null);
+  const [selectedBuilding, setSelectedBuilding] = useState<Building | null>(
+    null,
+  );
   const [createError, setCreateError] = useState<string | null>(null);
   const [deptSearch, setDeptSearch] = useState("");
   const [deptStatus, setDeptStatus] = useState("all");
@@ -40,9 +50,12 @@ export default function Page() {
   const [deptEditOpen, setDeptEditOpen] = useState(false);
   const [deptDeleteOpen, setDeptDeleteOpen] = useState(false);
   const [deptEditId, setDeptEditId] = useState<number | null>(null);
-  const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null);
+  const [selectedDepartment, setSelectedDepartment] =
+    useState<Department | null>(null);
   const [deptCreateError, setDeptCreateError] = useState<string | null>(null);
-  const [assignMode, setAssignMode] = useState<"supervisor" | "custodian" | null>(null);
+  const [assignMode, setAssignMode] = useState<
+    "supervisor" | "custodian" | null
+  >(null);
 
   const handleAssignHead = (department: Department) => {
     setSelectedDepartment(department);
@@ -54,59 +67,89 @@ export default function Page() {
     setAssignMode("custodian");
   };
 
-const departmentsQuery = trpc.departmentRouter.getDepartments.useQuery(
-     {
-       search: deptSearch || undefined,
-       status: deptStatus === "all" ? undefined : (deptStatus as "active" | "inactive"),
-       page: deptPage,
-       pageSize: deptPageSize,
-     },
-     { placeholderData: keepPreviousData },
-   );
+  const departmentsQuery = trpc.departmentRouter.getDepartments.useQuery(
+    {
+      search: deptSearch || undefined,
+      status:
+        deptStatus === "all"
+          ? undefined
+          : (deptStatus as "active" | "inactive"),
+      page: deptPage,
+      pageSize: deptPageSize,
+    },
+    {
+      enabled: canViewDepartment,
+      placeholderData: keepPreviousData,
+    },
+  );
 
   const editDepartmentQuery = trpc.departmentRouter.getDepartmentById.useQuery(
     { id: deptEditId! },
-    { enabled: deptEditId !== null },
-);
-  
+    { enabled: canViewDepartment && deptEditId !== null },
+  );
+
   const departments = departmentsQuery.data?.items ?? [];
   const deptTotalPages = departmentsQuery.data?.totalPages ?? 1;
 
   const allEmployeesQuery = trpc.employeeRouter.getEmployees.useQuery(
     { pageSize: 100 },
+    { enabled: canViewDepartment },
   );
   const employeeMap = useMemo(() => {
-    const map = new Map<number, { firstName: string; lastName: string; middleName: string }>();
+    const map = new Map<
+      number,
+      { firstName: string; lastName: string; middleName: string }
+    >();
     (allEmployeesQuery.data?.items ?? []).forEach((e: any) => {
-      map.set(e.id, { firstName: e.firstName, lastName: e.lastName, middleName: e.middleName });
+      map.set(e.id, {
+        firstName: e.firstName,
+        lastName: e.lastName,
+        middleName: e.middleName,
+      });
     });
     return map;
   }, [allEmployeesQuery.data]);
 
-  const enrichedDepartments = useMemo(() => departments.map((dept) => {
-    const raw = dept as Record<string, unknown>;
-    const createdAt = raw.createdAt ? new Date(raw.createdAt as string) : undefined;
-    const updatedAt = raw.updatedAt ? new Date(raw.updatedAt as string) : undefined;
-    const supId = dept.supervisorId;
-    const custId = dept.custodianId;
-    return {
-      ...dept,
-      createdAt,
-      updatedAt,
-      supervisorName: supId != null && employeeMap.has(supId)
-        ? (() => {
-            const e = employeeMap.get(supId)!;
-            return [e.firstName, e.middleName, e.lastName].filter(Boolean).join(" ").trim();
-          })()
-        : null,
-      custodianName: custId != null && employeeMap.has(custId)
-        ? (() => {
-            const e = employeeMap.get(custId)!;
-            return [e.firstName, e.middleName, e.lastName].filter(Boolean).join(" ").trim();
-          })()
-        : null,
-    };
-  }), [departments, employeeMap]);
+  const enrichedDepartments = useMemo(
+    () =>
+      departments.map((dept) => {
+        const raw = dept as Record<string, unknown>;
+        const createdAt = raw.createdAt
+          ? new Date(raw.createdAt as string)
+          : undefined;
+        const updatedAt = raw.updatedAt
+          ? new Date(raw.updatedAt as string)
+          : undefined;
+        const supId = dept.supervisorId;
+        const custId = dept.custodianId;
+        return {
+          ...dept,
+          createdAt,
+          updatedAt,
+          supervisorName:
+            supId != null && employeeMap.has(supId)
+              ? (() => {
+                  const e = employeeMap.get(supId)!;
+                  return [e.firstName, e.middleName, e.lastName]
+                    .filter(Boolean)
+                    .join(" ")
+                    .trim();
+                })()
+              : null,
+          custodianName:
+            custId != null && employeeMap.has(custId)
+              ? (() => {
+                  const e = employeeMap.get(custId)!;
+                  return [e.firstName, e.middleName, e.lastName]
+                    .filter(Boolean)
+                    .join(" ")
+                    .trim();
+                })()
+              : null,
+        };
+      }),
+    [departments, employeeMap],
+  );
 
   const deptEditDefaults = useMemo(() => {
     const dept = editDepartmentQuery.data;
@@ -184,15 +227,21 @@ const departmentsQuery = trpc.departmentRouter.getDepartments.useQuery(
       page,
       pageSize,
     },
-    { placeholderData: keepPreviousData },
+    {
+      enabled: canViewOffice,
+      placeholderData: keepPreviousData,
+    },
   );
 
-  const roomCountsQuery = trpc.roomRouter.getRoomCountsByBuilding.useQuery({});
+  const roomCountsQuery = trpc.roomRouter.getRoomCountsByBuilding.useQuery(
+    {},
+    { enabled: canViewOffice },
+  );
   const roomCounts = roomCountsQuery.data ?? {};
 
   const editBuildingQuery = trpc.buildingRouter.getBuildingById.useQuery(
     { id: editId! },
-    { enabled: editId !== null },
+    { enabled: canViewOffice && editId !== null },
   );
 
   const buildings = buildingsQuery.data?.items ?? [];
@@ -264,6 +313,34 @@ const departmentsQuery = trpc.departmentRouter.getDepartments.useQuery(
     deleteBuilding.mutate({ id: selectedBuilding.id });
   };
 
+  if (authLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-lg font-semibold">Locations</h2>
+          <p className="text-sm text-muted-foreground">
+            Loading authorization...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const hasAnyAccess = canViewOffice || canViewDepartment;
+
+  if (!hasAnyAccess) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-lg font-semibold">Locations</h2>
+          <p className="text-sm text-muted-foreground">
+            You do not have permission to access this page.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -273,185 +350,207 @@ const departmentsQuery = trpc.departmentRouter.getDepartments.useQuery(
         </p>
       </div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between gap-4">
-          <div>
-            <CardTitle>Building</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Manage building and physical locations used by assets.
-            </p>
-          </div>
-          <Button onClick={() => {
-            setCreateError(null);
-            setCreateOpen(true);
-          }}>
-            <Plus /> Create Building
-          </Button>
-        </CardHeader>
-        <CardContent className="space-y-4 overflow-y-auto">
-          <BuildingFilters
-            search={search}
-            onSearchChange={(value) => {
-              setSearch(value);
-              setPage(1);
-            }}
-            status={status}
-            onStatusChange={(value) => {
-              setStatus(value);
-              setPage(1);
-            }}
-          />
-          <BuildingTable
+      {canViewOffice && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between gap-4">
+            <div>
+              <CardTitle>Building</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Manage building and physical locations used by assets.
+              </p>
+            </div>
+            {canManageOffice && (
+              <Button
+                onClick={() => {
+                  setCreateError(null);
+                  setCreateOpen(true);
+                }}
+              >
+                <Plus /> Create Building
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent className="space-y-4 overflow-y-auto">
+            <BuildingFilters
+              search={search}
+              onSearchChange={(value) => {
+                setSearch(value);
+                setPage(1);
+              }}
+              status={status}
+              onStatusChange={(value) => {
+                setStatus(value);
+                setPage(1);
+              }}
+            />
+            <BuildingTable
               data={buildings}
               page={page}
               pageSize={pageSize}
               totalPages={totalPages}
-            onPaginationChange={(next) => {
-              setPage(next.page);
-              setPageSize(next.pageSize);
-            }}
-            onEdit={(building) => {
-              setEditId(building.id);
-              setEditOpen(true);
-            }}
-            onDelete={(building) => {
-              setSelectedBuilding(building);
-              setDeleteOpen(true);
-            }}
-            roomCounts={roomCounts}
-          />
-        </CardContent>
-
-        <BuildingDialog
-          open={createOpen}
-          onOpenChange={setCreateOpen}
-          onSubmit={handleCreate}
-          errorMessage={createError}
-          onClearError={() => setCreateError(null)}
-          title="Create Building"
-        />
-
-        <BuildingDialog
-          open={editOpen}
-          onOpenChange={(open) => {
-            setEditOpen(open);
-            if (!open) setEditId(null);
-          }}
-          onSubmit={handleUpdate}
-          defaultValues={editDefaults}
-          title="Edit Building"
-        />
-
-        <BuildingDeleteDialog
-          open={deleteOpen}
-          onOpenChange={setDeleteOpen}
-          onConfirm={handleDelete}
-          roomName={selectedBuilding?.name ?? ""}
-        />
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between gap-4">
-          <div>
-            <CardTitle>Department</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Manage organizational departments.
-            </p>
-          </div>
-          <Button onClick={() => {
-            setDeptCreateError(null);
-            setDeptCreateOpen(true);
-          }}>
-            <Plus /> Create Department
-          </Button>
-        </CardHeader>
-        <CardContent className="space-y-4 overflow-y-auto">
-          <DepartmentFilters
-            search={deptSearch}
-            onSearchChange={(value) => {
-              setDeptSearch(value);
-              setDeptPage(1);
-            }}
-            status={deptStatus}
-            onStatusChange={(value) => {
-              setDeptStatus(value);
-              setDeptPage(1);
-            }}
-          />
-          {departmentsQuery.isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <p className="text-muted-foreground">Loading departments...</p>
-            </div>
-          ) : (
-            <DepartmentTable
-              data={enrichedDepartments}
-              page={deptPage}
-              pageSize={deptPageSize}
-              totalPages={deptTotalPages}
               onPaginationChange={(next) => {
-                setDeptPage(next.page);
-                setDeptPageSize(next.pageSize);
+                setPage(next.page);
+                setPageSize(next.pageSize);
               }}
-              onEdit={(dept) => {
-                setDeptEditId(dept.id);
-                setDeptEditOpen(true);
+              onEdit={(building) => {
+                setEditId(building.id);
+                setEditOpen(true);
               }}
-              onDelete={(dept) => {
-                setSelectedDepartment(dept);
-                setDeptDeleteOpen(true);
+              onDelete={(building) => {
+                setSelectedBuilding(building);
+                setDeleteOpen(true);
               }}
-              onAssignHead={handleAssignHead}
-              onAssignCustodian={handleAssignCustodian}
+              roomCounts={roomCounts}
+              canManage={canManageOffice}
             />
+          </CardContent>
+
+          {canManageOffice && (
+            <>
+              <BuildingDialog
+                open={createOpen}
+                onOpenChange={setCreateOpen}
+                onSubmit={handleCreate}
+                errorMessage={createError}
+                onClearError={() => setCreateError(null)}
+                title="Create Building"
+              />
+
+              <BuildingDialog
+                open={editOpen}
+                onOpenChange={(open) => {
+                  setEditOpen(open);
+                  if (!open) setEditId(null);
+                }}
+                onSubmit={handleUpdate}
+                defaultValues={editDefaults}
+                title="Edit Building"
+              />
+
+              <BuildingDeleteDialog
+                open={deleteOpen}
+                onOpenChange={setDeleteOpen}
+                onConfirm={handleDelete}
+                roomName={selectedBuilding?.name ?? ""}
+              />
+            </>
           )}
-        </CardContent>
+        </Card>
+      )}
 
-        <DepartmentDialog
-          open={deptCreateOpen}
-          onOpenChange={setDeptCreateOpen}
-          onSubmit={handleCreateDepartment}
-          errorMessage={deptCreateError}
-          onClearError={() => setDeptCreateError(null)}
-          title="Create Department"
-        />
+      {canViewDepartment && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between gap-4">
+            <div>
+              <CardTitle>Department</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Manage organizational departments.
+              </p>
+            </div>
+            {canManageDepartment && (
+              <Button
+                onClick={() => {
+                  setDeptCreateError(null);
+                  setDeptCreateOpen(true);
+                }}
+              >
+                <Plus /> Create Department
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent className="space-y-4 overflow-y-auto">
+            <DepartmentFilters
+              search={deptSearch}
+              onSearchChange={(value) => {
+                setDeptSearch(value);
+                setDeptPage(1);
+              }}
+              status={deptStatus}
+              onStatusChange={(value) => {
+                setDeptStatus(value);
+                setDeptPage(1);
+              }}
+            />
+            {departmentsQuery.isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <p className="text-muted-foreground">Loading departments...</p>
+              </div>
+            ) : (
+              <DepartmentTable
+                data={enrichedDepartments}
+                page={deptPage}
+                pageSize={deptPageSize}
+                totalPages={deptTotalPages}
+                onPaginationChange={(next) => {
+                  setDeptPage(next.page);
+                  setDeptPageSize(next.pageSize);
+                }}
+                onEdit={(dept) => {
+                  setDeptEditId(dept.id);
+                  setDeptEditOpen(true);
+                }}
+                onDelete={(dept) => {
+                  setSelectedDepartment(dept);
+                  setDeptDeleteOpen(true);
+                }}
+                onAssignHead={handleAssignHead}
+                onAssignCustodian={handleAssignCustodian}
+                canManage={canManageDepartment}
+              />
+            )}
+          </CardContent>
 
-        <DepartmentDialog
-          open={deptEditOpen}
-          onOpenChange={(open) => {
-            setDeptEditOpen(open);
-            if (!open) setDeptEditId(null);
-          }}
-          onSubmit={handleUpdateDepartment}
-          defaultValues={deptEditDefaults}
-          title="Edit Department"
-        />
+          {canManageDepartment && (
+            <>
+              <DepartmentDialog
+                open={deptCreateOpen}
+                onOpenChange={setDeptCreateOpen}
+                onSubmit={handleCreateDepartment}
+                errorMessage={deptCreateError}
+                onClearError={() => setDeptCreateError(null)}
+                title="Create Department"
+              />
 
-        <DepartmentDeleteDialog
-          open={deptDeleteOpen}
-          onOpenChange={setDeptDeleteOpen}
-          onConfirm={handleDeleteDepartment}
-          departmentName={selectedDepartment?.name ?? ""}
-        />
+              <DepartmentDialog
+                open={deptEditOpen}
+                onOpenChange={(open) => {
+                  setDeptEditOpen(open);
+                  if (!open) setDeptEditId(null);
+                }}
+                onSubmit={handleUpdateDepartment}
+                defaultValues={deptEditDefaults}
+                title="Edit Department"
+              />
 
-        {assignMode && (
-          <DepartmentAssignDialog
-            open={assignMode !== null}
-            onOpenChange={(open) => {
-              if (!open) {
-                setAssignMode(null);
-                setSelectedDepartment(null);
-              }
-            }}
-            department={selectedDepartment}
-            mode={assignMode}
-            onSuccess={() => {
-              utils.departmentRouter.getDepartments.invalidate();
-              utils.employeeRouter.getEmployees.invalidate();
-              toast.success("Assignment updated successfully.");
-            }}
-          />
-        )}
-      </Card>
+              <DepartmentDeleteDialog
+                open={deptDeleteOpen}
+                onOpenChange={setDeptDeleteOpen}
+                onConfirm={handleDeleteDepartment}
+                departmentName={selectedDepartment?.name ?? ""}
+              />
+
+              {assignMode && (
+                <DepartmentAssignDialog
+                  open={assignMode !== null}
+                  onOpenChange={(open) => {
+                    if (!open) {
+                      setAssignMode(null);
+                      setSelectedDepartment(null);
+                    }
+                  }}
+                  department={selectedDepartment}
+                  mode={assignMode}
+                  onSuccess={() => {
+                    utils.departmentRouter.getDepartments.invalidate();
+                    utils.employeeRouter.getEmployees.invalidate();
+                    toast.success("Assignment updated successfully.");
+                  }}
+                />
+              )}
+            </>
+          )}
+        </Card>
+      )}
     </div>
   );
 }

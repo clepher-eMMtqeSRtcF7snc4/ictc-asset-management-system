@@ -28,6 +28,7 @@ interface BuildingTableProps {
   onEdit: (building: Building) => void;
   onDelete: (building: Building) => void;
   roomCounts?: Record<number, number>;
+  canManage?: boolean;
 }
 
 export function BuildingTable({
@@ -39,6 +40,7 @@ export function BuildingTable({
   onEdit,
   onDelete,
   roomCounts = {},
+  canManage = true,
 }: BuildingTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -60,11 +62,15 @@ export function BuildingTable({
                   <DropdownMenuItem asChild>
                     <Link href={{pathname:`/administration/locations/${row.original.id}`, query: {name:row.original.name, desc: row.original.description ?? "—"}}}><BuildingIcon/> Rooms</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onEdit(row.original)}><Pen /> Edit</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive" onClick={() => onDelete(row.original)}>
-                    <Trash2/> Delete
-                  </DropdownMenuItem>
+                  {canManage && (
+                    <>
+                      <DropdownMenuItem onClick={() => onEdit(row.original)}><Pen /> Edit</DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="text-destructive" onClick={() => onDelete(row.original)}>
+                        <Trash2/> Delete
+                      </DropdownMenuItem>
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             ),
@@ -72,7 +78,7 @@ export function BuildingTable({
         }
         return column;
       }),
-    [onEdit, onDelete, roomCounts]
+    [onEdit, onDelete, roomCounts, canManage]
   );
 
   const table = useReactTable({

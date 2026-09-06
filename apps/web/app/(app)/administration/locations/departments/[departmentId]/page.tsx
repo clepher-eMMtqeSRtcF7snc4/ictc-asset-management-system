@@ -17,12 +17,21 @@ import { DepartmentEmployeeDialog } from "@/components/administration/locations/
 import { DepartmentEmployeeDeleteDialog } from "@/components/administration/locations/department-employee/dep-emp-delete-dialog";
 import { EmployeeRow } from "@/components/administration/locations/department-employee/dep-emp-types";
 import { CreateEmployeeInput, Employee } from "@repo/trpc/schemas";
+import { useAuthorization } from "@/hooks/use-authorization";
 
 const DEFAULT_PAGE_SIZE = 10;
 
 export default function Page() {
   const params = useParams();
   const departmentId = params.departmentId ? Number(params.departmentId) : null;
+  const { can, isLoading: authLoading } = useAuthorization();
+
+  const canViewDepartment = can("department.read");
+  const canViewEmployee = can("employee.read");
+  const canCreateEmployee = can("employee.create");
+  const canUpdateEmployee = can("employee.update");
+  const canDeleteEmployee = can("employee.delete");
+
   const [createOpen, setCreateOpen] = useState(false);
   const [editEmployee, setEditEmployee] = useState<Employee | null>(null);
   const [deleteEmployee, setDeleteEmployee] = useState<Employee | null>(null);
@@ -38,27 +47,30 @@ export default function Page() {
 
   const departmentsQuery = trpc.departmentRouter.getDepartments.useQuery(
     { pageSize: 100 },
-    { enabled: !!departmentId }
+    { enabled: !!departmentId && canViewDepartment },
   );
 
   const positionsQuery = trpc.positionRouter.getPositions.useQuery(
     { status: "active", pageSize: 100 },
-    { enabled: !!departmentId }
+    { enabled: !!departmentId && canViewEmployee },
   );
 
   const designationsQuery = trpc.designationRouter.getDesignations.useQuery(
     { status: "active", pageSize: 100 },
-    { enabled: !!departmentId }
+    { enabled: !!departmentId && canViewEmployee },
   );
 
   const department = trpc.departmentRouter.getDepartmentById.useQuery(
     { id: departmentId! },
-    { enabled: !!departmentId }
+    { enabled: !!departmentId && canViewDepartment },
   );
 
   const supervisorQuery = trpc.employeeRouter.getEmployeeById.useQuery(
     { id: department.data?.supervisorId ?? 0 },
-    { enabled: !!departmentId && !!department.data?.supervisorId }
+    {
+      enabled:
+        !!departmentId && !!department.data?.supervisorId && canViewEmployee,
+    },
   );
 
   const employeesQuery = trpc.employeeRouter.getEmployees.useQuery(
@@ -71,16 +83,25 @@ export default function Page() {
       page,
       pageSize,
     },
-    { enabled: !!departmentId }
+    { enabled: !!departmentId && canViewEmployee },
   );
 
   const employees = employeesQuery.data?.items ?? [];
   const totalPages = employeesQuery.data?.totalPages ?? 1;
 
   const enrichedEmployees = useMemo(() => {
-    const departmentMap = new Map(departmentsQuery.data?.items.map((d) => [d.id, { code: d.code, color: d.color }]));
-    const positionMap = new Map(positionsQuery.data?.items.map((p) => [p.id, p.name]));
-    const designationMap = new Map(designationsQuery.data?.items.map((d) => [d.id, d.name]));
+    const departmentMap = new Map(
+      departmentsQuery.data?.items.map((d) => [
+        d.id,
+        { code: d.code, color: d.color },
+      ]),
+    );
+    const positionMap = new Map(
+      positionsQuery.data?.items.map((p) => [p.id, p.name]),
+    );
+    const designationMap = new Map(
+      designationsQuery.data?.items.map((d) => [d.id, d.name]),
+    );
 
     return employees.map((emp) => {
       const dept = departmentMap.get(emp.departmentId ?? 0);
@@ -88,11 +109,20 @@ export default function Page() {
         ...emp,
         departmentCode: dept?.code ?? "—",
         departmentColor: dept?.color ?? null,
-        positionName: emp.position ? (positionMap.get(emp.position) ?? emp.position) : "—",
-        designationName: emp.designation ? (designationMap.get(emp.designation) ?? emp.designation) : "—",
+        positionName: emp.position
+          ? (positionMap.get(emp.position) ?? emp.position)
+          : "—",
+        designationName: emp.designation
+          ? (designationMap.get(emp.designation) ?? emp.designation)
+          : "—",
       };
     });
-  }, [employees, departmentsQuery.data, positionsQuery.data, designationsQuery.data]);
+  }, [
+    employees,
+    departmentsQuery.data,
+    positionsQuery.data,
+    designationsQuery.data,
+  ]);
 
   const createMutation = trpc.employeeRouter.create.useMutation({
     onSuccess: () => {
@@ -136,7 +166,9 @@ export default function Page() {
     await createMutation.mutateAsync(values);
   };
 
-  const handleUpdate = async (values: CreateEmployeeInput & { id?: number }) => {
+  const handleUpdate = async (
+    values: CreateEmployeeInput & { id?: number },
+  ) => {
     setErrorMessage(null);
     if (!values.id) return;
     await updateMutation.mutateAsync(values as any);
@@ -150,6 +182,48 @@ export default function Page() {
 
   const employeeName = (emp: Employee) =>
     `${emp.firstName} ${emp.middleName ?? ""} ${emp.lastName}`.trim();
+
+  if (authLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <PageHeader
+            title={department.data?.name ?? "Department"}
+            description="Loading authorization..."
+            action={
+              <Link
+                className="flex gap-1.5 text-primary text-sm font-semibold"
+                href="/administration/locations"
+              >
+                <ArrowLeft width="20" height="20" /> Back to locations
+              </Link>
+            }
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (!canViewDepartment || !canViewEmployee) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <PageHeader
+            title={department.data?.name ?? "Department"}
+            description="You do not have permission to access this page."
+            action={
+              <Link
+                className="flex gap-1.5 text-primary text-sm font-semibold"
+                href="/administration/locations"
+              >
+                <ArrowLeft width="20" height="20" /> Back to locations
+              </Link>
+            }
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -192,20 +266,39 @@ export default function Page() {
                   : "No head assigned."}
             </p>
           </div>
-          <Button onClick={() => { setErrorMessage(null); setCreateOpen(true); }}>
-            <UserPlus2 /> Add Employee
-          </Button>
+          {canCreateEmployee && (
+            <Button
+              onClick={() => {
+                setErrorMessage(null);
+                setCreateOpen(true);
+              }}
+            >
+              <UserPlus2 /> Add Employee
+            </Button>
+          )}
         </CardHeader>
         <CardContent className="space-y-4 overflow-y-auto">
           <DepartmentEmployeeFilters
             search={search}
-            onSearchChange={(value) => { setSearch(value); setPage(1); }}
+            onSearchChange={(value) => {
+              setSearch(value);
+              setPage(1);
+            }}
             status={status}
-            onStatusChange={(value) => { setStatus(value); setPage(1); }}
+            onStatusChange={(value) => {
+              setStatus(value);
+              setPage(1);
+            }}
             position={position}
-            onPositionChange={(value) => { setPosition(value); setPage(1); }}
+            onPositionChange={(value) => {
+              setPosition(value);
+              setPage(1);
+            }}
             designation={designation}
-            onDesignationChange={(value) => { setDesignation(value); setPage(1); }}
+            onDesignationChange={(value) => {
+              setDesignation(value);
+              setPage(1);
+            }}
             positions={positionsQuery.data?.items ?? []}
             designations={designationsQuery.data?.items ?? []}
           />
@@ -228,52 +321,69 @@ export default function Page() {
                 setErrorMessage(null);
               }}
               onDelete={(emp) => setDeleteEmployee(emp)}
+              canUpdate={canUpdateEmployee}
+              canDelete={canDeleteEmployee}
             />
           )}
         </CardContent>
       </Card>
 
-      <DepartmentEmployeeDialog
-        open={createOpen}
-        onOpenChange={(open) => { setCreateOpen(open); if (!open) setErrorMessage(null); }}
-        onSubmit={handleCreate}
-        title="Create Employee"
-        errorMessage={errorMessage}
-        onClearError={() => setErrorMessage(null)}
-        defaultDepartmentId={departmentId ?? undefined}
-        departments={departmentsQuery.data?.items ?? []}
-      />
+      {canCreateEmployee && (
+        <DepartmentEmployeeDialog
+          open={createOpen}
+          onOpenChange={(open) => {
+            setCreateOpen(open);
+            if (!open) setErrorMessage(null);
+          }}
+          onSubmit={handleCreate}
+          title="Create Employee"
+          errorMessage={errorMessage}
+          onClearError={() => setErrorMessage(null)}
+          defaultDepartmentId={departmentId ?? undefined}
+          departments={departmentsQuery.data?.items ?? []}
+        />
+      )}
 
-      <DepartmentEmployeeDialog
-        open={!!editEmployee}
-        onOpenChange={(open) => {
-          if (!open) setEditEmployee(null);
-        }}
-        onSubmit={handleUpdate}
-        editId={editEmployee?.id}
-        defaultValues={editEmployee ? {
-          firstName: editEmployee.firstName,
-          middleName: editEmployee.middleName,
-          lastName: editEmployee.lastName,
-          email: editEmployee.email,
-          position: editEmployee.position,
-          designation: editEmployee.designation,
-          departmentId: editEmployee.departmentId,
-          status: editEmployee.status,
-          photo: editEmployee.photo,
-        } : undefined}
-        title={`Edit ${editEmployee ? employeeName(editEmployee) : "Employee"}`}
-        errorMessage={errorMessage}
-        onClearError={() => setErrorMessage(null)}
-        departments={departmentsQuery.data?.items ?? []}
-      />
+      {canUpdateEmployee && (
+        <DepartmentEmployeeDialog
+          open={!!editEmployee}
+          onOpenChange={(open) => {
+            if (!open) setEditEmployee(null);
+          }}
+          onSubmit={handleUpdate}
+          editId={editEmployee?.id}
+          defaultValues={
+            editEmployee
+              ? {
+                  firstName: editEmployee.firstName,
+                  middleName: editEmployee.middleName,
+                  lastName: editEmployee.lastName,
+                  email: editEmployee.email,
+                  position: editEmployee.position,
+                  designation: editEmployee.designation,
+                  departmentId: editEmployee.departmentId,
+                  status: editEmployee.status,
+                  photo: editEmployee.photo,
+                }
+              : undefined
+          }
+          title={`Edit ${editEmployee ? employeeName(editEmployee) : "Employee"}`}
+          errorMessage={errorMessage}
+          onClearError={() => setErrorMessage(null)}
+          departments={departmentsQuery.data?.items ?? []}
+        />
+      )}
 
-      <DepartmentEmployeeDeleteDialog
-        open={!!deleteEmployee}
-        onOpenChange={(open) => { if (!open) setDeleteEmployee(null); }}
-        onConfirm={handleDelete}
-        employeeName={deleteEmployee ? employeeName(deleteEmployee) : ""}
-      />
+      {canDeleteEmployee && (
+        <DepartmentEmployeeDeleteDialog
+          open={!!deleteEmployee}
+          onOpenChange={(open) => {
+            if (!open) setDeleteEmployee(null);
+          }}
+          onConfirm={handleDelete}
+          employeeName={deleteEmployee ? employeeName(deleteEmployee) : ""}
+        />
+      )}
     </div>
   );
 }

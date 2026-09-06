@@ -27,6 +27,7 @@ interface DepartmentTableProps {
   onDelete: (department: EnrichedDepartment) => void;
   onAssignHead: (department: EnrichedDepartment) => void;
   onAssignCustodian: (department: EnrichedDepartment) => void;
+  canManage?: boolean;
 }
 
 export function DepartmentTable({
@@ -39,6 +40,7 @@ export function DepartmentTable({
   onDelete,
   onAssignHead,
   onAssignCustodian,
+  canManage = true,
 }: DepartmentTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -62,19 +64,23 @@ export function DepartmentTable({
                       <UsersRoundIcon/> Employees
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onAssignHead(row.original)}>
-                    <UserRound/> Assign Head
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onAssignCustodian(row.original)}>
-                    <UserRound/> Assign Custodian
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onEdit(row.original)}>
-                    <Pen/> Edit
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive" onClick={() => onDelete(row.original)}>
-                    <Trash2/> Delete
-                  </DropdownMenuItem>
+                  {canManage && (
+                    <>
+                      <DropdownMenuItem onClick={() => onAssignHead(row.original)}>
+                        <UserRound/> Assign Head
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onAssignCustodian(row.original)}>
+                        <UserRound/> Assign Custodian
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onEdit(row.original)}>
+                        <Pen/> Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="text-destructive" onClick={() => onDelete(row.original)}>
+                        <Trash2/> Delete
+                      </DropdownMenuItem>
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             ),
@@ -82,7 +88,7 @@ export function DepartmentTable({
         }
         return column;
       }),
-    [onEdit, onDelete, onAssignHead, onAssignCustodian]
+    [onEdit, onDelete, onAssignHead, onAssignCustodian, canManage]
   );
 
   const table = useReactTable({

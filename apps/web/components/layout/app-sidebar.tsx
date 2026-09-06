@@ -30,7 +30,25 @@ import {
 import Image from "next/image"
 import { useAuthorization } from "@/hooks/use-authorization"
 
-const data = {
+interface NavSubItem {
+  title: string
+  url: string
+  requiredPermission?: string
+}
+
+interface NavItem {
+  title: string
+  url: string
+  icon?: React.ReactNode
+  isActive?: boolean
+  items?: NavSubItem[]
+}
+
+const data: {
+  teams: { name: string; logo: React.ReactNode; plan: string }[]
+  navMain: NavItem[]
+  administration: { name: string; url: string; icon: React.ReactNode }[]
+} = {
   teams: [
     {
       name: "MSU at Naawan",
@@ -151,6 +169,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return data.administration.filter((item) => {
       if (item.url === "/administration/roles-permissions") {
         return can("user.read") || can("role.read") || can("permission.read")
+      }
+      if (item.url === "/administration/locations") {
+        return can("office.read") || can("department.read")
+      }
+      if (item.url === "/administration/employees") {
+        return can("employee.read")
       }
       return true
     })

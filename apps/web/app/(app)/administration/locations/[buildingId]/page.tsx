@@ -18,12 +18,18 @@ import { PageHeader } from "@/components/layout/page-header";
 import { trpc } from "@/lib/trpc/client";
 import { CreateRoomInput, CreateRoomTypeInput, Room, RoomType } from "@repo/trpc/schemas";
 import { toast } from "sonner";
+import { useAuthorization } from "@/hooks/use-authorization";
 
 const DEFAULT_PAGE_SIZE = 10;
 
 export default function Page() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const { can, isLoading: authLoading } = useAuthorization();
+
+  const canViewOffice = can("office.read");
+  const canManageOffice = can("office.manage");
+
   const [createError, setCreateError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -51,26 +57,35 @@ export default function Page() {
 
   const utils = trpc.useUtils();
 
-  const roomsQuery = trpc.roomRouter.getRooms.useQuery({
-    buildingId,
-    search: search || undefined,
-    status: status !== "all" ? status as "active" | "inactive" : undefined,
-    floor: floor !== "all" ? floor as "1st floor" | "2nd floor" | "3rd floor" | "4th floor" : undefined,
-    page,
-    pageSize: DEFAULT_PAGE_SIZE,
-  });
+  const roomsQuery = trpc.roomRouter.getRooms.useQuery(
+    {
+      buildingId,
+      search: search || undefined,
+      status: status !== "all" ? status as "active" | "inactive" : undefined,
+      floor: floor !== "all" ? floor as "1st floor" | "2nd floor" | "3rd floor" | "4th floor" : undefined,
+      page,
+      pageSize: DEFAULT_PAGE_SIZE,
+    },
+    { enabled: canViewOffice },
+  );
 
-  const roomTypesQuery = trpc.roomTypeRouter.getRoomTypes.useQuery({
-    search: roomTypeSearch || undefined,
-    page: roomTypePage,
-    pageSize: DEFAULT_PAGE_SIZE,
-  });
+  const roomTypesQuery = trpc.roomTypeRouter.getRoomTypes.useQuery(
+    {
+      search: roomTypeSearch || undefined,
+      page: roomTypePage,
+      pageSize: DEFAULT_PAGE_SIZE,
+    },
+    { enabled: canViewOffice },
+  );
 
-  const departmentsQuery = trpc.departmentRouter.getDepartments.useQuery({
-    status: "active",
-    page: 1,
-    pageSize: 100,
-  });
+  const departmentsQuery = trpc.departmentRouter.getDepartments.useQuery(
+    {
+      status: "active",
+      page: 1,
+      pageSize: 100,
+    },
+    { enabled: canViewOffice },
+  );
 
   const createRoomMutation = trpc.roomRouter.create.useMutation({
     onSuccess: () => {
@@ -211,6 +226,48 @@ export default function Page() {
     deleteRoomTypeMutation.mutate({ id: selectedRoomTypeId });
   };
 
+  if (authLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <PageHeader
+            title={displayName}
+            description="Loading authorization..."
+            action={
+              <Link
+                className="flex gap-1.5 text-primary text-sm font-semibold"
+                href="/administration/locations"
+              >
+                <ArrowLeft width="20" height="20" /> Back to locations
+              </Link>
+            }
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (!canViewOffice) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <PageHeader
+            title={displayName}
+            description="You do not have permission to access this page."
+            action={
+              <Link
+                className="flex gap-1.5 text-primary text-sm font-semibold"
+                href="/administration/locations"
+              >
+                <ArrowLeft width="20" height="20" /> Back to locations
+              </Link>
+            }
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -236,14 +293,16 @@ export default function Page() {
               Configure rooms, offices, departments, and storage areas.
             </p>
           </div>
-          <div>
-            <Button className="ml-1.5" onClick={() => {
-              setCreateError(null);
-              setCreateOpen(true);
-            }}>
-              <Plus /> Create Room
-            </Button>
-          </div>
+          {canManageOffice && (
+            <div>
+              <Button className="ml-1.5" onClick={() => {
+                setCreateError(null);
+                setCreateOpen(true);
+              }}>
+                <Plus /> Create Room
+              </Button>
+            </div>
+          )}
         </CardHeader>
         <CardContent className="space-y-4 overflow-y-auto">
           <RoomFilters
@@ -280,6 +339,7 @@ export default function Page() {
               onDelete={handleDeleteRoomClick}
               roomTypes={roomTypes}
               departments={departments}
+              canManage={canManageOffice}
             />
           )}
         </CardContent>
@@ -293,14 +353,16 @@ export default function Page() {
               Manage categories and classifications for rooms.
             </p>
           </div>
-          <div>
-            <Button className="ml-1.5" onClick={() => {
-              setRoomTypeCreateError(null);
-              setRoomTypeCreateOpen(true);
-            }}>
-              <Plus /> Create Room Type
-            </Button>
-          </div>
+          {canManageOffice && (
+            <div>
+              <Button className="ml-1.5" onClick={() => {
+                setRoomTypeCreateError(null);
+                setRoomTypeCreateOpen(true);
+              }}>
+                <Plus /> Create Room Type
+              </Button>
+            </div>
+          )}
         </CardHeader>
         <CardContent className="space-y-4 overflow-y-auto">
           <RoomTypeFilters
@@ -325,69 +387,74 @@ export default function Page() {
               }}
               onEdit={handleEditRoomType}
               onDelete={handleDeleteRoomTypeClick}
+              canManage={canManageOffice}
             />
           )}
         </CardContent>
       </Card>
 
-      <RoomDialog
-        open={createOpen}
-        onOpenChange={setCreateOpen}
-        onSubmit={handleCreateRoom}
-        errorMessage={createError}
-        onClearError={() => setCreateError(null)}
-        title="Create Room"
-        defaultValues={{ buildingId, floor: "1st floor", roomTypeId: 1, name: "", departmentId: null }}
-      />
+      {canManageOffice && (
+        <>
+          <RoomDialog
+            open={createOpen}
+            onOpenChange={setCreateOpen}
+            onSubmit={handleCreateRoom}
+            errorMessage={createError}
+            onClearError={() => setCreateError(null)}
+            title="Create Room"
+            defaultValues={{ buildingId, floor: "1st floor", roomTypeId: 1, name: "", departmentId: null }}
+          />
 
-      <RoomDialog
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        onSubmit={handleUpdateRoom}
-        defaultValues={selectedRoom ? {
-          name: selectedRoom.name,
-          code: selectedRoom.code,
-          roomTypeId: selectedRoom.roomTypeId,
-          buildingId: selectedRoom.buildingId,
-          floor: selectedRoom.floor,
-          departmentId: selectedRoom.departmentId,
-        } : undefined}
-        title="Edit Room"
-      />
+          <RoomDialog
+            open={editOpen}
+            onOpenChange={setEditOpen}
+            onSubmit={handleUpdateRoom}
+            defaultValues={selectedRoom ? {
+              name: selectedRoom.name,
+              code: selectedRoom.code,
+              roomTypeId: selectedRoom.roomTypeId,
+              buildingId: selectedRoom.buildingId,
+              floor: selectedRoom.floor,
+              departmentId: selectedRoom.departmentId,
+            } : undefined}
+            title="Edit Room"
+          />
 
-      <RoomDeleteDialog
-        open={deleteOpen}
-        onOpenChange={setDeleteOpen}
-        onConfirm={handleDeleteRoomConfirm}
-        roomName={selectedRoom?.name ?? ""}
-      />
+          <RoomDeleteDialog
+            open={deleteOpen}
+            onOpenChange={setDeleteOpen}
+            onConfirm={handleDeleteRoomConfirm}
+            roomName={selectedRoom?.name ?? ""}
+          />
 
-      <RoomTypeDialog
-        open={roomTypeCreateOpen}
-        onOpenChange={setRoomTypeCreateOpen}
-        onSubmit={handleCreateRoomType}
-        errorMessage={roomTypeCreateError}
-        onClearError={() => setRoomTypeCreateError(null)}
-        title="Create Room Type"
-      />
+          <RoomTypeDialog
+            open={roomTypeCreateOpen}
+            onOpenChange={setRoomTypeCreateOpen}
+            onSubmit={handleCreateRoomType}
+            errorMessage={roomTypeCreateError}
+            onClearError={() => setRoomTypeCreateError(null)}
+            title="Create Room Type"
+          />
 
-      <RoomTypeDialog
-        open={roomTypeEditOpen}
-        onOpenChange={setRoomTypeEditOpen}
-        onSubmit={handleUpdateRoomType}
-        defaultValues={selectedRoomType ? {
-          name: selectedRoomType.name,
-          code: selectedRoomType.code,
-        } : undefined}
-        title="Edit Room Type"
-      />
+          <RoomTypeDialog
+            open={roomTypeEditOpen}
+            onOpenChange={setRoomTypeEditOpen}
+            onSubmit={handleUpdateRoomType}
+            defaultValues={selectedRoomType ? {
+              name: selectedRoomType.name,
+              code: selectedRoomType.code,
+            } : undefined}
+            title="Edit Room Type"
+          />
 
-      <RoomTypeDeleteDialog
-        open={roomTypeDeleteOpen}
-        onOpenChange={setRoomTypeDeleteOpen}
-        onConfirm={handleDeleteRoomTypeConfirm}
-        roomTypeName={selectedRoomType?.name ?? ""}
-      />
+          <RoomTypeDeleteDialog
+            open={roomTypeDeleteOpen}
+            onOpenChange={setRoomTypeDeleteOpen}
+            onConfirm={handleDeleteRoomTypeConfirm}
+            roomTypeName={selectedRoomType?.name ?? ""}
+          />
+        </>
+      )}
     </div>
   );
 }

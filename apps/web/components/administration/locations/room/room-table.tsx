@@ -26,6 +26,7 @@ interface RoomTableProps {
   onDelete: (room: Room) => void;
   roomTypes?: { id: number; name: string }[];
   departments?: { id: number; name: string }[];
+  canManage?: boolean;
 }
 
 export function RoomTable({
@@ -38,6 +39,7 @@ export function RoomTable({
   onDelete,
   roomTypes = [],
   departments = [],
+  canManage = true,
 }: RoomTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -57,11 +59,15 @@ export function RoomTable({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => onEdit(row.original)}><Boxes/> Assigned Assets</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onEdit(row.original)}><Pen /> Edit</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive" onClick={() => onDelete(row.original)}>
-                    <Trash2/> Delete
-                  </DropdownMenuItem>
+                  {canManage && (
+                    <>
+                      <DropdownMenuItem onClick={() => onEdit(row.original)}><Pen /> Edit</DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="text-destructive" onClick={() => onDelete(row.original)}>
+                        <Trash2/> Delete
+                      </DropdownMenuItem>
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             ),
@@ -69,7 +75,7 @@ export function RoomTable({
         }
         return column;
       }),
-    [onEdit, onDelete, roomTypes, departments]
+    [onEdit, onDelete, roomTypes, departments, canManage]
   );
 
   const table = useReactTable({

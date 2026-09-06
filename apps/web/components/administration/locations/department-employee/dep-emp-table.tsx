@@ -26,6 +26,8 @@ interface DepartmentEmployeeTableProps {
   onPaginationChange: (next: { page: number; pageSize: number }) => void;
   onEdit: (employee: Employee) => void;
   onDelete: (employee: Employee) => void;
+  canUpdate?: boolean;
+  canDelete?: boolean;
 }
 
 export function DepartmentEmployeeTable({
@@ -36,6 +38,8 @@ export function DepartmentEmployeeTable({
   onPaginationChange,
   onEdit,
   onDelete,
+  canUpdate = true,
+  canDelete = true,
 }: DepartmentEmployeeTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -57,13 +61,19 @@ export function DepartmentEmployeeTable({
                   <DropdownMenuItem onClick={() => onEdit(row.original)}>
                     <Boxes /> Assigned Asset
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onEdit(row.original)}>
-                    <Pen /> Edit
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive" onClick={() => onDelete(row.original)}>
-                    <Trash2 /> Delete
-                  </DropdownMenuItem>
+                  {canUpdate && (
+                    <DropdownMenuItem onClick={() => onEdit(row.original)}>
+                      <Pen /> Edit
+                    </DropdownMenuItem>
+                  )}
+                  {canDelete && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="text-destructive" onClick={() => onDelete(row.original)}>
+                        <Trash2 /> Delete
+                      </DropdownMenuItem>
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             ),
@@ -71,7 +81,7 @@ export function DepartmentEmployeeTable({
         }
         return column;
       }),
-    [onEdit, onDelete]
+    [onEdit, onDelete, canUpdate, canDelete]
   );
 
   const table = useReactTable({

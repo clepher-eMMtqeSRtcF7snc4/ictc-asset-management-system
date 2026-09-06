@@ -24,6 +24,7 @@ interface RoomTypeTableProps {
   onPaginationChange: (next: { page: number; pageSize: number }) => void;
   onEdit: (roomType: RoomType) => void;
   onDelete: (roomType: RoomType) => void;
+  canManage?: boolean;
 }
 
 export function RoomTypeTable({
@@ -34,13 +35,17 @@ export function RoomTypeTable({
   onPaginationChange,
   onEdit,
   onDelete,
+  canManage = true,
 }: RoomTypeTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const columns = useMemo(
-    () =>
-      roomTypeColumns.map((column) => {
+    () => {
+      const baseColumns = roomTypeColumns.filter(
+        (col) => canManage || col.id !== "actions",
+      );
+      return baseColumns.map((column) => {
         if (column.id === "actions") {
           return {
             ...column,
@@ -65,8 +70,9 @@ export function RoomTypeTable({
           };
         }
         return column;
-      }),
-    [onEdit, onDelete]
+      });
+    },
+    [onEdit, onDelete, canManage]
   );
 
   const table = useReactTable({
