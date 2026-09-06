@@ -10,6 +10,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { TRPCModule } from 'nestjs-trpc-v2';
 import { UsersModule } from './auth/users/users.module';
+import { AuthAuthorizationModule } from './auth/auth-authorization.module';
 import { UploadModule } from './upload/upload.module';
 import { AppContext } from './app.context';
 import { AuthTrpcMiddleware } from './auth/auth-trpc.middleware';
@@ -29,6 +30,7 @@ import { SupplierModule } from './assets/supplier/supplier.module';
 import { RoleModule } from './administration/rbac/role/role.module';
 import { PermissionModule } from './administration/rbac/permission/permission.module';
 import { UserRbacModule } from './administration/rbac/user/user.module';
+import { RbacAuthorizationModule } from './administration/rbac/authorization/rbac-authorization.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -54,6 +56,8 @@ import { UserRbacModule } from './administration/rbac/user/user.module';
       inject: [DATABASE_CONNECTION, ConfigService],
     }),
     UsersModule,
+    AuthAuthorizationModule,
+    RbacAuthorizationModule,
     BuildingModule,
     RoomModule,
     RoomTypeModule,

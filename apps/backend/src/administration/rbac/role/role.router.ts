@@ -8,6 +8,9 @@ import {
   rbacPermissionSchema,
 } from '@repo/trpc/schemas';
 import { AuthTrpcMiddleware } from '../../../auth/auth-trpc.middleware';
+import { AppContext } from '../../../app.context.interface';
+import { RbacService } from '../authorization/rbac.service';
+import { ForbiddenException } from '@nestjs/common';
 
 export type Role = z.infer<typeof rbacRoleSchema>;
 export type Permission = z.infer<typeof rbacPermissionSchema>;
@@ -15,10 +18,14 @@ export type Permission = z.infer<typeof rbacPermissionSchema>;
 @Router()
 @UseMiddlewares(AuthTrpcMiddleware)
 export class RoleRouter {
-  constructor(private readonly roleService: RoleService) {}
+  constructor(
+    private readonly roleService: RoleService,
+    private readonly rbacService: RbacService,
+  ) {}
 
   @Query({ input: z.object({}), output: z.array(z.string()) })
-  async getModules() {
+  async getModules(@Ctx() ctx: AppContext) {
+    await this.checkPermission(ctx, 'roles.read');
     return this.roleService.getModules();
   }
 
@@ -36,7 +43,8 @@ export class RoleRouter {
       pageSize: z.number(),
     }),
   })
-  async getRoles(@Input() input: any) {
+  async getRoles(@Input() input: any, @Ctx() ctx: AppContext) {
+    await this.checkPermission(ctx, 'roles.read');
     return this.roleService.findRoles(input);
   }
 
@@ -44,7 +52,8 @@ export class RoleRouter {
     input: z.object({ id: z.string() }),
     output: rbacRoleSchema,
   })
-  async getRoleById(@Input() input: { id: string }) {
+  async getRoleById(@Input() input: { id: string }, @Ctx() ctx: AppContext) {
+    await this.checkPermission(ctx, 'roles.read');
     return this.roleService.findRoleById(input.id);
   }
 
@@ -52,7 +61,8 @@ export class RoleRouter {
     input: createRoleInputSchema,
     output: rbacRoleSchema,
   })
-  async createRole(@Input() input: any) {
+  async createRole(@Input() input: any, @Ctx() ctx: AppContext) {
+    await this.checkPermission(ctx, 'roles.create');
     return this.roleService.createRole(input);
   }
 
@@ -60,13 +70,15 @@ export class RoleRouter {
     input: updateRoleInputSchema,
     output: rbacRoleSchema,
   })
-  async updateRole(@Input() input: any) {
+  async updateRole(@Input() input: any, @Ctx() ctx: AppContext) {
     const { id, ...data } = input;
+    await this.checkPermission(ctx, 'roles.update');
     return this.roleService.updateRole(id, data);
   }
 
   @Mutation({ input: z.object({ id: z.string() }) })
-  async deleteRole(@Input() input: { id: string }) {
+  async deleteRole(@Input() input: { id: string }, @Ctx() ctx: AppContext) {
+    await this.checkPermission(ctx, 'roles.delete');
     return this.roleService.deleteRole(input.id);
   }
 
@@ -74,7 +86,11 @@ export class RoleRouter {
     input: z.object({ id: z.string() }),
     output: z.array(rbacPermissionSchema),
   })
-  async getRolePermissions(@Input() input: { id: string }) {
+  async getRolePermissions(
+    @Input() input: { id: string },
+    @Ctx() ctx: AppContext,
+  ) {
+    await this.checkPermission(ctx, 'roles.read');
     return this.roleService.getRolePermissions(input.id);
   }
 
@@ -87,7 +103,26 @@ export class RoleRouter {
   })
   async syncRolePermissions(
     @Input() input: { id: string; permissionIds: string[] },
+    @Ctx() ctx: AppContext,
   ) {
+    await this.checkPermission(ctx, 'roles.manage_permissions');
     return this.roleService.syncRolePermissions(input.id, input.permissionIds);
+  }
+
+  private async checkPermission(ctx: AppContext, permissionCode: string) {
+    if (!ctx.user?.id) {
+      throw new ForbiddenException('Not authenticated');
+    }
+
+    const hasPermission = await this.rbacService.hasPermission(
+      ctx.user.id,
+      permissionCode,
+    );
+
+    if (!hasPermission) {
+      throw new ForbiddenException(
+        `You do not have permission: ${permissionCode}`,
+      );
+    }
   }
 }

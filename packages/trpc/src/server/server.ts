@@ -1656,7 +1656,22 @@ const appRouter = t.router({
       userId: z.string(),
       roleIds: z.array(z.string().uuid()),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
-  })
+  }),
+  auth: t.router({
+    getAuthorization: publicProcedure.output(z.object({
+      data: z.object({
+        userId: z.string(),
+        roles: z.array(z.object({
+          id: z.string(),
+          code: z.string(),
+          name: z.string(),
+        })),
+        permissions: z.array(z.string()),
+        isSuperAdmin: z.boolean(),
+        isAdmin: z.boolean(),
+      }),
+    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+  }),
 });
 export type AppRouter = typeof appRouter;
 

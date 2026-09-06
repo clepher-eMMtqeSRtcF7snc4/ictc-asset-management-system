@@ -7,16 +7,23 @@ import {
   updatePermissionInputSchema,
 } from '@repo/trpc/schemas';
 import { AuthTrpcMiddleware } from '../../../auth/auth-trpc.middleware';
+import { AppContext } from '../../../app.context.interface';
+import { RbacService } from '../authorization/rbac.service';
+import { ForbiddenException } from '@nestjs/common';
 
 export type Permission = z.infer<typeof rbacPermissionSchema>;
 
 @Router()
 @UseMiddlewares(AuthTrpcMiddleware)
 export class PermissionRouter {
-  constructor(private readonly permissionService: PermissionService) {}
+  constructor(
+    private readonly permissionService: PermissionService,
+    private readonly rbacService: RbacService,
+  ) {}
 
   @Query({ input: z.object({}), output: z.array(z.string()) })
-  async getModules() {
+  async getModules(@Ctx() ctx: AppContext) {
+    await this.checkPermission(ctx, 'permissions.read');
     return this.permissionService.getModules();
   }
 
@@ -35,7 +42,11 @@ export class PermissionRouter {
       pageSize: z.number(),
     }),
   })
-  async getPermissions(@Input() input: any) {
+  async getPermissions(
+    @Input() input: any,
+    @Ctx() ctx: AppContext,
+  ) {
+    await this.checkPermission(ctx, 'permissions.read');
     return this.permissionService.findPermissions(input);
   }
 
@@ -43,7 +54,11 @@ export class PermissionRouter {
     input: z.object({ id: z.string() }),
     output: rbacPermissionSchema,
   })
-  async getPermissionById(@Input() input: { id: string }) {
+  async getPermissionById(
+    @Input() input: { id: string },
+    @Ctx() ctx: AppContext,
+  ) {
+    await this.checkPermission(ctx, 'permissions.read');
     return this.permissionService.findPermissionById(input.id);
   }
 
@@ -51,7 +66,8 @@ export class PermissionRouter {
     input: createPermissionInputSchema,
     output: rbacPermissionSchema,
   })
-  async createPermission(@Input() input: any) {
+  async createPermission(@Input() input: any, @Ctx() ctx: AppContext) {
+    await this.checkPermission(ctx, 'permissions.create');
     return this.permissionService.createPermission(input);
   }
 
@@ -59,13 +75,35 @@ export class PermissionRouter {
     input: updatePermissionInputSchema,
     output: rbacPermissionSchema,
   })
-  async updatePermission(@Input() input: any) {
+  async updatePermission(@Input() input: any, @Ctx() ctx: AppContext) {
     const { id, ...data } = input;
+    await this.checkPermission(ctx, 'permissions.update');
     return this.permissionService.updatePermission(id, data);
   }
 
   @Mutation({ input: z.object({ id: z.string() }) })
-  async deletePermission(@Input() input: { id: string }) {
+  async deletePermission(
+    @Input() input: { id: string },
+    @Ctx() ctx: AppContext,
+  ) {
+    await this.checkPermission(ctx, 'permissions.delete');
     return this.permissionService.deletePermission(input.id);
+  }
+
+  private async checkPermission(ctx: AppContext, permissionCode: string) {
+    if (!ctx.user?.id) {
+      throw new ForbiddenException('Not authenticated');
+    }
+
+    const hasPermission = await this.rbacService.hasPermission(
+      ctx.user.id,
+      permissionCode,
+    );
+
+    if (!hasPermission) {
+      throw new ForbiddenException(
+        `You do not have permission: ${permissionCode}`,
+      );
+    }
   }
 }

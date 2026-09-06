@@ -4,8 +4,51 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RoleSection } from "@/components/administration/roles-permissions/role/role-section";
 import { PermissionSection } from "@/components/administration/roles-permissions/permission/permission-section";
 import { UserSection } from "@/components/administration/roles-permissions/user/user-section";
+import { useAuthorization } from "@/hooks/use-authorization";
+import { useMemo } from "react";
 
 export default function Page() {
+  const { can, isLoading } = useAuthorization();
+
+  const canViewUsers = can("users.read");
+  const canViewRoles = can("roles.read");
+  const canViewPermissions = can("permissions.read");
+
+  const defaultTab = useMemo(() => {
+    if (canViewUsers) return "users";
+    if (canViewRoles) return "roles";
+    if (canViewPermissions) return "permissions";
+    return "users";
+  }, [canViewUsers, canViewRoles, canViewPermissions]);
+
+  const hasAnyAccess = canViewUsers || canViewRoles || canViewPermissions;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-lg font-semibold">Roles & Permissions</h2>
+          <p className="text-sm text-muted-foreground">
+            Loading authorization...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasAnyAccess) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-lg font-semibold">Roles & Permissions</h2>
+          <p className="text-sm text-muted-foreground">
+            You do not have permission to access this page.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -15,21 +58,27 @@ export default function Page() {
         </p>
       </div>
 
-      <Tabs defaultValue="users">
+      <Tabs defaultValue={defaultTab}>
         <TabsList variant="line">
-          <TabsTrigger value="users">Users</TabsTrigger>
-          <TabsTrigger value="roles">Roles</TabsTrigger>
-          <TabsTrigger value="permissions">Permissions</TabsTrigger>
+          {canViewUsers && <TabsTrigger value="users">Users</TabsTrigger>}
+          {canViewRoles && <TabsTrigger value="roles">Roles</TabsTrigger>}
+          {canViewPermissions && <TabsTrigger value="permissions">Permissions</TabsTrigger>}
         </TabsList>
-         <TabsContent value="users" className="mt-4">
-          <UserSection />
-        </TabsContent>
-        <TabsContent value="roles" className="mt-4">
-          <RoleSection />
-        </TabsContent>
-        <TabsContent value="permissions" className="mt-4">
-          <PermissionSection />
-        </TabsContent>
+        {canViewUsers && (
+          <TabsContent value="users" className="mt-4">
+            <UserSection />
+          </TabsContent>
+        )}
+        {canViewRoles && (
+          <TabsContent value="roles" className="mt-4">
+            <RoleSection />
+          </TabsContent>
+        )}
+        {canViewPermissions && (
+          <TabsContent value="permissions" className="mt-4">
+            <PermissionSection />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

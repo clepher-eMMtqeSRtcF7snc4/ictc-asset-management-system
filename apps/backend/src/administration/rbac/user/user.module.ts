@@ -4,9 +4,10 @@ import { UserRbacService } from './user.service';
 import { UserRbacRouter } from './user.router';
 import { UserRoleService } from './user-role.service';
 import { UserRoleRouter } from './user-role.router';
+import { RbacAuthorizationModule } from '../authorization/rbac-authorization.module';
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, RbacAuthorizationModule],
   providers: [UserRbacService, UserRbacRouter, UserRoleService, UserRoleRouter],
   exports: [UserRbacService, UserRoleService],
 })

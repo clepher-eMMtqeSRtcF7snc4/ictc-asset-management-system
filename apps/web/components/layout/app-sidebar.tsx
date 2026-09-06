@@ -21,12 +21,14 @@ import {
   Handshake,
   Package,
   Settings2,
+  ShieldCheck,
   ShoppingCart,
   Truck,
   UserRound,
   UsersRound,
 } from "lucide-react"
 import Image from "next/image"
+import { useAuthorization } from "@/hooks/use-authorization"
 
 const data = {
   teams: [
@@ -111,6 +113,28 @@ const data = {
         { title: "Report Center", url: "/reports" },
       ],
     },
+    {
+      title: "Role & Permission",
+      url: "/administration/roles-permissions",
+      icon: <ShieldCheck />,
+      items: [
+        {
+          title: "Users",
+          url: "/administration/roles-permissions",
+          requiredPermission: "users.read",
+        },
+        {
+          title: "Roles",
+          url: "/administration/roles-permissions",
+          requiredPermission: "roles.read",
+        },
+        {
+          title: "Permissions",
+          url: "/administration/roles-permissions",
+          requiredPermission: "permissions.read",
+        },
+      ],
+    },
   ],
   administration: [
     { name: "Users", url: "/administration/roles-permissions", icon: <UsersRound /> },
@@ -120,14 +144,52 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { can } = useAuthorization()
+
+  const authorizedNavMain = React.useMemo(() => {
+    return data.navMain
+      .map((item) => {
+        if (item.title === "Role & Permission") {
+          const authorizedChildren = item.items?.filter(
+            (child) => !child.requiredPermission || can(child.requiredPermission),
+          )
+
+          if (!authorizedChildren || authorizedChildren.length === 0) {
+            return null
+          }
+
+          return {
+            ...item,
+            items: authorizedChildren.map(({ requiredPermission, ...child }) => child),
+          }
+        }
+
+        return item
+      })
+      .filter(Boolean) as typeof data.navMain
+  }, [can])
+
+  const authorizedAdministration = React.useMemo(() => {
+    return data.administration.filter((item) => {
+      if (item.url === "/administration/roles-permissions") {
+        return can("users.read") || can("roles.read") || can("permissions.read")
+      }
+      return true
+    })
+  }, [can])
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <SidebarDropdownMenu items={data.navMain} />
-        <SidebarSingleMenu settings={data.administration} />
+        {authorizedNavMain.length > 0 && (
+          <SidebarDropdownMenu items={authorizedNavMain} />
+        )}
+        {authorizedAdministration.length > 0 && (
+          <SidebarSingleMenu settings={authorizedAdministration} />
+        )}
       </SidebarContent>
       <SidebarFooter className="p-2">
         <div className="flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">

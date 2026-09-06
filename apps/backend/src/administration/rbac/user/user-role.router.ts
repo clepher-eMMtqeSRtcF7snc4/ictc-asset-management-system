@@ -19,12 +19,16 @@ import {
 import { AuthTrpcMiddleware } from '../../../auth/auth-trpc.middleware';
 import { AppContext } from '../../../app.context.interface';
 import { UserRoleService } from './user-role.service';
+import { RbacService } from '../authorization/rbac.service';
 import { ForbiddenException } from '@nestjs/common';
 
 @Router()
 @UseMiddlewares(AuthTrpcMiddleware)
 export class UserRoleRouter {
-  constructor(private readonly userRoleService: UserRoleService) {}
+  constructor(
+    private readonly userRoleService: UserRoleService,
+    private readonly rbacService: RbacService,
+  ) {}
 
   @Query({
     input: z.object({
@@ -42,7 +46,11 @@ export class UserRoleRouter {
       pageSize: z.number(),
     }),
   })
-  async list(@Input() input: any) {
+  async list(
+    @Input() input: any,
+    @Ctx() ctx: AppContext,
+  ) {
+    await this.checkPermission(ctx, 'users.read');
     return this.userRoleService.findUsersWithRoles(input);
   }
 
@@ -50,7 +58,11 @@ export class UserRoleRouter {
     input: z.object({ userId: z.string() }),
     output: userRolesOutputSchema,
   })
-  async getByUserId(@Input() input: { userId: string }) {
+  async getByUserId(
+    @Input() input: { userId: string },
+    @Ctx() ctx: AppContext,
+  ) {
+    await this.checkPermission(ctx, 'users.read');
     return this.userRoleService.getRolesByUserId(input.userId);
   }
 
@@ -58,7 +70,11 @@ export class UserRoleRouter {
     input: z.object({ userId: z.string() }),
     output: z.array(roleAssignmentSchema),
   })
-  async getAssignmentOptions(@Input() input: { userId: string }) {
+  async getAssignmentOptions(
+    @Input() input: { userId: string },
+    @Ctx() ctx: AppContext,
+  ) {
+    await this.checkPermission(ctx, 'users.read');
     return this.userRoleService.getRoleAssignmentOptions(input.userId);
   }
 
@@ -69,7 +85,7 @@ export class UserRoleRouter {
     @Input() input: { userId: string; roleIds: string[] },
     @Ctx() ctx: AppContext,
   ) {
-    await this.checkPermission(ctx, 'users.manage');
+    await this.checkPermission(ctx, 'users.manage_roles');
     return this.userRoleService.assignMany(input.userId, input.roleIds);
   }
 
@@ -80,7 +96,7 @@ export class UserRoleRouter {
     @Input() input: { userId: string; roleId: string },
     @Ctx() ctx: AppContext,
   ) {
-    await this.checkPermission(ctx, 'users.manage');
+    await this.checkPermission(ctx, 'users.manage_roles');
     return this.userRoleService.assign(input.userId, input.roleId);
   }
 
@@ -91,7 +107,7 @@ export class UserRoleRouter {
     @Input() input: { userId: string; roleId: string },
     @Ctx() ctx: AppContext,
   ) {
-    await this.checkPermission(ctx, 'users.manage');
+    await this.checkPermission(ctx, 'users.manage_roles');
     return this.userRoleService.remove(input.userId, input.roleId);
   }
 
@@ -102,19 +118,23 @@ export class UserRoleRouter {
     @Input() input: { userId: string; roleIds: string[] },
     @Ctx() ctx: AppContext,
   ) {
-    await this.checkPermission(ctx, 'users.manage');
+    await this.checkPermission(ctx, 'users.manage_roles');
     return this.userRoleService.replace(input.userId, input.roleIds);
   }
 
   private async checkPermission(ctx: AppContext, permissionCode: string) {
-    const hasPermission = await this.userRoleService.hasPermission(
+    if (!ctx.user?.id) {
+      throw new ForbiddenException('Not authenticated');
+    }
+
+    const hasPermission = await this.rbacService.hasPermission(
       ctx.user.id,
       permissionCode,
     );
 
     if (!hasPermission) {
       throw new ForbiddenException(
-        `You do not have permission to manage user roles`,
+        `You do not have permission: ${permissionCode}`,
       );
     }
   }

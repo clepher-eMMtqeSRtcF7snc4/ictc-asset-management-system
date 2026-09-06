@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  ForbiddenException,
   Inject,
 } from '@nestjs/common';
 import { DATABASE_CONNECTION } from '../../../database/database-connection';
@@ -156,6 +157,12 @@ export class RoleService {
   ) {
     const role = await this.findRoleById(id);
 
+    if (role.code === 'super_admin' && input.code && input.code !== 'super_admin') {
+      throw new ForbiddenException(
+        'Cannot change the code of the Super Admin role',
+      );
+    }
+
     if (input.code && input.code !== role.code) {
       const existing = await this.findRoleByCode(input.code);
       if (existing) {
@@ -197,7 +204,14 @@ export class RoleService {
   }
 
   async deleteRole(id: string) {
-    await this.findRoleById(id);
+    const role = await this.findRoleById(id);
+    
+    if (role.code === 'super_admin' || role.code === 'admin') {
+      throw new ForbiddenException(
+        'System roles (Super Admin, Admin) cannot be deleted',
+      );
+    }
+    
     await this.database
       .delete(rolePermissions)
       .where(eq(rolePermissions.roleId, id));
